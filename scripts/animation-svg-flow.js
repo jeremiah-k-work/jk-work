@@ -31,8 +31,9 @@ function updateBasePath() {
 
 // --- 2. Build the animated paths and start animation
 function startAnimation() {
+    
     const sentence = "JEREMIAH" + "\u00A0".repeat(2) + "KNEFEL" + "\u00A0".repeat(40);
-    const repeatCount = 2;
+    const repeatCount = 1;
     const phrase = sentence.repeat(repeatCount);
     const duration = 19000;
 

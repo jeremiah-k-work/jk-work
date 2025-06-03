@@ -21,12 +21,20 @@
 
 body {
     
-    margin: 0;
     font-family: 'Actay-Wide-Bold-Italic', sans-serif;
     background-color: #f8f8f8;
     color: #333;
     background-color: #171717;
     color: #f8f8f8;
+    
+    position: relative;
+    display: flex;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    overflow: hidden;
     
 }
 
@@ -66,21 +74,6 @@ text {
     
 }
 
-video#Background-Video {
-    
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    
-    object-fit: cover;
-    z-index: -99000;
-    
-    opacity: .2;
-    
-}
-
 
 
 
@@ -115,21 +108,41 @@ video#Background-Video {
 
 #Background-Video-Container {
     
+    z-index: -99000;
     pointer-events: none;
     
     position: absolute;
     top: 0;
     left: 0;
     
+    display: flex;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
     width: 100vw;
     height: 100vh;
-    
-    border: 20px solid #26bca5;
     
     animation-name: border-modulate;
     animation-duration: 4s;
     animation-iteration-count: infinite;
     animation-direction: alternate;
+    
+    border-radius: 20px;
+    
+}
+
+video#Background-Video {
+    
+    z-index: -99001;
+    
+    width: 100%;
+    height: 100%;
+    
+    object-fit: cover;
+    
+    opacity: .8;
     
 }
 
@@ -165,7 +178,7 @@ video#Background-Video {
     
     text-align: center;
     
-    border: 2px solid red;
+    /*border: 2px solid red;*/
     
     
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
@@ -176,12 +189,12 @@ video#Background-Video {
 #title-cycler {
     
     position: absolute;
-    width: 100%;
+    width: 80%;
     
     will-change: transform, filter, opacity;
     transition: transform 0.1s ease-out, filter 0.1s ease-out, opacity 0.1s ease-out;
     
-    font-size: 4rem;
+    font-size: 3rem;
     
 }
 

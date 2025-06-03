@@ -90,7 +90,7 @@ function updateTitle() {
             textToShow = currentInjectionText;
             injectionCounter++;
             
-            if (injectionCounter >= 3) {
+            if (injectionCounter >= 1) {
                 
                 injectionActive = false;
                 injectionCounter = 0;
@@ -102,7 +102,7 @@ function updateTitle() {
             titlesIndex = (titlesIndex + 1) % titles.length;
             
             // ~20% chance to trigger injection
-            if (Math.random() < 0.2) {
+            if (Math.random() < 0.05) {
                 
                 injectionActive = true;
                 currentInjectionText = injectionTexts[Math.floor(Math.random() * injectionTexts.length)].text;

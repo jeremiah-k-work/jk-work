@@ -1,0 +1,386 @@
+@font-face {
+    
+    font-family: 'Actay-Wide-Bold-Italic';
+    src: url(assets/fonts/actay/ActayWide-BoldItalic.otf);
+    
+}
+
+@keyframes border-modulate {
+    
+    from {border: 0vw solid black;}
+    to {border: 10vw solid white;}
+    
+}
+
+* {
+    
+    margin: 0;
+    box-sizing: border-box;
+    
+}
+
+body {
+    
+    margin: 0;
+    font-family: 'Actay-Wide-Bold-Italic', sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+    background-color: #171717;
+    color: #f8f8f8;
+    
+}
+
+header {
+    
+    background: #1f1f1f;
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    
+}
+
+.row {
+    
+    padding: 3rem 2rem;
+    margin: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    
+}
+
+svg {
+    
+  width: 100vw;
+  height: 100vh;
+  display: block;
+    
+}
+
+text {
+    
+    font-size: 3em;
+    fill: #f8f8f8;
+    letter-spacing: 0.5px;
+    opacity: 1;
+    
+}
+
+video#Background-Video {
+    
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    object-fit: cover;
+    z-index: -99000;
+    
+    opacity: .2;
+    
+}
+
+
+
+
+#Border-Animation {
+    
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+    width: 100vw;
+    height: 100vh;
+    
+    pointer-events: none;
+    
+}
+
+
+#Canvas {
+    
+    position: relative;
+    
+    width: 100vw;
+    height: 100vh;
+    
+    display: flex;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+}
+
+#Background-Video-Container {
+    
+    pointer-events: none;
+    
+    position: absolute;
+    top: 0;
+    left: 0;
+    
+    width: 100vw;
+    height: 100vh;
+    
+    border: 20px solid #26bca5;
+    
+    animation-name: border-modulate;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    
+}
+
+#Center-Bubble {
+    
+    
+    display: flex;
+    flex-direction: column;
+    
+    width: 100%;
+    height: 100%;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+}
+
+#title-container {
+    
+    position: relative;
+    width: 100%;
+    height: 100%;
+    
+    display: flex;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    height: 8rem; /* adjust based on font size */
+    overflow: hidden;
+    
+    text-align: center;
+    
+    border: 2px solid red;
+    
+    
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+    
+}
+
+#title-cycler {
+    
+    position: absolute;
+    width: 100%;
+    
+    will-change: transform, filter, opacity;
+    transition: transform 0.1s ease-out, filter 0.1s ease-out, opacity 0.1s ease-out;
+    
+    font-size: 4rem;
+    
+}
+
+#headline-container {
+    
+    position: relative;
+    z-index: -12;
+    pointer-events: none;
+    opacity: 1;
+    
+    width: 100vw;
+    
+    display: flex;
+    flex-direction: row;
+    
+    justify-content: center;
+    align-items: center;
+    align-content: stretch;
+    
+}
+
+#headline-container .headline {
+    
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 50%;
+    
+    display: block;
+    
+    font-size: 1rem;
+    padding: .5rem;
+    
+    color: white;
+    
+}
+
+#headline-container #headline-a {
+    
+    flex-basis: 60%;
+    
+    font-family: 'Actay-Wide-Bold-Italic', sans-serif;
+    
+    text-align: right;
+    
+    transition: all 0.6s ease-in-out;
+    
+}
+
+#headline-container #headline-b {
+    
+    font-family: 'Actay-Wide-Bold-Italic', sans-serif;
+    
+    text-align: left;
+    
+    transition: all 0.6s ease-in-out;
+    
+}
+
+
+
+
+.hire-me-button {
+    
+    display: flex;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    padding: 10px 20px;
+    
+    border-radius: 9300px;
+    background-color: #f03232;
+    
+    font-size: 1.2em;
+    
+    cursor: pointer;
+    
+    transition: all .2s;
+    
+}
+
+.hire-me-button:hover {
+    
+    padding: 14px 28px;
+    
+    font-size: 1.4em;
+    
+    transition: all .2s;
+    
+}
+
+
+
+.contact-social-bar {
+    
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+    flex-basis: 10px;
+    flex-grow: 0;
+    flex-shrink: 1;
+    
+    height: 60px;
+    padding: 12px;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+}
+
+
+.social-logo-link {
+    
+    position: relative;
+    display: flex;
+    flex-shrink: 2;
+    height: 100%;
+    
+    flex-direction: row;
+    
+    justify-content: space-around;
+    align-content: space-around;
+    align-items: center;
+    
+    background-color: aliceblue;
+    padding: 8px;
+    border-radius: .2rem;
+    
+    text-decoration: none;
+    color: #171717;
+    
+}
+
+.social-logo-link img {
+    
+    position: relative;
+    
+    flex-shrink: 4;
+    
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    
+}
+
+
+#social-logo-link-linkedin::after {
+    
+    content: "linkedin.com/in/jeremiahknefel/";
+    
+    position: relative;
+    display: block;
+    
+    flex-shrink: 1;
+    
+    width: 0%;
+    font-size: 0em;
+    
+    
+    transition: .2s all;
+    
+}
+
+
+
+
+#social-logo-link-linkedin:hover::after {
+    
+    display: block;
+    width: 200%;
+    font-size: .7em;
+    
+    
+    transition: .2s all;
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

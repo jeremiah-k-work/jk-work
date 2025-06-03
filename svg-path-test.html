@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        <title>Seamless SVG Text Loop</title>
+        
+        <link rel="stylesheet" href="style.css" />
+        
+    </head>
+    
+    
+    
+    <body>
+        
+        <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid meet">
+            
+            <defs>
+                <!-- Base loop path -->
+                <path id="basePath"
+          d="M 50,20 
+             Q 20,20 20,50 
+             L 20,250 
+             Q 20,280 50,280 
+             L 450,280 
+             Q 480,280 480,250 
+             L 480,50 
+             Q 480,20 450,20 
+             Z" />
+            </defs>
+            
+            <g id="text-group"></g>
+        </svg>
+        
+        
+        <script src="scripts/text-cycle-animation.js"></script>
+        
+    </body>
+    
+</html>
+
+
+

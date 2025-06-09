@@ -32,7 +32,7 @@
     
     syntax: "<color>";
     inherits: false;
-    initial-value: #3E4480;
+    initial-value: #3e4480;
     
 }
 
@@ -138,6 +138,9 @@
     max-height: 90vh;
     */
     
+    max-width: 98vw;
+    max-height: 98vh;
+    
     overflow: hidden;
     
 }
@@ -159,6 +162,8 @@ body {
     justify-content: center;
     align-content: center;
     align-items: center;
+    
+    background-color: var(--color-bank-dune);
     
     overflow: hidden;
     

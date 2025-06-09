@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,-23118,-7000)">
+        <g id="Stribe-Bubble---Go" serif:id="Stribe Bubble - Go" transform="matrix(0.199696,0,0,0.185328,18499.1,5552.77)">
+            <rect x="23129.6" y="7809" width="240.366" height="259" style="fill:none;"/>
+            <clipPath id="_clip1">
+                <rect x="23129.6" y="7809" width="240.366" height="259"/>
+            </clipPath>
+            <g clip-path="url(#_clip1)">
+                <g transform="matrix(3.48356,0,0,3.75362,-44047.3,1063.74)">
+                    <path d="M19318.5,1797C19337.5,1797 19353,1812.46 19353,1831.5C19353,1850.54 19337.5,1866 19318.5,1866C19299.5,1866 19284,1850.54 19284,1831.5C19284,1812.46 19299.5,1797 19318.5,1797ZM19316.9,1831.5L19312,1837.2C19311.5,1837.68 19311.3,1838.29 19311.3,1838.9C19311.3,1839.65 19311.6,1840.39 19312.2,1840.87L19314.8,1843.18C19315.3,1843.59 19315.9,1843.79 19316.5,1843.79C19317.3,1843.79 19318,1843.52 19318.5,1842.91L19327.1,1833.27C19327.5,1832.79 19327.7,1832.18 19327.7,1831.57C19327.7,1830.89 19327.5,1830.28 19327.1,1829.74L19318.5,1820.03C19318,1819.41 19317.3,1819.14 19316.6,1819.14C19316,1819.14 19315.3,1819.35 19314.8,1819.82L19312.2,1822.13C19311.6,1822.61 19311.3,1823.35 19311.3,1824.03C19311.3,1824.64 19311.5,1825.32 19312,1825.8L19316.9,1831.5Z" style="fill:rgb(216,141,0);"/>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

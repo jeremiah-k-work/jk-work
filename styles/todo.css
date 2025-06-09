@@ -1,0 +1,531 @@
+@font-face {
+    
+    font-family: 'Actay-Wide-Bold-Italic';
+    src: url(assets/fonts/actay/ActayWide-BoldItalic.otf);
+    
+}
+
+@font-face {
+    
+    font-family: 'Actay-Wide-Bold-Italic';
+    src: url('../assets/fonts/thyga/Thyga-Regular.otf');
+    
+}
+
+@font-face {
+    
+    font-family: 'Stribe-Basic';
+    src: url('../assets/fonts/stribe/Stribe-Basic.otf');
+    
+}
+
+
+@property --color-moonie-blue {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #5461E2;
+    
+}
+
+@property --color-beach-night {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #3E4480;
+    
+}
+
+@property --color-sunburst-yellow {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #E6AE02;
+    
+}
+
+@property --color-sunspot-orange {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #D88D00;
+    
+}
+
+@property --color-light-lavender {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #AA7FBF;
+    
+}
+
+@property --color-wonder-plum {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #9150B0;
+    
+}
+
+@property --color-lawn-greene {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #66967C;
+    
+}
+
+@property --color-bank-dune {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #D5D3B5;
+    
+}
+
+
+
+/* COLORS */
+
+/* MOONIE BLUE */
+/* #5461E2 */
+
+/* BEACH NIGHT */
+/* #3E4480
+
+
+/* SUNBURST YELLOW */
+/* #E6AE02 */
+
+/* SUNSPOT ORANGE */
+/* #D88D00 */
+
+
+/* LIGHT LAVENDER */
+/* #AA7FBF */
+
+/* WONDER PLUM */
+/* #9150B0 */
+
+
+/* LAWN GREENE */
+/* #66967C */
+
+/* BANK DUNE */
+/* #D5D3B5 */
+
+
+
+* {
+    
+    position: relative;
+    margin: 0;
+    box-sizing: border-box;
+    
+}
+
+
+body {
+    
+    
+    font-family: 'Stribe-Basic', serif;
+    
+    width: 100vw;
+    height: 100vh;
+    
+    overflow: hidden;
+    
+}
+
+h1 {
+    
+    
+    font-family: 'Stribe-Basic', serif;
+    
+    
+    
+}
+
+
+
+
+
+#Canvas {
+    
+    display: flex;
+    width: 100%;
+    height: 100%;
+    
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+    justify-content: space-between;
+    align-content: stretch;
+    align-items: stretch;
+    
+    background-color: var(--color-bank-dune);
+    
+}
+
+
+#Canvas {
+    
+    display: flex;
+    width: 100%;
+    height: 100%;
+    
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+    justify-content: space-between;
+    
+    background-color: var(--color-bank-dune);
+    
+}
+
+.cell {
+    
+    padding: 4vh 4vw;
+    border: 2px solid red;
+    
+}
+
+#Cell-A {
+    
+    display: flex;
+    flex-direction: column;
+    
+    flex-basis: 68%;
+    flex-basis: 50vw;
+    flex-grow: 1;
+    
+    font-size: 1.5em;
+    
+}
+
+#Cell-B {
+    
+    display: flex;
+    flex-direction: column;
+    
+    flex-basis: 28%;
+    flex-basis: 20vh;
+    flex-grow: 1;
+    flex-shrink: 2;
+    
+}
+
+#Cell-C {
+    
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: flex-end;
+    align-content: stretch;
+    align-items: stretch;
+    
+    flex-grow: 1;
+    flex-shrink: 10;
+    
+    max-height: 30vh;
+    
+}
+
+#Date-Display {
+    
+    display: flex;
+    
+    flex-direction: column;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: flex-end;
+    
+    font-size: 6.4em;
+    font-size: 6.4vw;
+    
+    text-align: right;
+    
+}
+
+
+#Hour-Minute-Display {
+    
+    color: var(--color-moonie-blue);
+    
+}
+
+#Meridiem-Display {
+    
+    font-size: 2em;
+    color: var(--color-beach-night);
+    
+}
+
+#Year-Display {
+    
+    font-size: .7em;
+    color: var(--color-sunburst-yellow);
+    
+}
+
+
+.section-title {
+    
+    position: relative;
+    display: flex;
+    
+    flex-direction: row;
+    
+    justify-content: space-between;
+    align-content: space-between;
+    align-items: stretch;
+    
+    color: var(--color-moonie-blue);
+    font-size: 3em;
+    
+}
+
+
+
+.list-item {
+    
+    font-size: 3.2vh;
+    
+}
+
+
+/* List Item: Complete */
+
+.list-item.complete .list-item-title {
+    
+    color: var(--color-lawn-greene);
+    
+}
+
+.list-item.complete .list-item-description {
+    
+    opacity: .2;
+    
+}
+
+.list-item.complete .list-item-description-a {
+    
+    color: var(--color-beach-night);
+    
+}
+
+.list-item.complete .list-item-description-b {
+    
+    color: var(--color-moonie-blue);
+    
+}
+
+
+/* List Item: Incomplete */
+
+.list-item.incomplete .list-item-title {
+    
+    color: var(--color-sunspot-orange);
+    
+}
+
+.list-item.incomplete .list-item-description-a {
+    
+    color: var(--color-wonder-plum);
+    
+}
+
+.list-item.incomplete .list-item-description-b {
+    
+    color: var(--color-light-lavender);
+    
+}
+
+.list-item {
+    
+    position: relative;
+    display: flex;
+    
+    flex-direction: row;
+    
+    padding: 2em;
+    
+    justify-content: space-evenly;
+    align-content: space-between;
+    align-items: stretch;
+    
+}
+
+.list-item span {
+    
+    padding: 2px 6px;
+    
+}
+
+
+
+
+.list-item-title {
+    
+    position: relative;
+    display: flex;
+    flex-basis: 38%;
+    flex-shrink: 0;
+    
+    flex-direction: row;
+    
+    justify-content: flex-end;
+    align-content: flex-end;
+    align-items: stretch;
+    
+    text-align: right;
+    
+}
+
+
+.list-item-description {
+    
+    position: relative;
+    display: flex;
+    flex-basis: 62%;
+    flex-shrink: 0;
+    
+    flex-direction: column;
+    
+    justify-content: space-between;
+    align-content: space-between;
+    align-items: stretch;
+    
+}
+
+list-item-icon {
+    
+    flex-shrink: 2;
+    flex-grow: 0;
+    
+}
+
+.list-item-icon img {
+    
+    height: .8em;
+    
+    object-fit: contain;
+    
+}
+
+
+
+
+
+#Name-Footer {
+    
+    display: flex;
+    flex-grow: 1;
+    
+    flex-direction: row;
+    
+    justify-content: flex-start;
+    align-content: flex-end;
+    align-items: flex-end;
+    
+    
+}
+
+#Name-Footer span {
+    
+    display: flex;
+    flex-direction: row;
+    
+    justify-content: flex-end;
+    align-content: flex-end;
+    align-items: flex-end;
+    
+}
+
+#Name-Footer .first-name {
+    
+    font-size: 12em;
+    /*font-size: 20vh;*/
+    color: var(--color-moonie-blue);
+    
+}
+
+#Name-Footer .last-name {
+    
+    font-size: 5em;
+    /*font-size: 8vh;*/
+    color: var(--color-sunspot-orange);
+    
+    line-height: 1.7em;
+    /*line-height: 14vh;*/
+    
+}
+
+
+.name-footer-row {
+    
+    display: flex;
+    flex-direction: row;
+    flex-grow: 2;
+    
+    justify-content: flex-start;
+    align-content: flex-start;
+    align-items: flex-end;
+    
+    flex-wrap: wrap;
+    
+}
+
+
+
+.name-footer-row span {
+    
+    padding: 8px;
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

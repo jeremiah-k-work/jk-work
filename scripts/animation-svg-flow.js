@@ -1,5 +1,20 @@
+/*
+let mobileVersionActive = false;
+
+function isMobile() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+function() {
+    
+    mobileVersionActive = isMobile();
+    
+}
+*/
+
 // --- 1. Generate the base path based on viewport size
 function updateBasePath() {
+    
     const svg = document.getElementById("mainSvg");
     const path = document.getElementById("basePath");
 
@@ -27,7 +42,9 @@ function updateBasePath() {
         Q ${left},${top} ${left + radius},${top}
         Z`;
     path.setAttribute("d", d);
+    
 }
+
 
 // --- 2. Build the animated paths and start animation
 function startAnimation() {
@@ -36,30 +53,37 @@ function startAnimation() {
     const repeatCount = 1;
     const phrase = sentence.repeat(repeatCount);
     const duration = 19000;
-
+    
     const basePath = document.getElementById("basePath");
     const pathLength = basePath.getTotalLength();
     const svgNS = "http://www.w3.org/2000/svg";
     const group = document.getElementById("text-group");
-
+    
     group.innerHTML = ""; // Clear old elements
-
+    
+    
     const numCopies = 4;
+    
+    
     const textPaths = [];
 
     function createOffsetPath(id, offsetLength) {
+        
+        
         const clone = document.createElementNS(svgNS, "path");
         clone.setAttribute("id", id);
-
+        
         const numPoints = 500;
         const points = [];
-
+        
+        
         for (let i = -1; i <= numPoints + 2; i++) {
             const length = ((i / numPoints) * pathLength + offsetLength + pathLength) % pathLength;
             const pt = basePath.getPointAtLength(length);
             points.push({ x: pt.x, y: pt.y });
         }
-
+        
+        
         let d = `M ${points[1].x},${points[1].y}`;
         for (let i = 1; i < points.length - 2; i++) {
             const p0 = points[i - 1];
@@ -74,13 +98,17 @@ function startAnimation() {
 
             d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
         }
-
+        
+        
         clone.setAttribute("d", d);
         basePath.parentNode.appendChild(clone);
         return clone;
+        
     }
 
     for (let i = 0; i < numCopies; i++) {
+        
+        
         const offsetFraction = i / numCopies;
         const offsetLength = offsetFraction * pathLength;
         const pathId = `loopPath${i}`;
@@ -95,6 +123,7 @@ function startAnimation() {
         text.appendChild(textPath);
         group.appendChild(text);
         textPaths.push({ textPath, offset: offsetFraction });
+        
     }
 
     let startTime = null;
@@ -112,6 +141,7 @@ function startAnimation() {
 
     requestAnimationFrame(animate);
 }
+
 
 function rebuild() {
     updateBasePath();
@@ -133,8 +163,10 @@ function rebuild() {
     }, 20); // 1 frame delay
 }
 
+
 window.addEventListener("resize", rebuild);
 window.addEventListener("DOMContentLoaded", rebuild);
+
 
 let resizeTimeout;
 window.addEventListener("resize", () => {

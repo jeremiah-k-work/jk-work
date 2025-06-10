@@ -1,0 +1,177 @@
+
+
+@font-face {
+    
+    font-family: 'Thunder-LC';
+    src: url('../assets/fonts/thunder/Thunder-LC.otf');
+    
+    
+}
+
+
+@font-face {
+    
+    font-family: 'Thunder-Bold-LC';
+    src: url('../assets/fonts/thunder/Thunder-BoldLC.otf');
+    
+    
+}
+
+
+* {
+    
+    position: relative;
+    margin: 0;
+    box-sizing: border-box;
+    
+    text-decoration: none;
+    
+}
+
+
+body {
+    
+    width: 100vw;
+    height: 100vh;
+    
+    padding: 4vw;
+    
+}
+
+#Canvas {
+    
+    width: 100%;
+    height: 100%;
+    
+    background-color: aliceblue;
+    
+}
+
+
+#Presentation {
+    
+    
+    width: 100%;
+    height: 100%;
+    
+    
+}
+
+
+#Introduction {
+    
+    width: 100%;
+    height: 100%;
+    
+    
+    
+}
+
+
+
+.anim-wave {
+    
+    
+    
+}
+
+
+
+.wave-container {
+    
+    position: relative;
+    width: 100%;
+    
+}
+
+.wave {
+    
+    width: 100%; /* match total x length (2×120) */
+    height: 100%;
+    animation: scroll-wave 4s linear infinite;
+    
+}
+
+@keyframes scroll-wave {
+    
+    0% {
+        
+        transform: translateX(0);
+        
+    }
+    
+    100% {
+        
+        transform: translateX(100%); /* exactly one wave length */
+        
+    }
+    
+}
+
+
+
+.example {
+    
+    width: 100%;
+    height: 4vh;
+    
+    background-color: red;
+    
+}
+.example svg {
+    
+    background-color: floralwhite;
+    
+    border: 2px solid indigo;
+    
+}
+
+
+
+
+
+.rsvg {
+    
+    width: 100%;
+    height: auto;
+    display: block; /* Helps with layout */
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,343 @@
+
+
+@font-face {
+    
+    font-family: 'Thunder-LC';
+    src: url('../assets/fonts/thunder/Thunder-LC.otf');
+    
+    
+}
+
+
+@font-face {
+    
+    font-family: 'Thunder-LC-Bold';
+    src: url('../assets/fonts/thunder/Thunder-BoldLC.otf');
+    
+    
+}
+
+
+/* COLORS */
+
+/*
+@property --color-actual-white {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #F9F108;
+    
+}
+
+@property --color-spacepad-blue {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #0075FF;
+    
+}
+
+@property --color-spacepad-white {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #F3F3F3;
+    
+}
+
+@property --color-zapped-orange {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #FFDA00;
+    
+}
+
+@property --color-dripping-gold {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: #F9F108;
+    
+}
+*/
+
+/* STYLES */
+/*
+@property --style-color-text-heading-a1 {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: var(--color-spacepad-blue);
+    
+}
+
+@property --style-color-background-a1 {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: var(--color-actual-white);
+    
+}
+
+@property --style-color-background-a2 {
+    
+    syntax: "<color>";
+    inherits: false;
+    initial-value: var(--color-spacepad-white);
+    
+}
+*/
+/* END: COLORS // // // // // */
+
+
+
+
+:root {
+    
+    --color-actual-white: #FFFFFF;
+    --color-spacepad-white: #F3F3F3;
+    --color-spacepad-blue: #0075FF;
+    --color-zapped-orange: #FFDA00;
+    --color-juiced-purple: #BC4EF0;
+    --color-dripping-gold: #F9F108;
+    --color-funky-dragonfruit: #F64284;
+    
+}
+
+[data-theme="airport"] {
+    
+    --style-color-background-a1: var(--color-actual-white);
+    --style-color-background-a2: var(--color-spacepad-white);
+    
+    --style-color-text-heading-a1: var(--color-spacepad-blue);
+    
+    --style-color-interact-a1: var(--color-dripping-gold);
+    
+}
+
+[data-theme="zapped"] {
+    
+    --style-color-background-a1: var(--color-zapped-orange);
+    --style-color-background-a2: var(--color-dripping-gold);
+    
+    --style-color-text-heading-a1: var(--color-juiced-purple);
+    
+    --style-color-interact-a1: var(--color-funky-dragonfruit);
+    
+}
+
+
+* {
+    
+    position: relative;
+    margin: 0;
+    box-sizing: border-box;
+    
+    text-decoration: none;
+    
+    transition: .2s all;
+    
+}
+
+
+body {
+    
+    width: 100vw;
+    height: 100vh;
+    
+    padding: 4vw;
+    
+}
+
+#Canvas {
+    
+    display: flex;
+    
+    flex-direction: column;
+    
+    justify-content: flex-end;
+    align-items: center;
+    
+    width: 100%;
+    height: 100%;
+    
+    /*
+    background-color: aliceblue;
+    */
+    
+    border: 1px solid var(--style-color-background-a2);
+    background-color: var(--style-color-background-a1);
+    border-radius: 12vh;
+    
+    overflow: hidden;
+    
+}
+
+
+#Presentation {
+    
+    display: flex;
+    width: 100%;
+    flex-basis: 50%;
+    
+    flex-direction: column;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    
+}
+
+
+#Introduction {
+    
+    display: flex;
+    
+    flex-direction: column;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    font-family: "Thunder-LC-Bold", sans-serif;
+    color: var(--style-color-text-heading-a1);
+    
+}
+
+#Intro-Logotype {
+    
+    font-size: 12vh;
+    
+}
+
+#Intro-Headline {
+    
+    font-size: 5vh;
+    
+}
+
+#Intro-Description {
+    
+    font-family: "Thunder-LC", sans-serif;
+    font-size: 2.7vh;
+    
+}
+
+
+.wave-container {
+    
+    display: flex;
+    width: 100%;
+    
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    object-fit: contain;
+    
+}
+
+
+.wave-container svg {
+    
+    display: flex;
+    width: 100%;
+    height: auto;
+    
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    /*
+    background-color: floralwhite;
+    
+    border: 2px solid indigo;
+    */
+    
+    fill: var(--style-color-background-a2);
+    
+}
+
+
+
+
+
+#wave2 {
+    
+    display: flex;
+    
+}
+
+#wave3 {
+    
+    display: flex;
+    
+}
+
+
+
+
+#Interact {
+    
+    position: relative;
+    
+    display: flex;
+    flex-basis: 20%;
+    width: 100%;
+    
+    flex-direction: column;
+    
+    justify-content: center;
+    align-items: center;
+    
+}
+
+#Touchpad {
+    
+    cursor: pointer;
+    
+    position: relative;
+    
+    display: flex;
+    
+    height: 16vw;
+    
+    fill: var(--style-color-interact-a1);
+    
+}
+
+
+
+#Footer {
+    
+    font-family: 'Thunder-LC', sans-serif;
+    
+    padding: 2vh;
+    color: var(--style-color-text-heading-a1)
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

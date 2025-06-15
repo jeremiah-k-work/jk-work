@@ -680,13 +680,14 @@ body {
     /* scrollbar-width: none;  /* Firefox */
     
 }
-
+/*
 #Credits-List::-webkit-scrollbar {
+    
     
     display: none;
     
 }
-
+*/
 .credits-category {
     
     display: flex;

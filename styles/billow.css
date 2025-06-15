@@ -674,9 +674,10 @@ body {
     
     border-bottom: 1px solid rgba(255, 255, 255, .4);
     
+    /*
     overflow-y: scroll;
     -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    /* scrollbar-width: none;  /* Firefox */
     
 }
 

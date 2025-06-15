@@ -161,6 +161,99 @@
                     </div>
                 </div>
                 
+                <div class="main-block-layer" id="Credits">
+                    
+                    <div id="Credits-List">
+                        
+                        <div class="credits-category">
+                            
+                            <span class="credits-category-title">Fonts</span>
+                            
+                            <a class="credits-category-item has-link" href="https://www.behance.net/rajputrajesh" target="_blank">
+                                <span class="credited-item">Thunder</span>
+                                <span class="credit-by"></span>
+                                <span class="credited-to">Rajesh Rajput</span>
+                            </a>
+                            
+                        </div>
+                        
+                        <div class="credits-category">
+                            
+                            <span class="credits-category-title">Video</span>
+                            
+                            <a class="credits-category-item" target="_blank">
+                                <span class="credited-item">Cinematography</span>
+                                <span class="credit-by"></span>
+                                <span class="credited-to">Jeremiah Knefel</span>
+                            </a>
+                            
+                            <a class="credits-category-item" target="_blank">
+                                <span class="credited-item">Editing</span>
+                                <span class="credit-by"></span>
+                                <span class="credited-to">Jeremiah Knefel</span>
+                            </a>
+                            
+                        </div>
+                        
+                        <div class="credits-category">
+                            
+                            <span class="credits-category-title">Website</span>
+                            
+                            <a class="credits-category-item" target="_blank">
+                                <span class="credited-item">UI Design</span>
+                                <span class="credit-by"></span>
+                                <span class="credited-to">Jeremiah Knefel</span>
+                            </a>
+                            
+                            <a class="credits-category-item" target="_blank">
+                                <span class="credited-item">Development</span>
+                                <span class="credit-by"></span>
+                                <span class="credited-to">Jeremiah Knefel</span>
+                            </a>
+                            
+                        </div>
+                        
+                        
+                    
+                        <div class="scroll-arrow">
+                            <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                                
+                                <!-- Stalk: bottom moves up, top stays fixed -->
+                                <line x1="30" y1="30" x2="30" y2="50" stroke="black" stroke-width="4" stroke-linecap="round">
+                                    
+                                    <animate attributeName="y1"
+                                             values="40;37;30"
+                                             dur="3s"
+                                             repeatCount="indefinite"
+                                             keyTimes="0;0.85;1"
+                                             calcMode="spline"
+                                             keySplines="0.33 0 0.67 1;0.33 0 0.67 1" />
+                                    
+                                    <animate attributeName="y2"
+                                             values="50;38;30"
+                                             dur="3s"
+                                             repeatCount="indefinite"
+                                             keyTimes="0;0.85;1"
+                                             calcMode="spline"
+                                             keySplines="0.33 0 0.67 1;0.33 0 0.67 1" />
+                                    
+                                    <animate attributeName="opacity"
+                                             values="0;1;0"
+                                             dur="3s"
+                                             repeatCount="indefinite"
+                                             keyTimes="0;0.6;1" />
+                                </line>
+                                
+                                <!-- Arrowhead hidden for now -->
+                                <line class="head-left" x1="30" y1="30" x2="20" y2="40" style="display:none" stroke="black" stroke-width="4" stroke-linecap="round" />
+                                <line class="head-right" x1="30" y1="30" x2="40" y2="40" style="display:none" stroke="black" stroke-width="4" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                
             </div>
             
             
@@ -181,6 +274,10 @@
                         
                         <div id="Menu-Clock-Option" class="main-menu-option" onclick="surfaceBlock('Clock')">
                             <span>Clock</span>
+                        </div>
+                        
+                        <div id="Menu-Clock-Option" class="main-menu-option" onclick="surfaceBlock('Credits')">
+                            <span>Credits</span>
                         </div>
                         
                     </div>
@@ -227,7 +324,7 @@
         <script src="scripts/billow-touch.js"></script>
         <script src="scripts/billow-time-display.js" ></script>
         <script src="scripts/connection-type.js" ></script>
-        <script src="scripts/clock-video-cycler.js" ></script>
+        <script src="scripts/background-video-cycler.js" ></script>
         
             
     </body>

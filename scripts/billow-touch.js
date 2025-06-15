@@ -47,7 +47,9 @@ function surfaceBlock(blockToSurface) {
     /* Unsurface All */
     $('#Clock').removeClass('surfaced');
     $('#Home').removeClass('surfaced');
+    $('#Credits').removeClass('surfaced');
     
+    /*
     if (blockToSurface == 'Home') {
         
         $('#Home').addClass('surfaced');
@@ -56,7 +58,14 @@ function surfaceBlock(blockToSurface) {
         
         $('#Clock').addClass('surfaced');
         
+    } else if (blockToSurface == 'Credits') {
+        
+        $('#Credits').addClass('surfaced');
+        
     }
+    */
+    
+    $('#' + blockToSurface).addClass('surfaced');
     
 }
 

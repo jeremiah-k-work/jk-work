@@ -123,11 +123,11 @@
                 
                 <div class="main-block-layer" id="Clock">
                     
-                    <div id="Date-Display-Masked">
-                        <video loop autoplay muted class="video-data">
-                            <source src="assets/videos/jnb-header-t4-vert.mov">
-                            <p>Your browser doesn't like embedded videos.</p>
-                        </video>
+                    <div id="Date-Display-Masked" class="video-container">
+                        
+                        <video id="Mask-Video-Element-1" class="video-data" muted autoplay playsinline></video>
+                        <video id="Mask-Video-Element-2" class="video-data" muted playsinline></video>
+                        
                     </div>
                     
                     <div id="Date-Display">
@@ -227,6 +227,7 @@
         <script src="scripts/billow-touch.js"></script>
         <script src="scripts/billow-time-display.js" ></script>
         <script src="scripts/connection-type.js" ></script>
+        <script src="scripts/clock-video-cycler.js" ></script>
         
             
     </body>

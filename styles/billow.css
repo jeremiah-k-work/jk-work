@@ -113,10 +113,7 @@
 
 * {
     
-    
     z-index: 0;
-    
-    
     position: relative;
     margin: 0;
     box-sizing: border-box;
@@ -405,7 +402,7 @@ body {
     
     padding: 2vh;
     
-    mix-blend-mode: difference;
+    /* mix-blend-mode: difference; */ /* Causes overflow: hidden to break in Safari */
     
 }
 
@@ -432,10 +429,6 @@ body {
     justify-content: center;
     align-content: center;
     align-items: center;
-    
-    /*
-    overflow: hidden;
-    */
     
 }
 
@@ -486,35 +479,24 @@ body {
     transition: .4s all;
     transition-timing-function: cubic-bezier(.19,1.03,.91,.95);
     
-    border-radius: 100vh;
+    border-radius: 9000px;
     
+    overflow: hidden;
     user-select: none;
     backdrop-filter: blur(4px);
-    /*
-    overflow: hidden;
-    */
+    
 }
 
 #Main-Menu.surfaced {
     
     pointer-events: all;
-    /*
-    overflow: hidden;
-    */
     
     width: 100%;
     height: 100%;
-    border-radius: 12vh;
+    border-radius: 0px;
     transition: .8s all;
     transition-timing-function: cubic-bezier(.3, 1.47, .41, .99);
     
-}
-
-#Main-Menu.main-block-layer {
-    
-    /*
-    overflow: hidden;
-    */
 }
 
 #Main-Menu .main-block-background {
@@ -674,20 +656,18 @@ body {
     
     border-bottom: 1px solid rgba(255, 255, 255, .4);
     
-    /*
     overflow-y: scroll;
     -ms-overflow-style: none;  /* IE and Edge */
-    /* scrollbar-width: none;  /* Firefox */
+    scrollbar-width: none;  /* Firefox */
     
 }
-/*
+
 #Credits-List::-webkit-scrollbar {
-    
     
     display: none;
     
 }
-*/
+
 .credits-category {
     
     display: flex;

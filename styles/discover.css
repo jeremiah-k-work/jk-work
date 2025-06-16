@@ -423,6 +423,13 @@ body {
     
     z-index: 505050;
     
+    display: flex;
+    flex-direction: row;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
     font-family: 'Thunder-LC', sans-serif;
     
     padding: 2vh;
@@ -435,6 +442,87 @@ body {
     
     color: var(--style-color-text-heading-b1);
     
+}
+
+.footer-bubble {
+    
+    user-select: none;
+    cursor: pointer;
+    
+    padding: 2dvw 2dvh;
+    border-radius: 9000dvh;
+    
+    background-color: var(--style-color-background-b1);
+    
+    transition: .2s all;
+    
+    
+}
+
+#Footer-Bubble-Email {
+    
+    position: relative;
+    
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    overflow: hidden;
+    
+}
+
+/* Copied feedback */
+#Footer-Bubble-Email.copied::after {
+    
+    content: 'Copied!';
+    position: absolute;
+    
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    
+    top: -100%;
+    width: 100%;
+    height: 100%;
+    
+    background-color: #4caf50;
+    color: white;
+    
+    border-radius: 9000dvh;
+    
+    opacity: 1;
+    animation: fadeOut 2s forwards;
+    
+    transition: all .2s;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+    0% {
+      opacity: 1;
+      top: -100%;
+    }
+    
+    20% {
+        opacity: 1;
+        top: 0%;
+    }
+    
+    80% {
+        opacity: 1;
+        top: 0%;
+    }
+    
+    100% {
+        opacity: 1;
+        top: 100%;
+    }
 }
 
 

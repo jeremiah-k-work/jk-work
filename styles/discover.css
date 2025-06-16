@@ -249,8 +249,32 @@ body {
     
     font-family: "Thunder-LC-Bold", sans-serif;
     color: var(--style-color-text-heading-a1);
+    text-align: center;
     
 }
+
+#Intro-Logo {
+    
+    height: 12dvh;
+    width: auto;
+    
+}
+
+#Intro-Logo svg {
+    
+    fill: var(--style-color-text-heading-a1);
+    
+}
+
+#Intro-Logo img {
+    
+    width: 100%;
+    height: 100%;
+    
+    object-fit: contain;
+    
+}
+
 
 #Home * {
     
@@ -378,6 +402,7 @@ body {
     cursor: pointer;
     
     display: flex;
+    display: none;
     content: "";
     height: 50%;
     

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jnb visions</title>
+<style>
+  @font-face {
+    font-family: 'Archivo';
+    src: url('Archivo-VariableFont_wdth,wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Unbounded';
+    src: url('Unbounded-Variable.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #c8001e;
+    --black: #000;
+    --white: #fff;
+    --gray-outline: rgba(160,160,160,0.65);
+    --card-w: min(300px, 72vw);
+    --card-h: calc(var(--card-w) * 1.32);
+    --gallery-w: min(520px, 90vw);
+    --gallery-h: calc(var(--gallery-w) * 1.28);
+    --expanded-w: min(840px, 96vw);
+    --expanded-h: calc(var(--expanded-w) * 0.78);
+    --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --font-primary: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-secondary: 'Unbounded', 'Helvetica Neue', Helvetica, sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    overflow: hidden;
+    font-family: var(--font-primary);
+    color: var(--white);
+    cursor: none;
+    user-select: none;
+  }
+  /* Propagate cursor:none everywhere so no system cursor leaks on buttons etc. */
+  * { cursor: none !important; }
+
+  /* ===== CUSTOM CURSOR ===== */
+  /* Cursor core — snaps exactly to pointer */
+  #cursor-core {
+    position: fixed;
+    top: 0; left: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ffffff;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Positioner — carries the orbiter to the right place via translate.
+     Zero size so it doesn't affect layout. */
+  #cursor-orbiter-pos {
+    position: fixed;
+    top: 0; left: 0;
+    width: 0; height: 0;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Orbiter — centred on the positioner point via negative margin.
+     Scale animates from its own centre, not the viewport origin. */
+  #cursor-orbiter {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    /* Pull back by half own size so it centres on the positioner point */
+    top: -7px; left: -7px;
+    transform-origin: center center;
+    transition: width 0.15s ease, height 0.15s ease,
+                top 0.15s ease, left 0.15s ease,
+                border-color 0.15s ease;
+  }
+  /* Left-click: orbiter shrinks and moves inward, springs back on release */
+  #cursor-orbiter.pressed-left {
+    width: 9px;
+    height: 9px;
+    top: -4.5px; left: -4.5px;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  #cursor-orbiter.springing {
+    animation: orbiterSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes orbiterSpring {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.9); }
+    62%  { transform: scale(0.88); }
+    100% { transform: scale(1); }
+  }
+
+  /* Right-click: orbiter shrinks in place */
+  #cursor-orbiter.pressed-right {
+    width: 8px;
+    height: 8px;
+    top: -4px; left: -4px;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Inner fill circle — child of orbiter, grows to fill on right-click */
+  #cursor-orbiter-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #ffffff;
+    transform: scale(0);
+    transform-origin: center center;
+    transition: transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+  #cursor-orbiter.pressed-right #cursor-orbiter-fill {
+    transform: scale(1);
+  }
+
+  /* ===== RED LINE SVG ===== */
+  #red-line {
+    position: fixed;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  #red-line.hidden { opacity: 0; }
+
+  /* ===== INTRO SCENE ===== */
+  #intro-scene {
+    position: fixed; inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(32px, 6vw, 80px);
+    z-index: 1;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  #intro-scene.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Left column: VISIONS label */
+  #visions-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--font-secondary);
+    font-size: clamp(8px, 1vw, 11px);
+    font-weight: 400;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--red);
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  /* Centre column: the card */
+  #intro-card {
+    position: relative;
+    width: var(--card-w);
+    height: var(--card-h);
+    border-radius: 22px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+  }
+
+  #intro-photo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #1a0000;
+  }
+
+  #intro-overlay {
+    position: absolute; inset: 0;
+    background: var(--red);
+    mix-blend-mode: difference;
+  }
+
+  #intro-logo {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 58%;
+    pointer-events: none;
+  }
+
+  /* Right column: nav buttons */
+  #intro-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  .intro-btn {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-family: var(--font-secondary);
+    font-size: clamp(11px, 1.4vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+    padding: 4px 0;
+    position: relative;
+    transition: color 0.18s;
+    line-height: 1;
+  }
+  .intro-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 0; height: 1px;
+    background: var(--white);
+    transition: width 0.22s var(--ease-expo);
+  }
+  .intro-btn:hover::after { width: 100%; }
+  .intro-btn.secondary {
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+  }
+  .intro-btn.secondary:hover { color: rgba(255,255,255,0.85); }
+  .intro-btn.secondary::after { background: rgba(255,255,255,0.45); }
+
+  /* ===== GALLERY STAGE ===== */
+  #gallery-stage {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    z-index: 2;
+  }
+  #gallery-stage.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* Outline-rect sits in the flex flow as a sibling of gallery-wrap,
+     but is pulled out of flow with absolute positioning relative to
+     the stage so it can be independently sized. We use a wrapper
+     approach: both sit inside a common flex container (#gallery-frame). */
+  #gallery-frame {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    /* sized to the outline-rect so it holds both elements */
+    width: calc(var(--gallery-w) + 7vh);
+    height: calc(var(--gallery-h) + 7vh);
+    flex-shrink: 0;
+    transition: width 0.7s var(--ease-expo), height 0.7s var(--ease-expo);
+  }
+  #gallery-frame.expanded {
+    width: calc(var(--expanded-w) + 7vh);
+    height: calc(var(--expanded-h) + 7vh);
+  }
+
+  #gallery-wrap {
+    position: relative;
+    width: var(--gallery-w);
+    height: var(--gallery-h);
+    flex-shrink: 0;
+    transition: width 0.7s var(--ease-expo), height 0.7s var(--ease-expo);
+    cursor: zoom-in;
+    z-index: 1;
+  }
+  #gallery-wrap.expanded {
+    width: var(--expanded-w);
+    height: var(--expanded-h);
+    cursor: zoom-out;
+  }
+
+  #gallery-photo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 12vh;
+    display: block;
+    background: #111;
+    opacity: 0;
+    image-rendering: pixelated;
+    transition: opacity 0.4s ease, border-radius 0.7s var(--ease-expo),
+                object-position 0.7s var(--ease-expo);
+  }
+  #gallery-photo.loaded { opacity: 1; }
+
+  /* Outline-rect: sibling of gallery-wrap, absolutely positioned
+     within #gallery-frame, centered, using the CSS-variable sizes.
+     Border-radius = photo-radius + half the gap on each side (3.5vh). */
+  #outline-rect {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--gray-outline);
+    border-radius: calc(12vh + 3.5vh);
+    pointer-events: none;
+    transition: border-radius 0.7s var(--ease-expo);
+  }
+
+  /* ===== LOGO (gallery mode) ===== */
+  #gallery-logo {
+    position: fixed;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease, left 0.7s var(--ease-expo), top 0.7s var(--ease-expo),
+                transform 0.7s var(--ease-expo), width 0.7s var(--ease-expo);
+    z-index: 10;
+  }
+  #gallery-logo img { width: 100%; display: block; }
+
+  /* ===== INFO PANEL ===== */
+  #info-panel {
+    position: fixed;
+    right: -300px;
+    opacity: 0;
+    pointer-events: none;
+    transition: right 0.7s var(--ease-expo), opacity 0.4s ease,
+                top 0.7s var(--ease-expo);
+    z-index: 10;
+    text-align: right;
+  }
+  #info-panel.visible { opacity: 1; }
+
+  .info-name-first {
+    font-family: var(--font-secondary);
+    font-size: clamp(10px, 2.2vw, 34px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--white);
+    margin: 0px 8px;
+  }
+  .info-name-last {
+    font-family: var(--font-secondary);
+    display: inline-block;
+    background: var(--white);
+    color: var(--black);
+    font-size: clamp(10px, 2.2vw, 34px);
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0px 40px 0px 8px;
+    line-height: 1.4;
+    margin-top: 5px;
+  }
+
+  /* ===== WATERMARKS ===== */
+  #watermark-left, #watermark-right {
+    position: fixed;
+    top: 0; bottom: 0;
+    writing-mode: vertical-rl;
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(180,0,0,0.55);
+    font-weight: 600;
+    pointer-events: none;
+    display: flex; align-items: center;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+  }
+  #watermark-left { left: 8px; }
+  #watermark-right { right: 8px; transform: rotate(180deg); }
+  #watermark-left.visible, #watermark-right.visible { opacity: 1; }
+
+  /* ===== NAV ===== */
+  #nav-prev, #nav-next {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease, color 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    z-index: 5;
+  }
+  #nav-prev { left: 24px; }
+  #nav-next { right: 24px; }
+  #nav-prev.visible, #nav-next.visible { opacity: 1; pointer-events: all; }
+  #nav-prev:hover, #nav-next:hover { color: rgba(255,255,255,0.8); }
+  .nav-line { width: 1px; height: 40px; background: currentColor; display: block; }
+
+  /* ===== BACK / CONNECT (gallery footer) ===== */
+  #gallery-footer {
+    position: fixed;
+    bottom: 36px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+    z-index: 20;
+  }
+  #gallery-footer.visible { opacity: 1; pointer-events: all; }
+
+  .footer-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.38);
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s;
+    padding: 2px 0;
+  }
+  .footer-btn:hover { color: rgba(255,255,255,0.88); }
+
+  /* ===== KEYBOARD HINT ===== */
+  #kbd-hint {
+    position: fixed;
+    bottom: 10px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-secondary);
+    font-size: 7px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.12);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+    white-space: nowrap;
+  }
+  #kbd-hint.visible { opacity: 1; }
+
+  /* ===== FADE UTILITY ===== */
+  .fade-in { animation: fadeIn 0.45s ease both; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ===== RED LINE IDLE ANIMATION ===== */
+  #red-line-group {
+    animation: redLineIdle 8s ease-in-out infinite;
+    transform-origin: 500px 300px; /* SVG centre — same as the rotate pivot */
+    transform-box: fill-box;
+  }
+  @keyframes redLineIdle {
+    0%   { transform: rotate(-15deg) translate(0px,   0px); }
+    25%  { transform: rotate(-15deg) translate(6px,  -4px); }
+    50%  { transform: rotate(-15deg) translate(0px,  -8px); }
+    75%  { transform: rotate(-15deg) translate(-6px, -4px); }
+    100% { transform: rotate(-15deg) translate(0px,   0px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- RED LINE -->
+<svg id="red-line" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Path extended well beyond the viewBox so ends are never visible
+    at any window proportion. preserveAspectRatio="xMidYMid slice"
+    ensures the SVG fills the viewport rather than letterboxing.
+    The group rotation of -15deg matches the original design.
+    A slow CSS animation gently undulates the path via a secondary
+    translate on the group, giving an idle breathing quality.
+  -->
+  <g transform="rotate(-15, 500, 300)" id="red-line-group">
+    <path
+      id="red-line-path"
+      d="M -400,450 L 480,450 Q 740,450 740,190 L 740,-200"
+      fill="none"
+      stroke="#c8001e"
+      stroke-width="2"
+      stroke-linecap="round"
+    />
+  </g>
+</svg>
+
+<!-- INTRO SCENE -->
+<div id="intro-scene">
+  <div id="visions-label">Visions</div>
+
+  <div id="intro-card">
+    <img id="intro-photo" src="9N2A2754--e1-Vibrant.png" alt="Artist portrait">
+    <div id="intro-overlay"></div>
+    <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
+  </div>
+
+  <nav id="intro-nav">
+    <button class="intro-btn" onclick="enterGallery('portraits')">Gallery</button>
+    <button class="intro-btn secondary" onclick="goConnect()">Connect</button>
+  </nav>
+</div>
+
+<!-- GALLERY STAGE -->
+<div id="gallery-stage">
+  <div id="gallery-frame">
+    <div id="outline-rect"></div>
+    <div id="gallery-wrap" onclick="toggleExpanded()">
+      <img id="gallery-photo" alt="Gallery image">
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY LOGO -->
+<div id="gallery-logo">
+  <img id="gallery-logo-img" alt="jnb visions">
+</div>
+
+<!-- INFO PANEL -->
+<div id="info-panel">
+  <div class="info-name-first" id="info-first"></div>
+  <div class="info-name-last" id="info-last"></div>
+</div>
+
+<!-- WATERMARKS -->
+<div id="watermark-left">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
+<div id="watermark-right">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
+
+<!-- NAV -->
+<button id="nav-prev" onclick="navigate(-1)">
+  <span class="nav-line"></span>
+  <span>Prev</span>
+</button>
+<button id="nav-next" onclick="navigate(1)">
+  <span>Next</span>
+  <span class="nav-line"></span>
+</button>
+
+<!-- GALLERY FOOTER -->
+<div id="gallery-footer">
+  <button class="footer-btn" onclick="goConnect()">Connect</button>
+  <button class="footer-btn" onclick="exitGallery()">&#8592; Back</button>
+</div>
+
+<!-- KEYBOARD HINT -->
+<div id="kbd-hint">&#8592; &nbsp; Arrow keys to navigate &nbsp; &#8594;</div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor-core"></div>
+<div id="cursor-orbiter-pos">
+  <div id="cursor-orbiter"><div id="cursor-orbiter-fill"></div></div>
+</div>
+
+<script>
+/* =====================================================
+   CONFIGURATION
+   =====================================================
+
+   LOGO: single source of truth. Change this filename
+   and both logo placements update automatically.
+
+   GALLERY entries:
+     src:        image filename (same folder as this HTML)
+     first:      subject first name — Unbounded, uppercase, white
+     last:       subject last name — Unbounded, white pill
+     logoY:      logo vertical position as % of image height (0=top, 100=bottom)
+     infoY:      info panel vertical position as % of viewport height
+     zoomAnchor: [x, y] — the point in the photo the frame zooms toward when
+                 expanded. Both values are percentages: [0,0] = top-left,
+                 [100,100] = bottom-right, [50,50] = dead center.
+                 Example: [60, 25] pulls toward the upper-right of the frame,
+                 useful when a subject's face sits in that region.
+                 Omit (or set to [50,50]) to zoom into the center.
+*/
+
+const LOGO = 'jnb-2026_sq.svg';
+
+const GALLERY = {
+  portraits: [
+    {
+      src: 'CA5D6891_CA_L_no-logo.jpg',
+      first: 'Freddie',
+      last: 'Andrews',
+      logoY: 50,
+      infoY: 70,
+      zoomAnchor: [60, 14]
+    },
+    {
+      src: 'CA5D6948.jpg',
+      first: 'Rebecca',
+      last: 'Deboer',
+      logoY: 44,
+      infoY: 68,
+      zoomAnchor: [60, 30]
+    },
+    {
+      src: 'CA5D6942_S_CA_.jpg',
+      first: 'Rebecca',
+      last: 'Deboer',
+      logoY: 64,
+      infoY: 44,
+      zoomAnchor: [70, 78]
+    }
+  ]
+};
+
+/* =====================================================
+   BOOT
+   ===================================================== */
+document.getElementById('gallery-logo-img').src = LOGO;
+
+/* =====================================================
+   STATE
+   ===================================================== */
+let state = 'intro';   // 'intro' | 'gallery' | 'expanded'
+let currentCollection = [];
+let currentIndex = 0;
+let isExpanded = false;
+
+/* =====================================================
+   CONNECT (placeholder)
+   ===================================================== */
+function goConnect() {
+  alert('Connect — coming soon.');
+}
+
+/* =====================================================
+   INTRO → GALLERY
+   ===================================================== */
+function enterGallery(collectionKey) {
+  currentCollection = GALLERY[collectionKey] || [];
+  currentIndex = 0;
+  if (!currentCollection.length) return;
+
+  // Hide intro + line
+  document.getElementById('intro-scene').classList.add('hidden');
+  document.getElementById('red-line').classList.add('hidden');
+
+  showGalleryUI();
+  loadSlide(currentIndex, false);
+  state = 'gallery';
+}
+
+function showGalleryUI() {
+  document.getElementById('gallery-stage').classList.add('visible');
+  document.getElementById('watermark-left').classList.add('visible');
+  document.getElementById('watermark-right').classList.add('visible');
+  document.getElementById('nav-prev').classList.add('visible');
+  document.getElementById('nav-next').classList.add('visible');
+  document.getElementById('gallery-footer').classList.add('visible');
+  document.getElementById('kbd-hint').classList.add('visible');
+
+  document.getElementById('gallery-logo').style.opacity = '1';
+  document.getElementById('info-panel').style.pointerEvents = 'none';
+}
+
+function hideGalleryUI() {
+  document.getElementById('gallery-stage').classList.remove('visible');
+  document.getElementById('watermark-left').classList.remove('visible');
+  document.getElementById('watermark-right').classList.remove('visible');
+  document.getElementById('nav-prev').classList.remove('visible');
+  document.getElementById('nav-next').classList.remove('visible');
+  document.getElementById('gallery-footer').classList.remove('visible');
+  document.getElementById('kbd-hint').classList.remove('visible');
+
+  document.getElementById('gallery-logo').style.opacity = '0';
+  document.getElementById('info-panel').style.opacity = '0';
+  document.getElementById('info-panel').style.right = '-300px';
+  document.getElementById('info-panel').classList.remove('visible');
+}
+
+/* =====================================================
+   GALLERY → INTRO
+   ===================================================== */
+function exitGallery() {
+  if (isExpanded) {
+    isExpanded = false;
+    document.getElementById('gallery-wrap').classList.remove('expanded');
+    state = 'gallery';
+  }
+  hideGalleryUI();
+  document.getElementById('gallery-photo').classList.remove('loaded');
+
+  // Restore intro + line
+  const introScene = document.getElementById('intro-scene');
+  introScene.classList.remove('hidden');
+  introScene.classList.add('fade-in');
+  setTimeout(() => introScene.classList.remove('fade-in'), 500);
+
+  document.getElementById('red-line').classList.remove('hidden');
+  state = 'intro';
+}
+
+/* =====================================================
+   IMAGE CACHE
+   Each src is fetched at most once per session. After the
+   first fetch the browser's memory cache serves it instantly,
+   but we also keep our own Map so we can check synchronously
+   whether an image is already ready before showing it.
+   ===================================================== */
+const imageCache = new Map(); // src → HTMLImageElement (decoded)
+
+function preloadImage(src) {
+  if (!src || imageCache.has(src)) return;
+  const img = new Image();
+  img.onload  = () => imageCache.set(src, img);
+  img.onerror = () => imageCache.set(src, null); // null = failed, don't retry
+  img.src = src;
+}
+
+function preloadNeighbours(index) {
+  const len = currentCollection.length;
+  // Preload next and previous, wrapping around
+  preloadImage(currentCollection[(index + 1) % len]?.src);
+  preloadImage(currentCollection[(index - 1 + len) % len]?.src);
+}
+
+/* =====================================================
+   LOAD A SLIDE
+   ===================================================== */
+function loadSlide(index, animate) {
+  const slide = currentCollection[index];
+  if (!slide) return;
+
+  const photo = document.getElementById('gallery-photo');
+  const infoFirst = document.getElementById('info-first');
+  const infoLast  = document.getElementById('info-last');
+
+  if (animate) photo.classList.remove('loaded');
+
+  // Always reset to centre when switching slides
+  photo.style.objectPosition = '50% 50%';
+
+  // Kick off neighbour preloads immediately (no-ops if already cached)
+  preloadNeighbours(index);
+
+  const delay = animate ? 220 : 0;
+
+  setTimeout(() => {
+    infoFirst.textContent = slide.first;
+    infoLast.textContent  = slide.last;
+
+    const apply = () => {
+      photo.src = slide.src;
+      setTimeout(() => photo.classList.add('loaded'), 30);
+    };
+
+    if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
+      // Already in cache — show instantly
+      apply();
+    } else {
+      // Not yet cached — fetch, cache, then show
+      const img = new Image();
+      img.onload = () => {
+        imageCache.set(slide.src, img);
+        apply();
+      };
+      img.onerror = () => {
+        imageCache.set(slide.src, null);
+        photo.style.background = 'linear-gradient(135deg, #1a0000 0%, #3d0010 50%, #0a0000 100%)';
+        photo.classList.add('loaded');
+      };
+      img.src = slide.src;
+    }
+
+    positionLogoAndInfo(slide, false);
+  }, delay);
+}
+
+/* =====================================================
+   LOGO + INFO POSITIONING
+   ===================================================== */
+function positionLogoAndInfo(slide, expanded) {
+  const logoEl = document.getElementById('gallery-logo');
+  const infoEl = document.getElementById('info-panel');
+  const wrap = document.getElementById('gallery-wrap');
+  const wrapRect = wrap.getBoundingClientRect();
+
+  const logoW = expanded ? 160 : 120;
+  const logoY_pct = (slide.logoY ?? 80) / 100;
+
+  if (!expanded) {
+    const logoLeft = wrapRect.left - logoW * 0.38;
+    const logoTop  = wrapRect.top + wrapRect.height * logoY_pct - 30;
+    logoEl.style.width     = logoW + 'px';
+    logoEl.style.left      = logoLeft + 'px';
+    logoEl.style.top       = logoTop + 'px';
+    logoEl.style.transform = 'none';
+    logoEl.style.opacity   = '1';
+
+    const infoRight = window.innerWidth - (wrapRect.right + 20);
+    const infoTop   = window.innerHeight * ((slide.infoY ?? 55) / 100);
+    infoEl.style.top    = infoTop + 'px';
+    infoEl.style.right  = Math.max(infoRight, 16) + 'px';
+    infoEl.style.opacity = '1';
+    infoEl.classList.add('visible');
+  } else {
+    logoEl.style.width     = (logoW * 1.35) + 'px';
+    logoEl.style.left      = (window.innerWidth / 2 - (logoW * 1.35) / 2) + 'px';
+    logoEl.style.top       = (wrapRect.bottom - 30) + 'px';
+    logoEl.style.transform = 'none';
+
+    infoEl.style.top    = (wrapRect.bottom - 90) + 'px';
+    infoEl.style.right  = (window.innerWidth - wrapRect.left - wrapRect.width * 0.42) + 'px';
+    infoEl.style.opacity = '1';
+  }
+}
+
+/* =====================================================
+   TOGGLE EXPANDED
+   ===================================================== */
+function toggleExpanded() {
+  const wrap = document.getElementById('gallery-wrap');
+  const frame = document.getElementById('gallery-frame');
+  const photo = document.getElementById('gallery-photo');
+  const slide = currentCollection[currentIndex];
+  isExpanded = !isExpanded;
+
+  if (isExpanded) {
+    state = 'expanded';
+    wrap.classList.add('expanded');
+    frame.classList.add('expanded');
+    // Apply zoom anchor — transitions smoothly via CSS
+    const [ax, ay] = slide.zoomAnchor ?? [50, 50];
+    photo.style.objectPosition = `${ax}% ${ay}%`;
+    setTimeout(() => positionLogoAndInfo(slide, true), 720);
+  } else {
+    state = 'gallery';
+    wrap.classList.remove('expanded');
+    frame.classList.remove('expanded');
+    // Return to center
+    photo.style.objectPosition = '50% 50%';
+    setTimeout(() => positionLogoAndInfo(slide, false), 720);
+  }
+}
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+function navigate(dir) {
+  const len = currentCollection.length;
+  currentIndex = (currentIndex + dir + len) % len;
+  if (isExpanded) {
+    isExpanded = false;
+    document.getElementById('gallery-wrap').classList.remove('expanded');
+    document.getElementById('gallery-frame').classList.remove('expanded');
+    document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
+    state = 'gallery';
+  }
+  loadSlide(currentIndex, true);
+}
+
+/* =====================================================
+   KEYBOARD
+   ===================================================== */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && (state === 'gallery' || state === 'expanded')) navigate(1);
+  if (e.key === 'ArrowLeft'  && (state === 'gallery' || state === 'expanded')) navigate(-1);
+  if (e.key === 'Escape') {
+    if (state === 'expanded') {
+      isExpanded = false;
+      document.getElementById('gallery-wrap').classList.remove('expanded');
+      document.getElementById('gallery-frame').classList.remove('expanded');
+      document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
+      state = 'gallery';
+      positionLogoAndInfo(currentCollection[currentIndex], false);
+    } else if (state === 'gallery') {
+      exitGallery();
+    }
+  }
+});
+
+/* =====================================================
+   WINDOW RESIZE
+   ===================================================== */
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (state === 'gallery' || state === 'expanded') {
+      positionLogoAndInfo(currentCollection[currentIndex], isExpanded);
+    }
+  }, 120);
+});
+
+/* =====================================================
+   CONTEXT MENU
+   Suppressed by default. Cmd+K (Mac) / Ctrl+K toggles it
+   back on for development, then off again.
+   ===================================================== */
+let contextMenuEnabled = false;
+document.addEventListener('contextmenu', e => {
+  if (!contextMenuEnabled) e.preventDefault();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    contextMenuEnabled = !contextMenuEnabled;
+    // Brief visual confirmation so you know the toggle fired
+    const msg = document.createElement('div');
+    msg.textContent = contextMenuEnabled ? 'Context menu ON' : 'Context menu OFF';
+    Object.assign(msg.style, {
+      position: 'fixed', bottom: '48px', left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'rgba(255,255,255,0.08)',
+      color: 'rgba(255,255,255,0.55)',
+      fontFamily: 'var(--font-secondary)',
+      fontSize: '9px', letterSpacing: '0.22em',
+      textTransform: 'uppercase',
+      padding: '7px 16px', borderRadius: '2px',
+      pointerEvents: 'none', zIndex: '99999',
+      transition: 'opacity 0.3s ease', opacity: '1'
+    });
+    document.body.appendChild(msg);
+    setTimeout(() => { msg.style.opacity = '0'; }, 1200);
+    setTimeout(() => { msg.remove(); }, 1600);
+  }
+});
+
+/* =====================================================
+   CUSTOM CURSOR
+   =====================================================
+   ORBIT_DISTANCE  px from core centre to orbiter at rest
+   ORBIT_LAG       angle smoothing (0 = instant, higher = more drag)
+   PRESS_DISTANCE  compressed distance while held down
+*/
+const ORBIT_DISTANCE = 22;
+const ORBIT_LAG      = 0.12;
+const PRESS_DISTANCE = 8;
+
+const cursorCore       = document.getElementById('cursor-core');
+const cursorOrbiterPos = document.getElementById('cursor-orbiter-pos');
+const cursorOrbiter    = document.getElementById('cursor-orbiter');
+
+let mouseX     = -999;  // off-screen until first move
+let mouseY     = -999;
+let orbitAngle = 0;
+let targetAngle= 0;
+let orbitDist  = ORBIT_DISTANCE;
+let cursorDown = false;
+let cursorRaf  = null;
+let cursorVisible = false;
+
+function showCursor() {
+  if (cursorVisible) return;
+  cursorVisible = true;
+  cursorCore.style.opacity       = '1';
+  cursorOrbiterPos.style.opacity = '1';
+}
+function hideCursor() {
+  cursorVisible = false;
+  cursorCore.style.opacity       = '0';
+  cursorOrbiterPos.style.opacity = '0';
+}
+
+function lerpAngle(a, b, t) {
+  let d = b - a;
+  while (d >  Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return a + d * t;
+}
+
+function runCursorLoop() {
+  // Core: translate to exact pointer position, offset by half size to centre
+  const halfCore = 2.5;
+  cursorCore.style.transform = `translate(${mouseX - halfCore}px, ${mouseY - halfCore}px)`;
+
+  // Orbiter positioner: translate to orbit position — the child div centres itself
+  const cx = window.innerWidth  / 2;
+  const cy = window.innerHeight / 2;
+  targetAngle = Math.atan2(mouseY - cy, mouseX - cx);
+  orbitAngle  = lerpAngle(orbitAngle, targetAngle, 1 - ORBIT_LAG);
+
+  const ox = mouseX + Math.cos(orbitAngle) * orbitDist;
+  const oy = mouseY + Math.sin(orbitAngle) * orbitDist;
+  cursorOrbiterPos.style.transform = `translate(${ox}px, ${oy}px)`;
+
+  cursorRaf = requestAnimationFrame(runCursorLoop);
+}
+
+// Kick the loop off immediately so it's ready before the mouse enters
+cursorRaf = requestAnimationFrame(runCursorLoop);
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  showCursor();
+});
+document.addEventListener('mouseleave', hideCursor);
+document.addEventListener('mouseenter', showCursor);
+
+function cursorPressDown(e) {
+  cursorDown = true;
+  cursorOrbiter.classList.remove('springing', 'pressed-left', 'pressed-right');
+
+  if (e.button === 2) {
+    // Right-click: shrink in place, fill grows inside
+    // orbitDist stays at ORBIT_DISTANCE — no inward pull
+    cursorOrbiter.classList.add('pressed-right');
+  } else {
+    // Left-click: compress orbit inward, spring on release
+    orbitDist = PRESS_DISTANCE;
+    cursorOrbiter.classList.add('pressed-left');
+  }
+}
+
+function cursorPressUp(e) {
+  if (!cursorDown) return;
+  cursorDown = false;
+
+  if (e.button === 2) {
+    // Right-click release: just restore
+    cursorOrbiter.classList.remove('pressed-right');
+  } else {
+    // Left-click release: restore orbit distance and spring
+    orbitDist = ORBIT_DISTANCE;
+    cursorOrbiter.classList.remove('pressed-left');
+    void cursorOrbiter.offsetWidth;
+    cursorOrbiter.classList.add('springing');
+    cursorOrbiter.addEventListener('animationend',
+      () => cursorOrbiter.classList.remove('springing'), { once: true });
+  }
+}
+
+document.addEventListener('mousedown', cursorPressDown);
+document.addEventListener('mouseup',   cursorPressUp);
+
+/* Touch support — cursor tracking + swipe navigation + long-press hook */
+const SWIPE_THRESHOLD  = 48;  // px horizontal travel to count as a swipe
+const SWIPE_MAX_VERT   = 80;  // px — swipes more vertical than this are ignored
+let touchStartX    = 0;
+let touchStartY    = 0;
+let touchDeltaX    = 0;
+let touchMoved     = false;
+let longPressTimer = null;
+
+document.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  mouseX = t.clientX;
+  mouseY = t.clientY;
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+  touchDeltaX = 0;
+  touchMoved  = false;
+  showCursor();
+  cursorPressDown(e);
+  longPressTimer = setTimeout(() => {
+    longPressTimer = null;
+    // Long-press hook — connect to info panel later
+  }, 500);
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  mouseX = t.clientX;
+  mouseY = t.clientY;
+  touchDeltaX = t.clientX - touchStartX;
+  touchMoved  = true;
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  cursorPressUp(e);
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+
+  // Evaluate swipe only when in gallery or expanded state
+  if (touchMoved && (state === 'gallery' || state === 'expanded')) {
+    const vertDelta = Math.abs(e.changedTouches[0].clientY - touchStartY);
+    if (Math.abs(touchDeltaX) >= SWIPE_THRESHOLD && vertDelta <= SWIPE_MAX_VERT) {
+      navigate(touchDeltaX < 0 ? 1 : -1);
+    }
+  }
+  touchMoved = false;
+});
+</script>
+
+</body>
+</html>

@@ -191,16 +191,33 @@
   }
 
   /* Centre column: the card */
-  #intro-card {
+  /* ===== UNIFIED FRAME =====
+     Intro: flex child, card size, overlay on, logo visible.
+     Morph: detaches to fixed, expands to gallery size, overlay stays on.
+     Gallery: fixed, gallery size, overlay lifted, gallery-photo visible.
+  */
+  #unified-frame {
     position: relative;
-    /* min() so the card never exceeds --card-w but compresses on tiny windows.
-       flex-shrink:1 lets it yield space to the VISIONS label and nav buttons. */
     width: min(var(--card-w), 55vw);
     height: calc(min(var(--card-w), 55vw) * 1.32);
     border-radius: 22px;
     overflow: hidden;
     flex-shrink: 1;
-    transition: transform 0.18s ease;
+    z-index: 3;
+    transition:
+      width         0.75s var(--ease-expo),
+      height        0.75s var(--ease-expo),
+      border-radius 0.75s var(--ease-expo);
+  }
+  #unified-frame.detached {
+    position: fixed;
+    /* top/left locked by JS before transition fires */
+    transition:
+      width         0.75s var(--ease-expo),
+      height        0.75s var(--ease-expo),
+      border-radius 0.75s var(--ease-expo),
+      top           0.75s var(--ease-expo),
+      left          0.75s var(--ease-expo);
   }
 
   #intro-photo {
@@ -209,13 +226,32 @@
     object-fit: cover;
     display: block;
     background: #1a0000;
+    z-index: 0;
   }
+
+  #gallery-photo {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    background: transparent;
+    opacity: 0;
+    image-rendering: pixelated;
+    z-index: 1;
+    transition: opacity 0.55s ease,
+                object-position 0.75s var(--ease-expo);
+  }
+  #gallery-photo.loaded { opacity: 1; }
 
   #intro-overlay {
     position: absolute; inset: 0;
     background: var(--red);
     mix-blend-mode: difference;
+    z-index: 2;
+    transition: opacity 0.65s ease;
+    pointer-events: none;
   }
+  #intro-overlay.lifted { opacity: 0; }
 
   #intro-logo {
     position: absolute;
@@ -223,7 +259,18 @@
     transform: translate(-50%, -50%);
     width: 58%;
     pointer-events: none;
+    z-index: 3;
+    transition: opacity 0.35s ease;
   }
+  #intro-logo.hidden-logo { opacity: 0; }
+
+  /* Invisible tap layer — only active in gallery state */
+  #gallery-tap {
+    position: absolute; inset: 0;
+    z-index: 4;
+    display: none;
+  }
+  #gallery-tap.active { display: block; }
 
   /* Right column: nav buttons */
   #intro-nav {
@@ -268,78 +315,25 @@
   .intro-btn.secondary:hover { color: rgba(255,255,255,0.85); }
   .intro-btn.secondary::after { background: rgba(255,255,255,0.45); }
 
-  /* ===== GALLERY STAGE ===== */
-  #gallery-stage {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s ease;
-    z-index: 2;
-  }
-  #gallery-stage.visible {
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  /* Outline-rect sits in the flex flow as a sibling of gallery-wrap,
-     but is pulled out of flow with absolute positioning relative to
-     the stage so it can be independently sized. We use a wrapper
-     approach: both sit inside a common flex container (#gallery-frame). */
-  #gallery-frame {
-    position: relative;
-    display: flex; align-items: center; justify-content: center;
-    width: calc(var(--gallery-w) + var(--outline-gap) * 2);
-    height: calc(var(--gallery-h) + var(--outline-gap) * 2);
-    flex-shrink: 0;
-    transition: width 0.7s var(--ease-expo), height 0.7s var(--ease-expo);
-  }
-  #gallery-frame.expanded {
-    width: calc(var(--expanded-w) + var(--outline-gap) * 2);
-    height: calc(var(--expanded-h) + var(--outline-gap) * 2);
-  }
-
-  #gallery-wrap {
-    position: relative;
-    width: var(--gallery-w);
-    height: var(--gallery-h);
-    flex-shrink: 0;
-    transition: width 0.7s var(--ease-expo), height 0.7s var(--ease-expo);
-    cursor: zoom-in;
-    z-index: 1;
-  }
-  #gallery-wrap.expanded {
-    width: var(--expanded-w);
-    height: var(--expanded-h);
-    cursor: zoom-out;
-  }
-
-  #gallery-photo {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: 12vh;
-    display: block;
-    background: #111;
-    opacity: 0;
-    image-rendering: pixelated;
-    transition: opacity 0.4s ease, border-radius 0.7s var(--ease-expo),
-                object-position 0.7s var(--ease-expo);
-  }
-  #gallery-photo.loaded { opacity: 1; }
-
-  /* Outline-rect: sibling of gallery-wrap, absolutely positioned
-     within #gallery-frame, centered, using the CSS-variable sizes.
-     Border-radius = photo-radius + half the gap on each side (3.5vh). */
+  /* ===== OUTLINE RECT =====
+     Fixed, positioned and sized by JS to wrap unified-frame.
+     Hidden in intro, fades in during morph. */
   #outline-rect {
-    position: absolute;
-    inset: 0;
+    position: fixed;
     border: 2px solid var(--gray-outline);
-    /* radius = photo radius + the per-side gap so curves stay proportional */
     border-radius: calc(12vh + var(--outline-gap));
     pointer-events: none;
-    transition: border-radius 0.7s var(--ease-expo);
+    z-index: 2;
+    opacity: 0;
+    transition:
+      opacity       0.5s ease,
+      width         0.75s var(--ease-expo),
+      height        0.75s var(--ease-expo),
+      top           0.75s var(--ease-expo),
+      left          0.75s var(--ease-expo),
+      border-radius 0.75s var(--ease-expo);
   }
+  #outline-rect.rect-visible { opacity: 1; }
 
   /* ===== LOGO (gallery mode) ===== */
   #gallery-logo {
@@ -523,26 +517,28 @@
 <div id="intro-scene">
   <div id="visions-label">Visions</div>
 
-  <div id="intro-card">
-    <img id="intro-photo" src="9N2A2754--e1-Vibrant.png" alt="Artist portrait">
+  <!-- THE UNIFIED FRAME
+       In intro state: behaves as the artist portrait card (flex child).
+       In gallery state: detaches to fixed positioning, morphs to gallery size.
+       The overlay acts as the shutter throughout. -->
+  <div id="unified-frame">
+    <div id="outline-rect"></div>
+    <!-- jnb portrait — visible in intro, hidden under overlay during transition -->
+    <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+    <!-- Gallery photo — loaded under the overlay, revealed when overlay lifts -->
+    <img id="gallery-photo" alt="Gallery image">
+    <!-- Red overlay — the shutter -->
     <div id="intro-overlay"></div>
+    <!-- Intro logo — centred over the card in intro state -->
     <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
+    <!-- Invisible click target for gallery zoom toggle (active in gallery state) -->
+    <div id="gallery-tap" onclick="toggleExpanded()"></div>
   </div>
 
   <nav id="intro-nav">
     <button class="intro-btn" onclick="enterGallery('portraits')">Gallery</button>
     <button class="intro-btn secondary" onclick="goConnect()">Connect</button>
   </nav>
-</div>
-
-<!-- GALLERY STAGE -->
-<div id="gallery-stage">
-  <div id="gallery-frame">
-    <div id="outline-rect"></div>
-    <div id="gallery-wrap" onclick="toggleExpanded()">
-      <img id="gallery-photo" alt="Gallery image">
-    </div>
-  </div>
 </div>
 
 <!-- GALLERY LOGO -->
@@ -661,42 +657,124 @@ function goConnect() {
 /* =====================================================
    INTRO → GALLERY
    ===================================================== */
+/* =====================================================
+   ENTER GALLERY — the morph sequence
+   =====================================================
+   Phase 1 (0ms):    Detach frame from flex layout, lock position,
+                     start expanding to gallery size, fade outline in,
+                     hide intro nav + visions label.
+   Phase 2 (200ms):  Load first gallery image under the overlay.
+   Phase 3 (750ms):  Frame has reached gallery size. Lift the overlay
+                     to reveal the gallery image. Fade logo out.
+                     Slide in gallery logo + subject name.
+   Phase 4 (1400ms): Enable gallery interactions.
+   ===================================================== */
 function enterGallery(collectionKey) {
   currentCollection = GALLERY[collectionKey] || [];
   currentIndex = 0;
   if (!currentCollection.length) return;
+  state = 'morphing';
 
-  // Hide intro + line
-  document.getElementById('intro-scene').classList.add('hidden');
+  const frame   = document.getElementById('unified-frame');
+  const overlay = document.getElementById('intro-overlay');
+  const logo    = document.getElementById('intro-logo');
+  const rect    = document.getElementById('outline-rect');
+  const scene   = document.getElementById('intro-scene');
+
+  // ── Phase 1: lock current position, detach from flex ──
+  const fr = frame.getBoundingClientRect();
+  frame.style.top    = fr.top  + 'px';
+  frame.style.left   = fr.left + 'px';
+  frame.style.width  = fr.width  + 'px';
+  frame.style.height = fr.height + 'px';
+  frame.classList.add('detached');
+
+  // Position outline-rect to match frame exactly, then size it up
+  positionOutlineRect(fr.left, fr.top, fr.width, fr.height, 22);
+
+  // Hide intro nav and label (they're now orphaned since frame detached)
+  document.getElementById('intro-nav').style.opacity    = '0';
+  document.getElementById('intro-nav').style.pointerEvents = 'none';
+  document.getElementById('visions-label').style.opacity = '0';
   document.getElementById('red-line').classList.add('hidden');
 
-  showGalleryUI();
-  loadSlide(currentIndex, false);
-  state = 'gallery';
+  // Fade the intro-scene background away (it now only contains the label + nav)
+  scene.style.pointerEvents = 'none';
+
+  // One frame later: trigger the size transition
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const gw = Math.min(480, vw * 0.82);
+    const gh = gw * 1.28;
+    const targetTop  = (vh - gh) / 2;
+    const targetLeft = (vw - gw) / 2;
+
+    frame.style.top    = targetTop  + 'px';
+    frame.style.left   = targetLeft + 'px';
+    frame.style.width  = gw + 'px';
+    frame.style.height = gh + 'px';
+    frame.style.borderRadius = '12vh';
+
+    // Outline rect transitions to gallery size simultaneously
+    const gap = vh * 0.04; // --outline-gap: 4vh
+    positionOutlineRect(
+      targetLeft - gap, targetTop - gap,
+      gw + gap * 2, gh + gap * 2,
+      'calc(12vh + 4vh)'
+    );
+    rect.classList.add('rect-visible');
+  }));
+
+  // ── Phase 2: load image under the overlay ──
+  setTimeout(() => {
+    preloadNeighbours(0);
+    loadSlideUnder(0);
+  }, 200);
+
+  // ── Phase 3: lift overlay, show gallery chrome ──
+  setTimeout(() => {
+    logo.classList.add('hidden-logo');
+    overlay.classList.add('lifted');
+    showGalleryChrome();
+    loadSlide(0, false);
+  }, 750);
+
+  // ── Phase 4: enable interactions ──
+  setTimeout(() => {
+    document.getElementById('gallery-tap').classList.add('active');
+    state = 'gallery';
+  }, 1400);
 }
 
-function showGalleryUI() {
-  document.getElementById('gallery-stage').classList.add('visible');
+/* Position the outline-rect absolutely on screen */
+function positionOutlineRect(left, top, width, height, radius) {
+  const rect = document.getElementById('outline-rect');
+  rect.style.left   = left   + (typeof left   === 'number' ? 'px' : '');
+  rect.style.top    = top    + (typeof top    === 'number' ? 'px' : '');
+  rect.style.width  = width  + (typeof width  === 'number' ? 'px' : '');
+  rect.style.height = height + (typeof height === 'number' ? 'px' : '');
+  if (radius) rect.style.borderRadius = (typeof radius === 'number') ? radius + 'px' : radius;
+}
+
+function showGalleryChrome() {
   document.getElementById('watermark-left').classList.add('visible');
   document.getElementById('watermark-right').classList.add('visible');
   document.getElementById('nav-prev').classList.add('visible');
   document.getElementById('nav-next').classList.add('visible');
   document.getElementById('gallery-footer').classList.add('visible');
   document.getElementById('kbd-hint').classList.add('visible');
-
   document.getElementById('gallery-logo').style.opacity = '1';
   document.getElementById('info-panel').style.pointerEvents = 'none';
 }
 
-function hideGalleryUI() {
-  document.getElementById('gallery-stage').classList.remove('visible');
+function hideGalleryChrome() {
   document.getElementById('watermark-left').classList.remove('visible');
   document.getElementById('watermark-right').classList.remove('visible');
   document.getElementById('nav-prev').classList.remove('visible');
   document.getElementById('nav-next').classList.remove('visible');
   document.getElementById('gallery-footer').classList.remove('visible');
   document.getElementById('kbd-hint').classList.remove('visible');
-
   document.getElementById('gallery-logo').style.opacity = '0';
   document.getElementById('info-panel').style.opacity = '0';
   document.getElementById('info-panel').style.right = '-300px';
@@ -706,23 +784,90 @@ function hideGalleryUI() {
 /* =====================================================
    GALLERY → INTRO
    ===================================================== */
+/* =====================================================
+   EXIT GALLERY — reverse morph back to intro card
+   ===================================================== */
 function exitGallery() {
-  if (isExpanded) {
-    isExpanded = false;
-    document.getElementById('gallery-wrap').classList.remove('expanded');
-    state = 'gallery';
+  if (state === 'morphing') return;
+  if (isExpanded) toggleExpanded();
+  state = 'morphing';
+
+  const frame   = document.getElementById('unified-frame');
+  const overlay = document.getElementById('intro-overlay');
+  const logo    = document.getElementById('intro-logo');
+  const rect    = document.getElementById('outline-rect');
+  const photo   = document.getElementById('gallery-photo');
+
+  // ── Phase 1: drop the overlay (shutter closes over gallery image) ──
+  hideGalleryChrome();
+  document.getElementById('gallery-tap').classList.remove('active');
+  overlay.classList.remove('lifted');
+  logo.classList.remove('hidden-logo');
+
+  // ── Phase 2: contract frame back to card size ──
+  setTimeout(() => {
+    // We need to return frame to flex layout — calculate where it will land
+    // Approximate: centre of viewport, card dimensions
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const cardW = Math.min(Math.min(300, vw * 0.72), vw * 0.55);
+    const cardH = cardW * 1.32;
+    const targetTop  = (vh - cardH) / 2;
+    const targetLeft = (vw - cardW) / 2;
+
+    frame.style.top    = targetTop  + 'px';
+    frame.style.left   = targetLeft + 'px';
+    frame.style.width  = cardW + 'px';
+    frame.style.height = cardH + 'px';
+    frame.style.borderRadius = '22px';
+
+    rect.classList.remove('rect-visible');
+
+    document.getElementById('red-line').classList.remove('hidden');
+  }, 300);
+
+  // ── Phase 3: reattach to flex layout ──
+  setTimeout(() => {
+    frame.classList.remove('detached');
+    frame.style.top = frame.style.left = '';
+    frame.style.width = frame.style.height = '';
+    frame.style.borderRadius = '';
+    rect.style.cssText = '';
+
+    photo.classList.remove('loaded');
+    photo.style.objectPosition = '50% 50%';
+
+    // Restore intro nav
+    document.getElementById('intro-nav').style.opacity    = '1';
+    document.getElementById('intro-nav').style.pointerEvents = 'all';
+    document.getElementById('visions-label').style.opacity = '1';
+    document.getElementById('intro-scene').style.pointerEvents = 'all';
+
+    state = 'intro';
+  }, 1050);
+}
+
+/* =====================================================
+   LOAD SLIDE UNDER OVERLAY
+   Silently sets the gallery-photo src so it's ready
+   before the overlay lifts. Does not trigger opacity.
+   ===================================================== */
+function loadSlideUnder(index) {
+  const slide = currentCollection[index];
+  if (!slide) return;
+  const photo = document.getElementById('gallery-photo');
+  photo.style.objectPosition = '50% 50%';
+
+  const apply = () => { photo.src = slide.src; };
+
+  if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
+    apply();
+  } else {
+    const img = new Image();
+    img.onload  = () => { imageCache.set(slide.src, img); apply(); };
+    img.onerror = () => { imageCache.set(slide.src, null); };
+    img.src = slide.src;
   }
-  hideGalleryUI();
-  document.getElementById('gallery-photo').classList.remove('loaded');
-
-  // Restore intro + line
-  const introScene = document.getElementById('intro-scene');
-  introScene.classList.remove('hidden');
-  introScene.classList.add('fade-in');
-  setTimeout(() => introScene.classList.remove('fade-in'), 500);
-
-  document.getElementById('red-line').classList.remove('hidden');
-  state = 'intro';
 }
 
 /* =====================================================
@@ -805,10 +950,9 @@ function loadSlide(index, animate) {
    LOGO + INFO POSITIONING
    ===================================================== */
 function positionLogoAndInfo(slide, expanded) {
-  const logoEl = document.getElementById('gallery-logo');
-  const infoEl = document.getElementById('info-panel');
-  const wrap = document.getElementById('gallery-wrap');
-  const wrapRect = wrap.getBoundingClientRect();
+  const logoEl  = document.getElementById('gallery-logo');
+  const infoEl  = document.getElementById('info-panel');
+  const wrapRect = document.getElementById('unified-frame').getBoundingClientRect();
 
   const logoW = expanded ? 160 : 120;
   const logoY_pct = (slide.logoY ?? 80) / 100;
@@ -844,27 +988,42 @@ function positionLogoAndInfo(slide, expanded) {
    TOGGLE EXPANDED
    ===================================================== */
 function toggleExpanded() {
-  const wrap = document.getElementById('gallery-wrap');
-  const frame = document.getElementById('gallery-frame');
+  if (state === 'morphing') return;
+  const frame = document.getElementById('unified-frame');
   const photo = document.getElementById('gallery-photo');
+  const rect  = document.getElementById('outline-rect');
   const slide = currentCollection[currentIndex];
-  isExpanded = !isExpanded;
+  isExpanded  = !isExpanded;
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const gap = vh * 0.04;
 
   if (isExpanded) {
     state = 'expanded';
-    wrap.classList.add('expanded');
-    frame.classList.add('expanded');
-    // Apply zoom anchor — transitions smoothly via CSS
+    const ew = Math.min(800, vw * 0.92);
+    const eh = ew * 0.78;
+    frame.style.width  = ew + 'px';
+    frame.style.height = eh + 'px';
+    frame.style.top    = ((vh - eh) / 2) + 'px';
+    frame.style.left   = ((vw - ew) / 2) + 'px';
+    positionOutlineRect((vw - ew) / 2 - gap, (vh - eh) / 2 - gap,
+                         ew + gap * 2, eh + gap * 2);
     const [ax, ay] = slide.zoomAnchor ?? [50, 50];
     photo.style.objectPosition = `${ax}% ${ay}%`;
-    setTimeout(() => positionLogoAndInfo(slide, true), 720);
+    setTimeout(() => positionLogoAndInfo(slide, true), 780);
   } else {
     state = 'gallery';
-    wrap.classList.remove('expanded');
-    frame.classList.remove('expanded');
-    // Return to center
+    const gw = Math.min(480, vw * 0.82);
+    const gh = gw * 1.28;
+    frame.style.width  = gw + 'px';
+    frame.style.height = gh + 'px';
+    frame.style.top    = ((vh - gh) / 2) + 'px';
+    frame.style.left   = ((vw - gw) / 2) + 'px';
+    positionOutlineRect((vw - gw) / 2 - gap, (vh - gh) / 2 - gap,
+                         gw + gap * 2, gh + gap * 2);
     photo.style.objectPosition = '50% 50%';
-    setTimeout(() => positionLogoAndInfo(slide, false), 720);
+    setTimeout(() => positionLogoAndInfo(slide, false), 780);
   }
 }
 
@@ -872,12 +1031,22 @@ function toggleExpanded() {
    NAVIGATION
    ===================================================== */
 function navigate(dir) {
+  if (state === 'morphing') return;
   const len = currentCollection.length;
   currentIndex = (currentIndex + dir + len) % len;
   if (isExpanded) {
+    // Collapse before navigating
     isExpanded = false;
-    document.getElementById('gallery-wrap').classList.remove('expanded');
-    document.getElementById('gallery-frame').classList.remove('expanded');
+    const frame = document.getElementById('unified-frame');
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const gw = Math.min(480, vw * 0.82), gh = gw * 1.28;
+    frame.style.width  = gw + 'px';
+    frame.style.height = gh + 'px';
+    frame.style.top    = ((vh - gh) / 2) + 'px';
+    frame.style.left   = ((vw - gw) / 2) + 'px';
+    const gap = vh * 0.04;
+    positionOutlineRect((vw - gw) / 2 - gap, (vh - gh) / 2 - gap,
+                         gw + gap * 2, gh + gap * 2);
     document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
     state = 'gallery';
   }
@@ -892,12 +1061,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft'  && (state === 'gallery' || state === 'expanded')) navigate(-1);
   if (e.key === 'Escape') {
     if (state === 'expanded') {
-      isExpanded = false;
-      document.getElementById('gallery-wrap').classList.remove('expanded');
-      document.getElementById('gallery-frame').classList.remove('expanded');
-      document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
-      state = 'gallery';
-      positionLogoAndInfo(currentCollection[currentIndex], false);
+      toggleExpanded(); // handles collapse cleanly
     } else if (state === 'gallery') {
       exitGallery();
     }
@@ -912,6 +1076,22 @@ window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (state === 'gallery' || state === 'expanded') {
+      // Re-centre the frame and rect on resize
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const gap = vh * 0.04;
+      const frame = document.getElementById('unified-frame');
+      let fw, fh;
+      if (isExpanded) {
+        fw = Math.min(800, vw * 0.92); fh = fw * 0.78;
+      } else {
+        fw = Math.min(480, vw * 0.82); fh = fw * 1.28;
+      }
+      frame.style.width  = fw + 'px';
+      frame.style.height = fh + 'px';
+      frame.style.top    = ((vh - fh) / 2) + 'px';
+      frame.style.left   = ((vw - fw) / 2) + 'px';
+      positionOutlineRect((vw - fw) / 2 - gap, (vh - fh) / 2 - gap,
+                           fw + gap * 2, fh + gap * 2);
       positionLogoAndInfo(currentCollection[currentIndex], isExpanded);
     }
   }, 120);

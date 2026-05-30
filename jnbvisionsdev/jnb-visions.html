@@ -29,9 +29,15 @@
     --gray-outline: rgba(160,160,160,0.65);
     --card-w: min(300px, 72vw);
     --card-h: calc(var(--card-w) * 1.32);
-    --gallery-w: min(520px, 90vw);
+    /* Gallery width capped so outline never leaves the viewport.
+       90vw felt large; 82vw gives breathing room on all window sizes. */
+    --gallery-w: min(480px, 82vw);
     --gallery-h: calc(var(--gallery-w) * 1.28);
-    --expanded-w: min(840px, 96vw);
+    /* Outline gap: 4vh per side (was 3.5vh offset + 7vh total).
+       Stored as a single variable so frame, rect, and border-radius
+       all stay in sync from one place. */
+    --outline-gap: 4vh;
+    --expanded-w: min(800px, 92vw);
     --expanded-h: calc(var(--expanded-w) * 0.78);
     --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --font-primary: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -152,7 +158,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(32px, 6vw, 80px);
+    /* Gap compresses tightly on small windows */
+    gap: clamp(16px, 4vw, 60px);
+    /* Padding so nothing ever touches the edge */
+    padding: 0 clamp(12px, 3vw, 40px);
     z-index: 1;
     opacity: 1;
     transition: opacity 0.5s ease;
@@ -174,16 +183,23 @@
     color: var(--red);
     flex-shrink: 0;
     line-height: 1;
+    /* Disappear cleanly when viewport is too narrow to fit all three columns */
+    transition: opacity 0.3s ease;
+  }
+  @media (max-width: 480px) {
+    #visions-label { display: none; }
   }
 
   /* Centre column: the card */
   #intro-card {
     position: relative;
-    width: var(--card-w);
-    height: var(--card-h);
+    /* min() so the card never exceeds --card-w but compresses on tiny windows.
+       flex-shrink:1 lets it yield space to the VISIONS label and nav buttons. */
+    width: min(var(--card-w), 55vw);
+    height: calc(min(var(--card-w), 55vw) * 1.32);
     border-radius: 22px;
     overflow: hidden;
-    flex-shrink: 0;
+    flex-shrink: 1;
     transition: transform 0.18s ease;
   }
 
@@ -213,8 +229,10 @@
   #intro-nav {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: clamp(10px, 2vh, 18px);
     flex-shrink: 0;
+    /* Never let the nav column get so wide it forces overflow */
+    min-width: 0;
   }
 
   .intro-btn {
@@ -222,7 +240,7 @@
     border: none;
     color: var(--white);
     font-family: var(--font-secondary);
-    font-size: clamp(11px, 1.4vw, 14px);
+    font-size: clamp(10px, 1.4vw, 14px);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -232,6 +250,7 @@
     position: relative;
     transition: color 0.18s;
     line-height: 1;
+    white-space: nowrap;
   }
   .intro-btn::after {
     content: '';
@@ -270,15 +289,14 @@
   #gallery-frame {
     position: relative;
     display: flex; align-items: center; justify-content: center;
-    /* sized to the outline-rect so it holds both elements */
-    width: calc(var(--gallery-w) + 7vh);
-    height: calc(var(--gallery-h) + 7vh);
+    width: calc(var(--gallery-w) + var(--outline-gap) * 2);
+    height: calc(var(--gallery-h) + var(--outline-gap) * 2);
     flex-shrink: 0;
     transition: width 0.7s var(--ease-expo), height 0.7s var(--ease-expo);
   }
   #gallery-frame.expanded {
-    width: calc(var(--expanded-w) + 7vh);
-    height: calc(var(--expanded-h) + 7vh);
+    width: calc(var(--expanded-w) + var(--outline-gap) * 2);
+    height: calc(var(--expanded-h) + var(--outline-gap) * 2);
   }
 
   #gallery-wrap {
@@ -317,7 +335,8 @@
     position: absolute;
     inset: 0;
     border: 2px solid var(--gray-outline);
-    border-radius: calc(12vh + 3.5vh);
+    /* radius = photo radius + the per-side gap so curves stay proportional */
+    border-radius: calc(12vh + var(--outline-gap));
     pointer-events: none;
     transition: border-radius 0.7s var(--ease-expo);
   }
@@ -505,7 +524,7 @@
   <div id="visions-label">Visions</div>
 
   <div id="intro-card">
-    <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+    <img id="intro-photo" src="9N2A2754--e1-Vibrant.png" alt="Artist portrait">
     <div id="intro-overlay"></div>
     <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
   </div>

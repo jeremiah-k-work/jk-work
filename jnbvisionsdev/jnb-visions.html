@@ -42,6 +42,12 @@
     --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --font-primary: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-secondary: 'Unbounded', 'Helvetica Neue', Helvetica, sans-serif;
+    /* How far the GALLERY word rises toward the top in gallery state.
+       Negative = upward. Adjust this one value to reposition the word. */
+    --nav-gallery-rise: -88vh;
+    /* Gallery nav: how far from bottom the nav's bottom edge should sit.
+       Increase to move the nav higher up the screen. */
+    --nav-gallery-bottom-margin: 8vh;
   }
 
   html, body {
@@ -192,33 +198,51 @@
 
   /* Centre column: the card */
   /* ===== UNIFIED FRAME =====
-     Intro: flex child, card size, overlay on, logo visible.
-     Morph: detaches to fixed, expands to gallery size, overlay stays on.
-     Gallery: fixed, gallery size, overlay lifted, gallery-photo visible.
+     Intro:   position:relative, flex child, card dimensions.
+     Gallery: position:fixed, centred, gallery dimensions.
+     CRITICAL: no z-index on any child — stacking is document order only.
+     This keeps overflow:hidden clipping intact when position:fixed is applied,
+     because no child is promoted to its own compositor layer.
   */
+  /* unified-frame: handles size and position only.
+     No overflow, no border-radius — those live on #frame-inner
+     which never changes its positioning model, so Safari never
+     re-composites the clip boundary. */
   #unified-frame {
     position: relative;
     width: min(var(--card-w), 55vw);
     height: calc(min(var(--card-w), 55vw) * 1.32);
-    border-radius: 22px;
-    overflow: hidden;
     flex-shrink: 1;
-    z-index: 3;
     transition:
-      width         0.75s var(--ease-expo),
-      height        0.75s var(--ease-expo),
-      border-radius 0.75s var(--ease-expo);
+      width  0.75s var(--ease-expo),
+      height 0.75s var(--ease-expo);
   }
   #unified-frame.detached {
     position: fixed;
-    /* top/left locked by JS before transition fires */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     transition:
-      width         0.75s var(--ease-expo),
-      height        0.75s var(--ease-expo),
-      border-radius 0.75s var(--ease-expo),
-      top           0.75s var(--ease-expo),
-      left          0.75s var(--ease-expo);
+      width  0.75s var(--ease-expo),
+      height 0.75s var(--ease-expo);
   }
+
+  /* frame-inner: always position:relative, always the same positioning model.
+     Carries overflow:hidden and border-radius — these never break in Safari
+     because this element is never promoted or repositioned. */
+  #frame-inner {
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    transition: border-radius 0.75s var(--ease-expo);
+  }
+  /* Gallery border-radius applied when frame expands */
+  #unified-frame.detached #frame-inner {
+    border-radius: 12vh;
+  }
+
+  /* Children — no z-index, no will-change. Document order = paint order. */
 
   #intro-photo {
     position: absolute; inset: 0;
@@ -226,7 +250,6 @@
     object-fit: cover;
     display: block;
     background: #1a0000;
-    z-index: 0;
   }
 
   #gallery-photo {
@@ -237,7 +260,6 @@
     background: transparent;
     opacity: 0;
     image-rendering: pixelated;
-    z-index: 1;
     transition: opacity 0.55s ease,
                 object-position 0.75s var(--ease-expo);
   }
@@ -247,7 +269,6 @@
     position: absolute; inset: 0;
     background: var(--red);
     mix-blend-mode: difference;
-    z-index: 2;
     transition: opacity 0.65s ease;
     pointer-events: none;
   }
@@ -259,61 +280,145 @@
     transform: translate(-50%, -50%);
     width: 58%;
     pointer-events: none;
-    z-index: 3;
     transition: opacity 0.35s ease;
   }
   #intro-logo.hidden-logo { opacity: 0; }
 
-  /* Invisible tap layer — only active in gallery state */
   #gallery-tap {
     position: absolute; inset: 0;
-    z-index: 4;
     display: none;
   }
   #gallery-tap.active { display: block; }
 
-  /* Right column: nav buttons */
-  #intro-nav {
+  /* ===== UNIFIED NAV =====
+     Single fixed container, always in the DOM.
+     Intro: JS positions left edge flush with frame right edge.
+     Gallery: bottom-centre, width clamped to visible children only.
+
+     The Gallery word grows large in gallery state but must NOT
+     influence the container width — it overflows visually while
+     contributing zero layout width via width:0 + overflow:visible.
+     This keeps the container centring correct. */
+
+  #nav-unified {
+    position: fixed;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: clamp(10px, 2vh, 18px);
-    flex-shrink: 0;
-    /* Never let the nav column get so wide it forces overflow */
-    min-width: 0;
+    z-index: 20;
+    overflow: visible;
+    /* Transition left and transform only.
+       top/bottom are NOT transitioned — they snap via JS inline styles
+       to avoid the top↔bottom interpolation problem on return. */
+    transition:
+      left      0.75s var(--ease-expo),
+      transform 0.75s var(--ease-expo);
+  }
+  /* Suppress ALL transitions when snapping back to intro position */
+  #nav-unified.no-transition {
+    transition: none !important;
   }
 
-  .intro-btn {
+  /* Gallery state: horizontal centering only.
+     top/bottom are set by JS as inline styles so we can use bottom
+     directly (no height measurement needed) without CSS conflicts. */
+  #nav-unified.gallery {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    align-items: center;
+  }
+
+  /* Base word */
+  .nav-word {
     background: transparent;
     border: none;
-    color: var(--white);
     font-family: var(--font-secondary);
-    font-size: clamp(10px, 1.4vw, 14px);
-    font-weight: 700;
-    letter-spacing: 0.12em;
     text-transform: uppercase;
-    cursor: pointer;
-    text-align: left;
-    padding: 4px 0;
-    position: relative;
-    transition: color 0.18s;
+    letter-spacing: 0.12em;
     line-height: 1;
     white-space: nowrap;
+    position: relative;
+    padding: 0;
+    transition:
+      font-size      0.75s var(--ease-expo),
+      color          0.25s ease,
+      opacity        0.75s var(--ease-expo),
+      transform      0.75s var(--ease-expo),
+      letter-spacing 0.75s var(--ease-expo);
   }
-  .intro-btn::after {
+  .nav-word::after {
     content: '';
     position: absolute;
     bottom: -2px; left: 0;
     width: 0; height: 1px;
-    background: var(--white);
+    background: currentColor;
     transition: width 0.22s var(--ease-expo);
   }
-  .intro-btn:hover::after { width: 100%; }
-  .intro-btn.secondary {
-    color: rgba(255,255,255,0.45);
-    font-weight: 400;
+  .nav-word:hover::after { width: 100%; }
+
+  /* ── GALLERY word ──
+     Intro: normal size, in flow.
+     Gallery: zero layout width so it cannot affect container centring.
+     The word overflows visually. translateX(-50%) centres it on the
+     container's centreline regardless of the word's own rendered width.
+     translateY lifts it to the top of the screen. */
+  #nav-gallery {
+    font-size: clamp(10px, 1.4vw, 14px);
+    font-weight: 700;
+    color: var(--white);
+    opacity: 1;
+    width: auto;
+    transform: none;
   }
-  .intro-btn.secondary:hover { color: rgba(255,255,255,0.85); }
-  .intro-btn.secondary::after { background: rgba(255,255,255,0.45); }
+  #nav-unified.gallery #nav-gallery {
+    /* width:100% fills the viewport (fixed context), text-align:center
+       on the container centres the text within it. */
+    width: 100vw;
+    font-size: clamp(48px, 18vw, 120px);
+    letter-spacing: 0.05em;
+    color: var(--white);
+    opacity: 0.045;
+    pointer-events: none;
+    /* --nav-gallery-rise is defined in :root — change it there to reposition */
+    transform: translateY(var(--nav-gallery-rise));
+  }
+  /* Centre the overflowing Gallery word on the container centreline */
+  #nav-unified.gallery {
+    text-align: center;
+  }
+
+  /* ── CONNECT word ── */
+  #nav-connect {
+    font-size: clamp(10px, 1.4vw, 14px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+    opacity: 1;
+    transform: none;
+  }
+  #nav-unified.gallery #nav-connect {
+    font-size: clamp(9px, 1.1vw, 12px);
+    color: rgba(255,255,255,0.38);
+  }
+  #nav-connect:hover { color: rgba(255,255,255,0.85); }
+
+  /* ── BACK word ── */
+  #nav-back {
+    font-family: var(--font-primary);
+    font-size: clamp(10px, 1.4vw, 14px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.38);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+  #nav-unified.gallery #nav-back {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  #nav-back:hover { color: rgba(255,255,255,0.85); }
 
   /* ===== OUTLINE RECT =====
      Fixed, positioned and sized by JS to wrap unified-frame.
@@ -429,31 +534,7 @@
   #nav-prev:hover, #nav-next:hover { color: rgba(255,255,255,0.8); }
   .nav-line { width: 1px; height: 40px; background: currentColor; display: block; }
 
-  /* ===== BACK / CONNECT (gallery footer) ===== */
-  #gallery-footer {
-    position: fixed;
-    bottom: 36px;
-    left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 14px;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.4s ease;
-    z-index: 20;
-  }
-  #gallery-footer.visible { opacity: 1; pointer-events: all; }
 
-  .footer-btn {
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.38);
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: color 0.15s;
-    padding: 2px 0;
-  }
-  .footer-btn:hover { color: rgba(255,255,255,0.88); }
 
   /* ===== KEYBOARD HINT ===== */
   #kbd-hint {
@@ -517,29 +598,27 @@
 <div id="intro-scene">
   <div id="visions-label">Visions</div>
 
-  <!-- THE UNIFIED FRAME
-       In intro state: behaves as the artist portrait card (flex child).
-       In gallery state: detaches to fixed positioning, morphs to gallery size.
-       The overlay acts as the shutter throughout. -->
+  <!-- UNIFIED FRAME
+       Intro: position:relative flex child, card size, overlay on.
+       Morph: detaches to position:fixed, expands to gallery size.
+       Children have NO z-index — stacking is pure document order,
+       which keeps overflow:hidden clipping intact at all times. -->
   <div id="unified-frame">
-    <div id="outline-rect"></div>
-    <!-- jnb portrait — visible in intro, hidden under overlay during transition -->
-    <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
-    <!-- Gallery photo — loaded under the overlay, revealed when overlay lifts -->
-    <img id="gallery-photo" alt="Gallery image">
-    <!-- Red overlay — the shutter -->
-    <div id="intro-overlay"></div>
-    <!-- Intro logo — centred over the card in intro state -->
-    <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
-    <!-- Invisible click target for gallery zoom toggle (active in gallery state) -->
-    <div id="gallery-tap" onclick="toggleExpanded()"></div>
+    <!-- #frame-inner carries overflow:hidden and border-radius.
+         It never changes position so Safari never re-composites the clip. -->
+    <div id="frame-inner">
+      <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+      <img id="gallery-photo" alt="">
+      <div id="intro-overlay"></div>
+      <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
+      <div id="gallery-tap" onclick="toggleExpanded()"></div>
+    </div>
   </div>
 
-  <nav id="intro-nav">
-    <button class="intro-btn" onclick="enterGallery('portraits')">Gallery</button>
-    <button class="intro-btn secondary" onclick="goConnect()">Connect</button>
-  </nav>
 </div>
+
+<!-- OUTLINE RECT — fixed, positioned by JS to wrap unified-frame -->
+<div id="outline-rect"></div>
 
 <!-- GALLERY LOGO -->
 <div id="gallery-logo">
@@ -566,11 +645,15 @@
   <span class="nav-line"></span>
 </button>
 
-<!-- GALLERY FOOTER -->
-<div id="gallery-footer">
-  <button class="footer-btn" onclick="goConnect()">Connect</button>
-  <button class="footer-btn" onclick="exitGallery()">&#8592; Back</button>
-</div>
+<!-- UNIFIED NAV
+     All navigation words live here always.
+     State is driven by #nav-unified.gallery class.
+     CSS transitions carry each word smoothly between positions. -->
+<nav id="nav-unified">
+  <button id="nav-gallery"  class="nav-word" onclick="enterGallery('portraits')">Gallery</button>
+  <button id="nav-connect"  class="nav-word" onclick="goConnect()">Connect</button>
+  <button id="nav-back"     class="nav-word" onclick="exitGallery()">Back</button>
+</nav>
 
 <!-- KEYBOARD HINT -->
 <div id="kbd-hint">&#8592; &nbsp; Arrow keys to navigate &nbsp; &#8594;</div>
@@ -660,14 +743,12 @@ function goConnect() {
 /* =====================================================
    ENTER GALLERY — the morph sequence
    =====================================================
-   Phase 1 (0ms):    Detach frame from flex layout, lock position,
-                     start expanding to gallery size, fade outline in,
-                     hide intro nav + visions label.
-   Phase 2 (200ms):  Load first gallery image under the overlay.
-   Phase 3 (750ms):  Frame has reached gallery size. Lift the overlay
-                     to reveal the gallery image. Fade logo out.
-                     Slide in gallery logo + subject name.
-   Phase 4 (1400ms): Enable gallery interactions.
+   Phase 1 (0ms):    Lock frame position, detach to fixed,
+                     expand to gallery size. Outline rect fades in.
+                     Intro chrome fades out.
+   Phase 2 (150ms):  Load gallery image silently under overlay.
+   Phase 3 (800ms):  Overlay lifts. Gallery chrome slides in.
+   Phase 4 (1450ms): Tap-to-zoom enabled.
    ===================================================== */
 function enterGallery(collectionKey) {
   currentCollection = GALLERY[collectionKey] || [];
@@ -679,82 +760,82 @@ function enterGallery(collectionKey) {
   const overlay = document.getElementById('intro-overlay');
   const logo    = document.getElementById('intro-logo');
   const rect    = document.getElementById('outline-rect');
-  const scene   = document.getElementById('intro-scene');
 
-  // ── Phase 1: lock current position, detach from flex ──
+  // ── Phase 1: lock pixel position, detach from flex ──
   const fr = frame.getBoundingClientRect();
-  frame.style.top    = fr.top  + 'px';
-  frame.style.left   = fr.left + 'px';
-  frame.style.width  = fr.width  + 'px';
-  frame.style.height = fr.height + 'px';
+  // Apply the current rendered position as fixed coords before switching
+  frame.style.position = 'fixed';
+  frame.style.top      = fr.top  + 'px';
+  frame.style.left     = fr.left + 'px';
+  frame.style.width    = fr.width  + 'px';
+  frame.style.height   = fr.height + 'px';
+  frame.style.transform = 'none';
+  // Adding .detached switches position:fixed via CSS but we've already
+  // set the coords inline so there's no jump
   frame.classList.add('detached');
 
-  // Position outline-rect to match frame exactly, then size it up
-  positionOutlineRect(fr.left, fr.top, fr.width, fr.height, 22);
+  // Clear inline positional styles, add gallery class, then set bottom inline.
+  // Using bottom means we never need to know the nav's height.
+  const navEl = document.getElementById('nav-unified');
+  navEl.style.left      = '';
+  navEl.style.right     = '';
+  navEl.style.top       = 'auto';
+  navEl.style.transform = '';
+  navEl.classList.remove('no-transition');
+  navEl.classList.add('gallery');
+  // bottom: 8vh keeps the nav's bottom edge 8vh from the viewport bottom
+  navEl.style.bottom = 'clamp(24px, 8vh, 60px)';
 
-  // Hide intro nav and label (they're now orphaned since frame detached)
-  document.getElementById('intro-nav').style.opacity    = '0';
-  document.getElementById('intro-nav').style.pointerEvents = 'none';
-  document.getElementById('visions-label').style.opacity = '0';
+  // Hide other intro chrome
+  document.getElementById('visions-label').style.opacity   = '0';
+  document.getElementById('intro-scene').style.pointerEvents = 'none';
   document.getElementById('red-line').classList.add('hidden');
 
-  // Fade the intro-scene background away (it now only contains the label + nav)
-  scene.style.pointerEvents = 'none';
-
-  // One frame later: trigger the size transition
+  // Two rAFs to ensure the fixed position is painted before we start moving
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const gw = Math.min(480, vw * 0.82);
     const gh = gw * 1.28;
-    const targetTop  = (vh - gh) / 2;
-    const targetLeft = (vw - gw) / 2;
+    const gap = vh * 0.04;
 
-    frame.style.top    = targetTop  + 'px';
-    frame.style.left   = targetLeft + 'px';
+    // Animate to centred gallery size
+    frame.style.top    = '50%';
+    frame.style.left   = '50%';
+    frame.style.transform = 'translate(-50%, -50%)';
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
-    frame.style.borderRadius = '12vh';
+    // border-radius is handled by CSS:
+    // #unified-frame.detached #frame-inner { border-radius: 12vh }
 
-    // Outline rect transitions to gallery size simultaneously
-    const gap = vh * 0.04; // --outline-gap: 4vh
-    positionOutlineRect(
-      targetLeft - gap, targetTop - gap,
-      gw + gap * 2, gh + gap * 2,
-      'calc(12vh + 4vh)'
-    );
+    // Outline rect tracks the frame
+    rect.style.width        = (gw + gap * 2) + 'px';
+    rect.style.height       = (gh + gap * 2) + 'px';
+    rect.style.top          = ((vh - gh) / 2 - gap) + 'px';
+    rect.style.left         = ((vw - gw) / 2 - gap) + 'px';
+    rect.style.borderRadius = 'calc(12vh + 4vh)';
     rect.classList.add('rect-visible');
   }));
 
-  // ── Phase 2: load image under the overlay ──
+  // ── Phase 2: load image under overlay ──
   setTimeout(() => {
     preloadNeighbours(0);
     loadSlideUnder(0);
-  }, 200);
+  }, 150);
 
-  // ── Phase 3: lift overlay, show gallery chrome ──
+  // ── Phase 3: lift overlay, show chrome ──
   setTimeout(() => {
     logo.classList.add('hidden-logo');
     overlay.classList.add('lifted');
     showGalleryChrome();
     loadSlide(0, false);
-  }, 750);
+  }, 800);
 
-  // ── Phase 4: enable interactions ──
+  // ── Phase 4: enable zoom ──
   setTimeout(() => {
     document.getElementById('gallery-tap').classList.add('active');
     state = 'gallery';
-  }, 1400);
-}
-
-/* Position the outline-rect absolutely on screen */
-function positionOutlineRect(left, top, width, height, radius) {
-  const rect = document.getElementById('outline-rect');
-  rect.style.left   = left   + (typeof left   === 'number' ? 'px' : '');
-  rect.style.top    = top    + (typeof top    === 'number' ? 'px' : '');
-  rect.style.width  = width  + (typeof width  === 'number' ? 'px' : '');
-  rect.style.height = height + (typeof height === 'number' ? 'px' : '');
-  if (radius) rect.style.borderRadius = (typeof radius === 'number') ? radius + 'px' : radius;
+  }, 1450);
 }
 
 function showGalleryChrome() {
@@ -762,7 +843,6 @@ function showGalleryChrome() {
   document.getElementById('watermark-right').classList.add('visible');
   document.getElementById('nav-prev').classList.add('visible');
   document.getElementById('nav-next').classList.add('visible');
-  document.getElementById('gallery-footer').classList.add('visible');
   document.getElementById('kbd-hint').classList.add('visible');
   document.getElementById('gallery-logo').style.opacity = '1';
   document.getElementById('info-panel').style.pointerEvents = 'none';
@@ -773,7 +853,6 @@ function hideGalleryChrome() {
   document.getElementById('watermark-right').classList.remove('visible');
   document.getElementById('nav-prev').classList.remove('visible');
   document.getElementById('nav-next').classList.remove('visible');
-  document.getElementById('gallery-footer').classList.remove('visible');
   document.getElementById('kbd-hint').classList.remove('visible');
   document.getElementById('gallery-logo').style.opacity = '0';
   document.getElementById('info-panel').style.opacity = '0';
@@ -789,7 +868,7 @@ function hideGalleryChrome() {
    ===================================================== */
 function exitGallery() {
   if (state === 'morphing') return;
-  if (isExpanded) toggleExpanded();
+  if (isExpanded) { isExpanded = false; }
   state = 'morphing';
 
   const frame   = document.getElementById('unified-frame');
@@ -798,53 +877,61 @@ function exitGallery() {
   const rect    = document.getElementById('outline-rect');
   const photo   = document.getElementById('gallery-photo');
 
-  // ── Phase 1: drop the overlay (shutter closes over gallery image) ──
+  // ── Phase 1: shutter closes, nav reverts simultaneously ──
   hideGalleryChrome();
   document.getElementById('gallery-tap').classList.remove('active');
+  // Snap nav back to intro position instantly (no transition) then re-enable
+  const navElExit = document.getElementById('nav-unified');
+  navElExit.classList.add('no-transition');
+  navElExit.classList.remove('gallery');
+  navElExit.style.bottom = 'auto';
+  positionIntroNav(); // writes inline top/left immediately
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      navElExit.classList.remove('no-transition');
+    });
+  });
   overlay.classList.remove('lifted');
   logo.classList.remove('hidden-logo');
 
   // ── Phase 2: contract frame back to card size ──
   setTimeout(() => {
-    // We need to return frame to flex layout — calculate where it will land
-    // Approximate: centre of viewport, card dimensions
     const vw = window.innerWidth;
-    const vh = window.innerHeight;
     const cardW = Math.min(Math.min(300, vw * 0.72), vw * 0.55);
     const cardH = cardW * 1.32;
-    const targetTop  = (vh - cardH) / 2;
-    const targetLeft = (vw - cardW) / 2;
-
-    frame.style.top    = targetTop  + 'px';
-    frame.style.left   = targetLeft + 'px';
     frame.style.width  = cardW + 'px';
     frame.style.height = cardH + 'px';
-    frame.style.borderRadius = '22px';
-
+    // border-radius reverts when .detached class is removed in phase 3
+    // CSS: #frame-inner { border-radius: 22px } (default)
     rect.classList.remove('rect-visible');
-
     document.getElementById('red-line').classList.remove('hidden');
   }, 300);
 
   // ── Phase 3: reattach to flex layout ──
   setTimeout(() => {
+    // Remove all inline positioning before reattaching
+    frame.style.position  = '';
+    frame.style.top       = '';
+    frame.style.left      = '';
+    frame.style.transform = '';
+    frame.style.width     = '';
+    frame.style.height    = '';
     frame.classList.remove('detached');
-    frame.style.top = frame.style.left = '';
-    frame.style.width = frame.style.height = '';
-    frame.style.borderRadius = '';
+    // Removing .detached also reverts #frame-inner border-radius via CSS
     rect.style.cssText = '';
 
     photo.classList.remove('loaded');
     photo.style.objectPosition = '50% 50%';
+    photo.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
-    // Restore intro nav
-    document.getElementById('intro-nav').style.opacity    = '1';
-    document.getElementById('intro-nav').style.pointerEvents = 'all';
-    document.getElementById('visions-label').style.opacity = '1';
+    document.getElementById('visions-label').style.opacity  = '1';
     document.getElementById('intro-scene').style.pointerEvents = 'all';
 
+    // Re-anchor nav to frame right edge now that frame is back in flex layout
+    positionIntroNav();
+
     state = 'intro';
-  }, 1050);
+  }, 1100);
 }
 
 /* =====================================================
@@ -1005,10 +1092,10 @@ function toggleExpanded() {
     const eh = ew * 0.78;
     frame.style.width  = ew + 'px';
     frame.style.height = eh + 'px';
-    frame.style.top    = ((vh - eh) / 2) + 'px';
-    frame.style.left   = ((vw - ew) / 2) + 'px';
-    positionOutlineRect((vw - ew) / 2 - gap, (vh - eh) / 2 - gap,
-                         ew + gap * 2, eh + gap * 2);
+    rect.style.left   = ((vw - ew) / 2 - gap) + 'px';
+    rect.style.top    = ((vh - eh) / 2 - gap) + 'px';
+    rect.style.width  = (ew + gap * 2) + 'px';
+    rect.style.height = (eh + gap * 2) + 'px';
     const [ax, ay] = slide.zoomAnchor ?? [50, 50];
     photo.style.objectPosition = `${ax}% ${ay}%`;
     setTimeout(() => positionLogoAndInfo(slide, true), 780);
@@ -1018,10 +1105,10 @@ function toggleExpanded() {
     const gh = gw * 1.28;
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
-    frame.style.top    = ((vh - gh) / 2) + 'px';
-    frame.style.left   = ((vw - gw) / 2) + 'px';
-    positionOutlineRect((vw - gw) / 2 - gap, (vh - gh) / 2 - gap,
-                         gw + gap * 2, gh + gap * 2);
+    rect.style.left   = ((vw - gw) / 2 - gap) + 'px';
+    rect.style.top    = ((vh - gh) / 2 - gap) + 'px';
+    rect.style.width  = (gw + gap * 2) + 'px';
+    rect.style.height = (gh + gap * 2) + 'px';
     photo.style.objectPosition = '50% 50%';
     setTimeout(() => positionLogoAndInfo(slide, false), 780);
   }
@@ -1035,18 +1122,18 @@ function navigate(dir) {
   const len = currentCollection.length;
   currentIndex = (currentIndex + dir + len) % len;
   if (isExpanded) {
-    // Collapse before navigating
     isExpanded = false;
     const frame = document.getElementById('unified-frame');
+    const rect  = document.getElementById('outline-rect');
     const vw = window.innerWidth, vh = window.innerHeight;
     const gw = Math.min(480, vw * 0.82), gh = gw * 1.28;
+    const gap = vh * 0.04;
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
-    frame.style.top    = ((vh - gh) / 2) + 'px';
-    frame.style.left   = ((vw - gw) / 2) + 'px';
-    const gap = vh * 0.04;
-    positionOutlineRect((vw - gw) / 2 - gap, (vh - gh) / 2 - gap,
-                         gw + gap * 2, gh + gap * 2);
+    rect.style.left   = ((vw - gw) / 2 - gap) + 'px';
+    rect.style.top    = ((vh - gh) / 2 - gap) + 'px';
+    rect.style.width  = (gw + gap * 2) + 'px';
+    rect.style.height = (gh + gap * 2) + 'px';
     document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
     state = 'gallery';
   }
@@ -1069,14 +1156,46 @@ document.addEventListener('keydown', e => {
 });
 
 /* =====================================================
+   NAV POSITIONING
+   Reads the frame's actual right edge so the nav column
+   sits flush with it, and computes the Gallery rise transform.
+   Called on load and on resize.
+   ===================================================== */
+function positionIntroNav() {
+  const nav   = document.getElementById('nav-unified');
+  const frame = document.getElementById('unified-frame');
+  if (!nav || !frame) return;
+
+  const fr  = frame.getBoundingClientRect();
+  const vw  = window.innerWidth;
+  const vh  = window.innerHeight;
+  const gap = 28; // px gap between frame right edge and nav left edge
+
+  // Intro position: left edge of nav = right edge of frame + gap
+  nav.style.left      = (fr.right + gap) + 'px';
+  nav.style.top       = '50%';
+  nav.style.right     = 'auto';
+  nav.style.bottom    = 'auto';
+  nav.style.transform = 'translateY(-50%)';
+
+}
+
+// Run after fonts are loaded for accurate height measurement,
+// then again immediately as a rough first pass
+positionIntroNav();
+document.fonts.ready.then(() => {
+  positionIntroNav();
+});
+
+/* =====================================================
    WINDOW RESIZE
    ===================================================== */
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
+    if (state === 'intro') positionIntroNav();
     if (state === 'gallery' || state === 'expanded') {
-      // Re-centre the frame and rect on resize
       const vw = window.innerWidth, vh = window.innerHeight;
       const gap = vh * 0.04;
       const frame = document.getElementById('unified-frame');
@@ -1088,10 +1207,11 @@ window.addEventListener('resize', () => {
       }
       frame.style.width  = fw + 'px';
       frame.style.height = fh + 'px';
-      frame.style.top    = ((vh - fh) / 2) + 'px';
-      frame.style.left   = ((vw - fw) / 2) + 'px';
-      positionOutlineRect((vw - fw) / 2 - gap, (vh - fh) / 2 - gap,
-                           fw + gap * 2, fh + gap * 2);
+      const rect = document.getElementById('outline-rect');
+      rect.style.left   = ((vw - fw) / 2 - gap) + 'px';
+      rect.style.top    = ((vh - fh) / 2 - gap) + 'px';
+      rect.style.width  = (fw + gap * 2) + 'px';
+      rect.style.height = (fh + gap * 2) + 'px';
       positionLogoAndInfo(currentCollection[currentIndex], isExpanded);
     }
   }, 120);
@@ -1110,7 +1230,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
     e.preventDefault();
     contextMenuEnabled = !contextMenuEnabled;
-    // Brief visual confirmation so you know the toggle fired
     const msg = document.createElement('div');
     msg.textContent = contextMenuEnabled ? 'Context menu ON' : 'Context menu OFF';
     Object.assign(msg.style, {
@@ -1129,11 +1248,19 @@ document.addEventListener('keydown', e => {
     setTimeout(() => { msg.style.opacity = '0'; }, 1200);
     setTimeout(() => { msg.remove(); }, 1600);
   }
+  if (e.key === 'ArrowRight' && (state === 'gallery' || state === 'expanded')) navigate(1);
+  if (e.key === 'ArrowLeft'  && (state === 'gallery' || state === 'expanded')) navigate(-1);
+  if (e.key === 'Escape') {
+    if (state === 'expanded') {
+      toggleExpanded();
+    } else if (state === 'gallery') {
+      exitGallery();
+    }
+  }
 });
 
 /* =====================================================
    CUSTOM CURSOR
-   =====================================================
    ORBIT_DISTANCE  px from core centre to orbiter at rest
    ORBIT_LAG       angle smoothing (0 = instant, higher = more drag)
    PRESS_DISTANCE  compressed distance while held down
@@ -1146,7 +1273,7 @@ const cursorCore       = document.getElementById('cursor-core');
 const cursorOrbiterPos = document.getElementById('cursor-orbiter-pos');
 const cursorOrbiter    = document.getElementById('cursor-orbiter');
 
-let mouseX     = -999;  // off-screen until first move
+let mouseX     = -999;
 let mouseY     = -999;
 let orbitAngle = 0;
 let targetAngle= 0;
@@ -1175,11 +1302,9 @@ function lerpAngle(a, b, t) {
 }
 
 function runCursorLoop() {
-  // Core: translate to exact pointer position, offset by half size to centre
   const halfCore = 2.5;
   cursorCore.style.transform = `translate(${mouseX - halfCore}px, ${mouseY - halfCore}px)`;
 
-  // Orbiter positioner: translate to orbit position — the child div centres itself
   const cx = window.innerWidth  / 2;
   const cy = window.innerHeight / 2;
   targetAngle = Math.atan2(mouseY - cy, mouseX - cx);
@@ -1192,7 +1317,6 @@ function runCursorLoop() {
   cursorRaf = requestAnimationFrame(runCursorLoop);
 }
 
-// Kick the loop off immediately so it's ready before the mouse enters
 cursorRaf = requestAnimationFrame(runCursorLoop);
 
 document.addEventListener('mousemove', e => {
@@ -1206,27 +1330,19 @@ document.addEventListener('mouseenter', showCursor);
 function cursorPressDown(e) {
   cursorDown = true;
   cursorOrbiter.classList.remove('springing', 'pressed-left', 'pressed-right');
-
-  if (e.button === 2) {
-    // Right-click: shrink in place, fill grows inside
-    // orbitDist stays at ORBIT_DISTANCE — no inward pull
+  if (e && e.button === 2) {
     cursorOrbiter.classList.add('pressed-right');
   } else {
-    // Left-click: compress orbit inward, spring on release
     orbitDist = PRESS_DISTANCE;
     cursorOrbiter.classList.add('pressed-left');
   }
 }
-
 function cursorPressUp(e) {
   if (!cursorDown) return;
   cursorDown = false;
-
-  if (e.button === 2) {
-    // Right-click release: just restore
+  if (e && e.button === 2) {
     cursorOrbiter.classList.remove('pressed-right');
   } else {
-    // Left-click release: restore orbit distance and spring
     orbitDist = ORBIT_DISTANCE;
     cursorOrbiter.classList.remove('pressed-left');
     void cursorOrbiter.offsetWidth;
@@ -1240,8 +1356,8 @@ document.addEventListener('mousedown', cursorPressDown);
 document.addEventListener('mouseup',   cursorPressUp);
 
 /* Touch support — cursor tracking + swipe navigation + long-press hook */
-const SWIPE_THRESHOLD  = 48;  // px horizontal travel to count as a swipe
-const SWIPE_MAX_VERT   = 80;  // px — swipes more vertical than this are ignored
+const SWIPE_THRESHOLD  = 48;
+const SWIPE_MAX_VERT   = 80;
 let touchStartX    = 0;
 let touchStartY    = 0;
 let touchDeltaX    = 0;
@@ -1260,7 +1376,6 @@ document.addEventListener('touchstart', e => {
   cursorPressDown(e);
   longPressTimer = setTimeout(() => {
     longPressTimer = null;
-    // Long-press hook — connect to info panel later
   }, 500);
 }, { passive: true });
 
@@ -1276,8 +1391,6 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', e => {
   cursorPressUp(e);
   if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-
-  // Evaluate swipe only when in gallery or expanded state
   if (touchMoved && (state === 'gallery' || state === 'expanded')) {
     const vertDelta = Math.abs(e.changedTouches[0].clientY - touchStartY);
     if (Math.abs(touchDeltaX) >= SWIPE_THRESHOLD && vertDelta <= SWIPE_MAX_VERT) {
@@ -1287,6 +1400,12 @@ document.addEventListener('touchend', e => {
   touchMoved = false;
 });
 </script>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor-core"></div>
+<div id="cursor-orbiter-pos">
+  <div id="cursor-orbiter"><div id="cursor-orbiter-fill"></div></div>
+</div>
 
 </body>
 </html>

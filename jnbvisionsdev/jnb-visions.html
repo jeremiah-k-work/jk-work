@@ -261,6 +261,20 @@
        the rounded clip. The red overlay covers any gap during loading. */
   }
 
+  /* Dark plate — covers intro-photo during gallery session.
+     Fades in on enter, fades out on exit.
+     Also provides a clean dark base when gallery-photo fades between slides. */
+  #photo-plate {
+    position: absolute; inset: 0;
+    background: #000;
+    opacity: 0;
+    /* 1px border-radius forces WebKit to respect the overflow:hidden clip
+       on the parent — same compositing quirk as intro-photo. */
+    border-radius: 1px;
+    transition: opacity 0.65s cubic-bezier(0.7, 0, 0.15, 1);
+  }
+  #photo-plate.visible { opacity: 1; }
+
   #gallery-photo {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
@@ -278,7 +292,9 @@
     position: absolute; inset: 0;
     background: var(--red);
     mix-blend-mode: difference;
-    transition: opacity 0.65s ease;
+    /* Slow cinematic lift — ease-in so it lingers at full opacity
+       before gradually fading, giving a sense of the curtain rising. */
+    transition: opacity 1.4s cubic-bezier(0.4, 0, 0.6, 1);
     pointer-events: none;
   }
   #intro-overlay.lifted { opacity: 0; }
@@ -501,6 +517,7 @@
     padding: 0px 40px 0px 8px;
     line-height: 1.4;
     margin-top: 5px;
+      border-radius: 12px;
   }
 
   /* ===== WATERMARKS ===== */
@@ -616,6 +633,10 @@
 <div id="unified-frame">
   <div id="frame-inner">
     <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+    <!-- Dark plate sits between intro-photo and gallery-photo.
+         Fades in when entering gallery (covers jnb),
+         fades out when exiting (reveals jnb under overlay). -->
+    <div id="photo-plate"></div>
     <img id="gallery-photo" alt="">
     <div id="intro-overlay"></div>
   </div>
@@ -808,6 +829,9 @@ function enterGallery(collectionKey) {
   // bottom: 8vh keeps the nav's bottom edge 8vh from the viewport bottom
   navEl.style.bottom = 'clamp(24px, 8vh, 60px)';
 
+  // Fade plate in — covers intro portrait as frame expands
+  document.getElementById('photo-plate').classList.add('visible');
+
   // Hide other intro chrome
   const labelEl = document.getElementById('visions-label');
   labelEl.style.opacity = '0';
@@ -903,7 +927,15 @@ function exitGallery() {
   // ── Phase 1: shutter closes — all moving parts start simultaneously ──
   hideGalleryChrome();
   document.getElementById('gallery-tap').classList.remove('active');
+
+  // Gallery photo fades out immediately — dissolves into the plate
+  // which is also fading out, creating a layered dissolve back to jnb
+  photo.classList.remove('loaded');
+
   overlay.classList.remove('lifted');
+
+  // Plate fades out — reveals intro portrait under the closing overlay
+  document.getElementById('photo-plate').classList.remove('visible');
 
   // Logo moves to intro position immediately
   positionLogoIntro();
@@ -945,7 +977,6 @@ function exitGallery() {
     frame.style.transition = '';
     rect.style.cssText = '';
 
-    photo.classList.remove('loaded');
     photo.style.objectPosition = '50% 50%';
     photo.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
@@ -1244,16 +1275,17 @@ function positionIntroNav() {
 }
 
 function positionLogoIntro() {
-  // Position logo centred over the frame in intro state.
-  // Uses frame coordinates so it mirrors the old intro-logo exactly.
-  const logo  = document.getElementById('logo');
-  const frame = document.getElementById('unified-frame');
-  if (!logo || !frame) return;
-  const fr = frame.getBoundingClientRect();
+  // Position logo centred over the intro card.
+  // Reads the spacer (document flow, always at final position) rather than
+  // the frame (position:fixed, may be mid-transition when this is called).
+  const logo   = document.getElementById('logo');
+  const spacer = document.getElementById('intro-spacer');
+  if (!logo || !spacer) return;
+  const sr    = spacer.getBoundingClientRect();
   const logoW = LOGO_SIZES.intro;
   logo.style.width     = logoW + 'px';
-  logo.style.left      = (fr.left + fr.width / 2 - logoW / 2) + 'px';
-  logo.style.top       = (fr.top  + fr.height / 2 - logoW / 2) + 'px';
+  logo.style.left      = (sr.left + sr.width  / 2 - logoW / 2) + 'px';
+  logo.style.top       = (sr.top  + sr.height / 2 - logoW / 2) + 'px';
   logo.style.transform = 'none';
   logo.style.opacity   = '1';
 }
@@ -1275,8 +1307,8 @@ function positionVisionsLabel() {
 function positionIntroAll() {
   positionFrame();
   positionIntroNav();
-  positionLogoIntro();
   positionVisionsLabel();
+  positionLogoIntro();
 }
 
 // Run after fonts are loaded for accurate height measurement,

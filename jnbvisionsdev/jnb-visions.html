@@ -517,7 +517,6 @@
     padding: 0px 40px 0px 8px;
     line-height: 1.4;
     margin-top: 5px;
-      border-radius: 12px;
   }
 
   /* ===== WATERMARKS ===== */
@@ -732,42 +731,68 @@ const LOGO_SIZES = {
   expanded: 160    // centred below the expanded photo
 };
 
-const GALLERY = {
+/* =====================================================
+   SUPABASE CONFIG
+   ===================================================== */
+const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
+
+/* Fallback used if Supabase is unreachable */
+const GALLERY_FALLBACK = {
   portraits: [
-    {
-      src: 'CA5D6891_CA_L_no-logo.jpg',
-      first: 'Freddie',
-      last: 'Andrews',
-      logoY: 50,
-      infoY: 70,
-      zoomAnchor: [60, 14],
-      zoomRatio: 0.65      // h/w ratio for landscape-viewport expanded state
-    },
-    {
-      src: 'CA5D6948.jpg',
-      first: 'Rebecca',
-      last: 'Deboer',
-      logoY: 44,
-      infoY: 68,
-      zoomAnchor: [60, 30],
-      zoomRatio: 0.65
-    },
-    {
-      src: 'CA5D6942_S_CA_.jpg',
-      first: 'Rebecca',
-      last: 'Deboer',
-      logoY: 64,
-      infoY: 44,
-      zoomAnchor: [70, 78],
-      zoomRatio: 0.65
-    }
+    { src: 'CA5D6891_CA_L_no-logo.jpg', first: 'Freddie', last: 'Andrews',
+      logoY: 50, infoY: 70, zoomAnchor: [60, 14], zoomRatio: 0.65 },
+    { src: 'CA5D6948.jpg', first: 'Rebecca', last: 'Deboer',
+      logoY: 44, infoY: 68, zoomAnchor: [60, 30], zoomRatio: 0.65 },
+    { src: 'CA5D6942_S_CA_.jpg', first: 'Rebecca', last: 'Deboer',
+      logoY: 64, infoY: 44, zoomAnchor: [70, 78], zoomRatio: 0.65 }
   ]
 };
+
+/* GALLERY is populated by fetchGallery() on load */
+let GALLERY = GALLERY_FALLBACK;
+
+async function fetchGallery() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/photos?select=*&order=display_order.asc`,
+      { headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+      }}
+    );
+    if (!res.ok) throw new Error('Supabase fetch failed');
+    const rows = await res.json();
+    if (!rows.length) throw new Error('No rows returned');
+
+    // Map Supabase column names to the format the site expects
+    const portraits = rows
+      .filter(r => r.collection === 'portraits')
+      .map(r => ({
+        src:        r.src,
+        first:      r.first_name,
+        last:       r.last_name,
+        logoY:      r.logo_y,
+        infoY:      r.info_y,
+        zoomAnchor: [r.zoom_anchor_x, r.zoom_anchor_y],
+        zoomRatio:  r.zoom_ratio
+      }));
+
+    GALLERY = { portraits };
+    console.log('[jnb] Gallery loaded from Supabase:', portraits.length, 'photos');
+  } catch (err) {
+    console.warn('[jnb] Supabase unavailable, using fallback gallery:', err.message);
+    GALLERY = GALLERY_FALLBACK;
+  }
+}
 
 /* =====================================================
    BOOT
    ===================================================== */
 document.getElementById('logo-img').src = LOGO;
+
+// Fetch gallery data from Supabase on load
+fetchGallery();
 
 /* =====================================================
    STATE

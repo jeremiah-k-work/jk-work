@@ -179,6 +179,7 @@
 
   /* Left column: VISIONS label */
   #visions-label {
+    position: fixed;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     font-family: var(--font-secondary);
@@ -187,10 +188,11 @@
     letter-spacing: 0.35em;
     text-transform: uppercase;
     color: var(--red);
-    flex-shrink: 0;
     line-height: 1;
-    /* Disappear cleanly when viewport is too narrow to fit all three columns */
-    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+    /* left/top set by JS — transitions with opacity for smooth enter/exit */
+    transition: opacity 0.5s ease, left 0.75s var(--ease-expo);
   }
   @media (max-width: 480px) {
     #visions-label { display: none; }
@@ -204,27 +206,32 @@
      This keeps overflow:hidden clipping intact when position:fixed is applied,
      because no child is promoted to its own compositor layer.
   */
-  /* unified-frame: handles size and position only.
-     No overflow, no border-radius — those live on #frame-inner
-     which never changes its positioning model, so Safari never
-     re-composites the clip boundary. */
-  #unified-frame {
-    position: relative;
+  /* ===== INTRO SPACER =====
+     Invisible placeholder in intro-scene that reserves the space
+     the frame visually occupies, keeping label and nav correctly flanking it. */
+  #intro-spacer {
     width: min(var(--card-w), 55vw);
     height: calc(min(var(--card-w), 55vw) * 1.32);
     flex-shrink: 1;
-    transition:
-      width  0.75s var(--ease-expo),
-      height 0.75s var(--ease-expo);
+    pointer-events: none;
   }
-  #unified-frame.detached {
+
+  /* unified-frame: handles size and position only.
+     No overflow, no border-radius — those live on #frame-inner.
+     z-index only applied when detached (gallery state) so gallery-tap
+     sits above gallery chrome elements that would otherwise intercept clicks. */
+  #unified-frame {
+    /* Always fixed — body child, never inherits pointer-events from intro-scene.
+       In intro: JS positions it over the spacer.
+       In gallery (detached): JS centres it at 50%/50%. */
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    z-index: 15;
     transition:
-      width  0.75s var(--ease-expo),
-      height 0.75s var(--ease-expo);
+      width     0.75s var(--ease-expo),
+      height    0.75s var(--ease-expo),
+      top       0.75s var(--ease-expo),
+      left      0.75s var(--ease-expo),
+      transform 0.75s var(--ease-expo);
   }
 
   /* frame-inner: always position:relative, always the same positioning model.
@@ -249,7 +256,9 @@
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
-    background: #1a0000;
+    /* No opaque background — prevents WebKit compositing bug where a solid
+       background on a child of overflow:hidden + border-radius bleeds outside
+       the rounded clip. The red overlay covers any gap during loading. */
   }
 
   #gallery-photo {
@@ -274,15 +283,7 @@
   }
   #intro-overlay.lifted { opacity: 0; }
 
-  #intro-logo {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 58%;
-    pointer-events: none;
-    transition: opacity 0.35s ease;
-  }
-  #intro-logo.hidden-logo { opacity: 0; }
+
 
   #gallery-tap {
     position: absolute; inset: 0;
@@ -322,12 +323,18 @@
 
   /* Gallery state: horizontal centering only.
      top/bottom are set by JS as inline styles so we can use bottom
-     directly (no height measurement needed) without CSS conflicts. */
+     directly (no height measurement needed) without CSS conflicts.
+     pointer-events:none on container prevents overflow:visible hit area
+     from intercepting clicks on the photo — buttons re-enable themselves. */
   #nav-unified.gallery {
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     align-items: center;
+    pointer-events: none;
+  }
+  #nav-unified.gallery .nav-word {
+    pointer-events: all;
   }
 
   /* Base word */
@@ -440,16 +447,24 @@
   }
   #outline-rect.rect-visible { opacity: 1; }
 
-  /* ===== LOGO (gallery mode) ===== */
-  #gallery-logo {
+  /* ===== UNIFIED LOGO =====
+     Single fixed element. JS positions it in all states:
+     intro: centred over the frame card
+     gallery: offset to the left edge of the gallery photo
+     expanded: centred below the photo
+     Transitions continuously — no swap, no opacity toggle. */
+  #logo {
     position: fixed;
-    opacity: 0;
     pointer-events: none;
-    transition: opacity 0.4s ease, left 0.7s var(--ease-expo), top 0.7s var(--ease-expo),
-                transform 0.7s var(--ease-expo), width 0.7s var(--ease-expo);
-    z-index: 10;
+    z-index: 17;
+    transition:
+      left   0.75s var(--ease-expo),
+      top    0.75s var(--ease-expo),
+      width  0.75s var(--ease-expo),
+      transform 0.75s var(--ease-expo),
+      opacity 0.5s ease;
   }
-  #gallery-logo img { width: 100%; display: block; }
+  #logo img { width: 100%; display: block; }
 
   /* ===== INFO PANEL ===== */
   #info-panel {
@@ -459,7 +474,7 @@
     pointer-events: none;
     transition: right 0.7s var(--ease-expo), opacity 0.4s ease,
                 top 0.7s var(--ease-expo);
-    z-index: 10;
+    z-index: 16;
     text-align: right;
   }
   #info-panel.visible { opacity: 1; }
@@ -594,35 +609,35 @@
   </g>
 </svg>
 
-<!-- INTRO SCENE -->
-<div id="intro-scene">
-  <div id="visions-label">Visions</div>
-
-  <!-- UNIFIED FRAME
-       Intro: position:relative flex child, card size, overlay on.
-       Morph: detaches to position:fixed, expands to gallery size.
-       Children have NO z-index — stacking is pure document order,
-       which keeps overflow:hidden clipping intact at all times. -->
-  <div id="unified-frame">
-    <!-- #frame-inner carries overflow:hidden and border-radius.
-         It never changes position so Safari never re-composites the clip. -->
-    <div id="frame-inner">
-      <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
-      <img id="gallery-photo" alt="">
-      <div id="intro-overlay"></div>
-      <img id="intro-logo" src="jnb-2026_sq.svg" alt="jnb visions">
-      <div id="gallery-tap" onclick="toggleExpanded()"></div>
-    </div>
+<!-- UNIFIED FRAME — direct child of body, never inside intro-scene.
+     Isolated from any pointer-events:none on parent elements.
+     In intro: positioned by JS to overlap the spacer in intro-scene.
+     In gallery: centred via translate(-50%,-50%). -->
+<div id="unified-frame">
+  <div id="frame-inner">
+    <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+    <img id="gallery-photo" alt="">
+    <div id="intro-overlay"></div>
   </div>
-
+  <div id="gallery-tap" onclick="toggleExpanded()"></div>
 </div>
+
+<!-- INTRO SCENE — spacer only; label and nav are fixed elements -->
+<div id="intro-scene">
+  <!-- Spacer holds the space the frame visually occupies,
+       keeping intro-scene the right width for JS measurements -->
+  <div id="intro-spacer"></div>
+</div>
+
+<!-- VISIONS LABEL — fixed, positioned by JS left of the frame -->
+<div id="visions-label">Visions</div>
 
 <!-- OUTLINE RECT — fixed, positioned by JS to wrap unified-frame -->
 <div id="outline-rect"></div>
 
-<!-- GALLERY LOGO -->
-<div id="gallery-logo">
-  <img id="gallery-logo-img" alt="jnb visions">
+<!-- UNIFIED LOGO — single element, repositioned by JS in all states -->
+<div id="logo">
+  <img id="logo-img" alt="jnb visions">
 </div>
 
 <!-- INFO PANEL -->
@@ -688,6 +703,14 @@
 
 const LOGO = 'jnb-2026_sq.svg';
 
+/* Logo width in each state (px).
+   Change these to resize the logo across all positions at once. */
+const LOGO_SIZES = {
+  intro:    120,   // centred over the intro card
+  gallery:  120,   // overlapping left edge of gallery photo
+  expanded: 160    // centred below the expanded photo
+};
+
 const GALLERY = {
   portraits: [
     {
@@ -696,7 +719,8 @@ const GALLERY = {
       last: 'Andrews',
       logoY: 50,
       infoY: 70,
-      zoomAnchor: [60, 14]
+      zoomAnchor: [60, 14],
+      zoomRatio: 0.65      // h/w ratio for landscape-viewport expanded state
     },
     {
       src: 'CA5D6948.jpg',
@@ -704,7 +728,8 @@ const GALLERY = {
       last: 'Deboer',
       logoY: 44,
       infoY: 68,
-      zoomAnchor: [60, 30]
+      zoomAnchor: [60, 30],
+      zoomRatio: 0.65
     },
     {
       src: 'CA5D6942_S_CA_.jpg',
@@ -712,7 +737,8 @@ const GALLERY = {
       last: 'Deboer',
       logoY: 64,
       infoY: 44,
-      zoomAnchor: [70, 78]
+      zoomAnchor: [70, 78],
+      zoomRatio: 0.65
     }
   ]
 };
@@ -720,7 +746,7 @@ const GALLERY = {
 /* =====================================================
    BOOT
    ===================================================== */
-document.getElementById('gallery-logo-img').src = LOGO;
+document.getElementById('logo-img').src = LOGO;
 
 /* =====================================================
    STATE
@@ -758,21 +784,17 @@ function enterGallery(collectionKey) {
 
   const frame   = document.getElementById('unified-frame');
   const overlay = document.getElementById('intro-overlay');
-  const logo    = document.getElementById('intro-logo');
+  const logoEl  = document.getElementById('logo');
   const rect    = document.getElementById('outline-rect');
 
-  // ── Phase 1: lock pixel position, detach from flex ──
-  const fr = frame.getBoundingClientRect();
-  // Apply the current rendered position as fixed coords before switching
-  frame.style.position = 'fixed';
-  frame.style.top      = fr.top  + 'px';
-  frame.style.left     = fr.left + 'px';
-  frame.style.width    = fr.width  + 'px';
-  frame.style.height   = fr.height + 'px';
-  frame.style.transform = 'none';
-  // Adding .detached switches position:fixed via CSS but we've already
-  // set the coords inline so there's no jump
-  frame.classList.add('detached');
+  // ── Phase 1: frame is already fixed — just prepare for animation ──
+  // Disable transition briefly so the starting position doesn't animate
+  frame.style.transition = 'none';
+  // positionFrame() already set top/left to match spacer — force a reflow
+  void frame.offsetHeight;
+  // Re-enable transition for the expansion animation
+  frame.style.transition = '';
+  frame.classList.add('detached'); // triggers frame-inner border-radius via CSS
 
   // Clear inline positional styles, add gallery class, then set bottom inline.
   // Using bottom means we never need to know the nav's height.
@@ -787,7 +809,9 @@ function enterGallery(collectionKey) {
   navEl.style.bottom = 'clamp(24px, 8vh, 60px)';
 
   // Hide other intro chrome
-  document.getElementById('visions-label').style.opacity   = '0';
+  const labelEl = document.getElementById('visions-label');
+  labelEl.style.opacity = '0';
+  labelEl.style.left = (parseFloat(labelEl.style.left || '0') - 20) + 'px';
   document.getElementById('intro-scene').style.pointerEvents = 'none';
   document.getElementById('red-line').classList.add('hidden');
 
@@ -795,13 +819,14 @@ function enterGallery(collectionKey) {
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const gw = Math.min(480, vw * 0.82);
-    const gh = gw * 1.28;
+    const { w: gw, h: gh } = galleryFrameSize();
     const gap = vh * 0.04;
 
     // Animate to centred gallery size
     frame.style.top    = '50%';
     frame.style.left   = '50%';
+    // Logo and info move simultaneously with the frame
+    positionLogoAndInfo(currentCollection[0], false);
     frame.style.transform = 'translate(-50%, -50%)';
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
@@ -825,7 +850,6 @@ function enterGallery(collectionKey) {
 
   // ── Phase 3: lift overlay, show chrome ──
   setTimeout(() => {
-    logo.classList.add('hidden-logo');
     overlay.classList.add('lifted');
     showGalleryChrome();
     loadSlide(0, false);
@@ -833,8 +857,9 @@ function enterGallery(collectionKey) {
 
   // ── Phase 4: enable zoom ──
   setTimeout(() => {
-    document.getElementById('gallery-tap').classList.add('active');
-    state = 'gallery';
+    const tap = document.getElementById('gallery-tap');
+    tap.classList.add('active');
+state = 'gallery';
   }, 1450);
 }
 
@@ -844,7 +869,6 @@ function showGalleryChrome() {
   document.getElementById('nav-prev').classList.add('visible');
   document.getElementById('nav-next').classList.add('visible');
   document.getElementById('kbd-hint').classList.add('visible');
-  document.getElementById('gallery-logo').style.opacity = '1';
   document.getElementById('info-panel').style.pointerEvents = 'none';
 }
 
@@ -854,7 +878,6 @@ function hideGalleryChrome() {
   document.getElementById('nav-prev').classList.remove('visible');
   document.getElementById('nav-next').classList.remove('visible');
   document.getElementById('kbd-hint').classList.remove('visible');
-  document.getElementById('gallery-logo').style.opacity = '0';
   document.getElementById('info-panel').style.opacity = '0';
   document.getElementById('info-panel').style.right = '-300px';
   document.getElementById('info-panel').classList.remove('visible');
@@ -873,36 +896,40 @@ function exitGallery() {
 
   const frame   = document.getElementById('unified-frame');
   const overlay = document.getElementById('intro-overlay');
-  const logo    = document.getElementById('intro-logo');
+  const logoEl  = document.getElementById('logo');
   const rect    = document.getElementById('outline-rect');
   const photo   = document.getElementById('gallery-photo');
 
-  // ── Phase 1: shutter closes, nav reverts simultaneously ──
+  // ── Phase 1: shutter closes — all moving parts start simultaneously ──
   hideGalleryChrome();
   document.getElementById('gallery-tap').classList.remove('active');
-  // Snap nav back to intro position instantly (no transition) then re-enable
+  overlay.classList.remove('lifted');
+
+  // Logo moves to intro position immediately
+  positionLogoIntro();
+
+  // Nav snaps back instantly (no transition), then re-enables
   const navElExit = document.getElementById('nav-unified');
   navElExit.classList.add('no-transition');
   navElExit.classList.remove('gallery');
   navElExit.style.bottom = 'auto';
-  positionIntroNav(); // writes inline top/left immediately
+  positionIntroNav();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       navElExit.classList.remove('no-transition');
     });
   });
-  overlay.classList.remove('lifted');
-  logo.classList.remove('hidden-logo');
 
-  // ── Phase 2: contract frame back to card size ──
+  // ── Phase 2: contract frame, revert border-radius simultaneously ──
   setTimeout(() => {
     const vw = window.innerWidth;
     const cardW = Math.min(Math.min(300, vw * 0.72), vw * 0.55);
     const cardH = cardW * 1.32;
     frame.style.width  = cardW + 'px';
     frame.style.height = cardH + 'px';
-    // border-radius reverts when .detached class is removed in phase 3
-    // CSS: #frame-inner { border-radius: 22px } (default)
+    // Remove .detached now so border-radius transitions back to 22px
+    // at the same time as the frame contracts — not delayed to Phase 3
+    frame.classList.remove('detached');
     rect.classList.remove('rect-visible');
     document.getElementById('red-line').classList.remove('hidden');
   }, 300);
@@ -910,25 +937,23 @@ function exitGallery() {
   // ── Phase 3: reattach to flex layout ──
   setTimeout(() => {
     // Remove all inline positioning before reattaching
-    frame.style.position  = '';
-    frame.style.top       = '';
-    frame.style.left      = '';
-    frame.style.transform = '';
-    frame.style.width     = '';
-    frame.style.height    = '';
-    frame.classList.remove('detached');
-    // Removing .detached also reverts #frame-inner border-radius via CSS
+    // Snap frame back to spacer position (no transition)
+    // .detached already removed in Phase 2; just snap position
+    frame.style.transition = 'none';
+    positionFrame();
+    void frame.offsetHeight;
+    frame.style.transition = '';
     rect.style.cssText = '';
 
     photo.classList.remove('loaded');
     photo.style.objectPosition = '50% 50%';
     photo.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
-    document.getElementById('visions-label').style.opacity  = '1';
+    positionVisionsLabel(); // slides label back and restores opacity
     document.getElementById('intro-scene').style.pointerEvents = 'all';
 
-    // Re-anchor nav to frame right edge now that frame is back in flex layout
-    positionIntroNav();
+    // Re-anchor frame position after snap
+    positionFrame();
 
     state = 'intro';
   }, 1100);
@@ -1037,11 +1062,11 @@ function loadSlide(index, animate) {
    LOGO + INFO POSITIONING
    ===================================================== */
 function positionLogoAndInfo(slide, expanded) {
-  const logoEl  = document.getElementById('gallery-logo');
+  const logoEl  = document.getElementById('logo');
   const infoEl  = document.getElementById('info-panel');
   const wrapRect = document.getElementById('unified-frame').getBoundingClientRect();
 
-  const logoW = expanded ? 160 : 120;
+  const logoW = expanded ? LOGO_SIZES.expanded : LOGO_SIZES.gallery;
   const logoY_pct = (slide.logoY ?? 80) / 100;
 
   if (!expanded) {
@@ -1074,6 +1099,40 @@ function positionLogoAndInfo(slide, expanded) {
 /* =====================================================
    TOGGLE EXPANDED
    ===================================================== */
+/* =====================================================
+   FRAME SIZE HELPERS
+   ===================================================== */
+
+// Gallery (normal) frame dimensions
+function galleryFrameSize() {
+  const vw = window.innerWidth;
+  const w = Math.min(480, vw * 0.82);
+  return { w, h: w * 1.28 };
+}
+
+// Expanded frame dimensions — viewport-responsive
+// Landscape viewport: aspect ratio flip using slide.zoomRatio
+// Portrait viewport:  slight grow, portrait ratio preserved
+function expandedFrameSize(slide) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const isLandscape = vw > vh;
+
+  if (isLandscape) {
+    // Aspect ratio flip — width-dominant, ratio from config
+    const ratio = slide.zoomRatio ?? 0.65;
+    const w = Math.min(800, vw * 0.88);
+    return { w, h: w * ratio };
+  } else {
+    // Focal crop — slight grow, keep portrait ratio
+    const w = Math.min(540, vw * 0.88);
+    return { w, h: w * 1.28 };
+  }
+}
+
+/* =====================================================
+   TOGGLE EXPANDED
+   ===================================================== */
 function toggleExpanded() {
   if (state === 'morphing') return;
   const frame = document.getElementById('unified-frame');
@@ -1082,33 +1141,31 @@ function toggleExpanded() {
   const slide = currentCollection[currentIndex];
   isExpanded  = !isExpanded;
 
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
+  const vw  = window.innerWidth;
+  const vh  = window.innerHeight;
   const gap = vh * 0.04;
 
   if (isExpanded) {
     state = 'expanded';
-    const ew = Math.min(800, vw * 0.92);
-    const eh = ew * 0.78;
+    const { w: ew, h: eh } = expandedFrameSize(slide);
     frame.style.width  = ew + 'px';
     frame.style.height = eh + 'px';
-    rect.style.left   = ((vw - ew) / 2 - gap) + 'px';
-    rect.style.top    = ((vh - eh) / 2 - gap) + 'px';
-    rect.style.width  = (ew + gap * 2) + 'px';
-    rect.style.height = (eh + gap * 2) + 'px';
+    rect.style.left    = ((vw - ew) / 2 - gap) + 'px';
+    rect.style.top     = ((vh - eh) / 2 - gap) + 'px';
+    rect.style.width   = (ew + gap * 2) + 'px';
+    rect.style.height  = (eh + gap * 2) + 'px';
     const [ax, ay] = slide.zoomAnchor ?? [50, 50];
     photo.style.objectPosition = `${ax}% ${ay}%`;
     setTimeout(() => positionLogoAndInfo(slide, true), 780);
   } else {
     state = 'gallery';
-    const gw = Math.min(480, vw * 0.82);
-    const gh = gw * 1.28;
+    const { w: gw, h: gh } = galleryFrameSize();
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
-    rect.style.left   = ((vw - gw) / 2 - gap) + 'px';
-    rect.style.top    = ((vh - gh) / 2 - gap) + 'px';
-    rect.style.width  = (gw + gap * 2) + 'px';
-    rect.style.height = (gh + gap * 2) + 'px';
+    rect.style.left    = ((vw - gw) / 2 - gap) + 'px';
+    rect.style.top     = ((vh - gh) / 2 - gap) + 'px';
+    rect.style.width   = (gw + gap * 2) + 'px';
+    rect.style.height  = (gh + gap * 2) + 'px';
     photo.style.objectPosition = '50% 50%';
     setTimeout(() => positionLogoAndInfo(slide, false), 780);
   }
@@ -1126,12 +1183,12 @@ function navigate(dir) {
     const frame = document.getElementById('unified-frame');
     const rect  = document.getElementById('outline-rect');
     const vw = window.innerWidth, vh = window.innerHeight;
-    const gw = Math.min(480, vw * 0.82), gh = gw * 1.28;
+    const { w: gw, h: gh } = galleryFrameSize();
     const gap = vh * 0.04;
     frame.style.width  = gw + 'px';
     frame.style.height = gh + 'px';
-    rect.style.left   = ((vw - gw) / 2 - gap) + 'px';
-    rect.style.top    = ((vh - gh) / 2 - gap) + 'px';
+    rect.style.left    = ((vw - gw) / 2 - gap) + 'px';
+    rect.style.top     = ((vh - gh) / 2 - gap) + 'px';
     rect.style.width  = (gw + gap * 2) + 'px';
     rect.style.height = (gh + gap * 2) + 'px';
     document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
@@ -1161,30 +1218,72 @@ document.addEventListener('keydown', e => {
    sits flush with it, and computes the Gallery rise transform.
    Called on load and on resize.
    ===================================================== */
+function positionFrame() {
+  const frame  = document.getElementById('unified-frame');
+  const spacer = document.getElementById('intro-spacer');
+  if (!frame || !spacer) return;
+  const sr = spacer.getBoundingClientRect();
+  frame.style.top       = sr.top  + 'px';
+  frame.style.left      = sr.left + 'px';
+  frame.style.width     = sr.width  + 'px';
+  frame.style.height    = sr.height + 'px';
+  frame.style.transform = 'none';
+}
+
 function positionIntroNav() {
-  const nav   = document.getElementById('nav-unified');
-  const frame = document.getElementById('unified-frame');
-  if (!nav || !frame) return;
-
-  const fr  = frame.getBoundingClientRect();
-  const vw  = window.innerWidth;
-  const vh  = window.innerHeight;
-  const gap = 28; // px gap between frame right edge and nav left edge
-
-  // Intro position: left edge of nav = right edge of frame + gap
-  nav.style.left      = (fr.right + gap) + 'px';
+  const nav    = document.getElementById('nav-unified');
+  const spacer = document.getElementById('intro-spacer');
+  if (!nav || !spacer) return;
+  const sr  = spacer.getBoundingClientRect();
+  const gap = 28;
+  nav.style.left      = (sr.right + gap) + 'px';
   nav.style.top       = '50%';
   nav.style.right     = 'auto';
   nav.style.bottom    = 'auto';
   nav.style.transform = 'translateY(-50%)';
+}
 
+function positionLogoIntro() {
+  // Position logo centred over the frame in intro state.
+  // Uses frame coordinates so it mirrors the old intro-logo exactly.
+  const logo  = document.getElementById('logo');
+  const frame = document.getElementById('unified-frame');
+  if (!logo || !frame) return;
+  const fr = frame.getBoundingClientRect();
+  const logoW = LOGO_SIZES.intro;
+  logo.style.width     = logoW + 'px';
+  logo.style.left      = (fr.left + fr.width / 2 - logoW / 2) + 'px';
+  logo.style.top       = (fr.top  + fr.height / 2 - logoW / 2) + 'px';
+  logo.style.transform = 'none';
+  logo.style.opacity   = '1';
+}
+
+function positionVisionsLabel() {
+  const label  = document.getElementById('visions-label');
+  const spacer = document.getElementById('intro-spacer');
+  if (!label || !spacer) return;
+  const sr  = spacer.getBoundingClientRect();
+  const vh  = window.innerHeight;
+  const gap = 20; // px gap between label right edge and spacer left edge
+  // Label is vertical text — its rendered width is its font size, height is its content
+  const lw = label.offsetWidth;
+  label.style.left = (sr.left - gap - lw) + 'px';
+  label.style.top  = (vh / 2 - label.offsetHeight / 2) + 'px';
+  label.style.opacity = '1';
+}
+
+function positionIntroAll() {
+  positionFrame();
+  positionIntroNav();
+  positionLogoIntro();
+  positionVisionsLabel();
 }
 
 // Run after fonts are loaded for accurate height measurement,
 // then again immediately as a rough first pass
-positionIntroNav();
+positionIntroAll();
 document.fonts.ready.then(() => {
-  positionIntroNav();
+  positionIntroAll();
 });
 
 /* =====================================================
@@ -1194,16 +1293,18 @@ let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    if (state === 'intro') positionIntroNav();
+    if (state === 'intro') positionIntroAll();
     if (state === 'gallery' || state === 'expanded') {
       const vw = window.innerWidth, vh = window.innerHeight;
       const gap = vh * 0.04;
       const frame = document.getElementById('unified-frame');
       let fw, fh;
       if (isExpanded) {
-        fw = Math.min(800, vw * 0.92); fh = fw * 0.78;
+        const es = expandedFrameSize(currentCollection[currentIndex]);
+        fw = es.w; fh = es.h;
       } else {
-        fw = Math.min(480, vw * 0.82); fh = fw * 1.28;
+        const gs = galleryFrameSize();
+        fw = gs.w; fh = gs.h;
       }
       frame.style.width  = fw + 'px';
       frame.style.height = fh + 'px';

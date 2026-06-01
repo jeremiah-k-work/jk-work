@@ -721,6 +721,14 @@
                  Omit (or set to [50,50]) to zoom into the center.
 */
 
+/* =====================================================
+   PATHS — update here if folder structure changes
+   ===================================================== */
+const PATHS = {
+  images: 'images/',   // trailing slash required
+  logo:   'jnb-2026_sq.svg'
+};
+
 const LOGO = PATHS.logo;
 
 /* Logo width in each state (px).
@@ -737,13 +745,6 @@ const LOGO_SIZES = {
 const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
 
-/* =====================================================
-   PATHS — update here if folder structure changes
-   ===================================================== */
-const PATHS = {
-  images: 'images/',   // trailing slash required
-  logo:   'jnb-2026_sq.svg'
-};
 
 /* Fallback used if Supabase is unreachable */
 const GALLERY_FALLBACK = {

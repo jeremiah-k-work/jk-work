@@ -814,7 +814,10 @@ function switchTab(name) {
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'collections') renderCollectionsList();
+  if (name === 'collections') {
+    // Re-render with latest data each time the tab is opened
+    renderCollectionsList();
+  }
 }
 
 /* =====================================================
@@ -850,7 +853,9 @@ let photoCreditsMap = {};
    ===================================================== */
 async function init() {
   await Promise.all([ loadCollections(), loadPeople() ]);
-  loadPhotos();
+  await loadPhotos();
+  // Now all data is ready — render collections list if that tab is active
+  renderCollectionsList();
 }
 
 /* =====================================================
@@ -914,6 +919,7 @@ async function loadPhotos(attempt = 1) {
 
     renderPhotoList();
     loadUnregistered();
+    renderCollectionsList();
   } catch (err) {
     if (attempt < 3) { setTimeout(() => loadPhotos(attempt + 1), 2000); return; }
     list.innerHTML = `

@@ -13,10 +13,12 @@
   :root {
     --bg:        #0a0a0a;
     --surface:   #111111;
+    --surface2:  #181818;
     --border:    rgba(255,255,255,0.08);
     --border-hi: rgba(255,255,255,0.18);
     --red:       #c8001e;
     --cyan:      #00c8a0;
+    --yellow:    #c8a000;
     --white:     #ffffff;
     --muted:     rgba(255,255,255,0.35);
     --font-ui:   'Unbounded', sans-serif;
@@ -42,428 +44,367 @@
     transition: opacity 0.4s ease;
   }
   #login-screen.hidden { opacity: 0; pointer-events: none; }
-
   .login-logo {
     font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 300;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
   }
   .login-title {
     font-family: var(--font-ui);
-    font-size: 28px;
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    color: var(--white);
+    font-size: 28px; font-weight: 900;
+    letter-spacing: -0.02em; color: var(--white);
   }
-
-  .login-form {
-    display: flex; flex-direction: column; gap: 12px;
-    width: 300px;
-  }
+  .login-form { display: flex; flex-direction: column; gap: 12px; width: 300px; }
   .login-form input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--white);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    outline: none;
-    transition: border-color 0.15s;
-    letter-spacing: 0.05em;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 13px; padding: 12px 16px; border-radius: var(--radius);
+    outline: none; transition: border-color 0.15s; letter-spacing: 0.05em;
   }
   .login-form input:focus { border-color: var(--border-hi); }
   .login-form input.error { border-color: var(--red); }
+  .login-error { font-size: 11px; color: var(--red); text-align: center; letter-spacing: 0.05em; min-height: 16px; }
 
+  /* ── BUTTONS ── */
   .btn-primary {
-    background: var(--white);
-    color: var(--bg);
-    border: none;
-    font-family: var(--font-ui);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 13px 24px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: opacity 0.15s;
+    background: var(--white); color: var(--bg); border: none;
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 13px 24px; border-radius: var(--radius);
+    cursor: pointer; transition: opacity 0.15s;
   }
   .btn-primary:hover { opacity: 0.85; }
 
-  .login-error {
-    font-size: 11px;
-    color: var(--red);
-    text-align: center;
-    letter-spacing: 0.05em;
-    min-height: 16px;
+  .btn-add {
+    background: var(--red); border: none; color: var(--white);
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    transition: opacity 0.15s;
   }
+  .btn-add:hover { opacity: 0.85; }
 
-  /* ── ADMIN SHELL ── */
-  #admin-shell {
-    display: none;
-    min-height: 100vh;
+  .btn-save {
+    background: var(--cyan); color: var(--bg); border: none;
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 10px 20px; border-radius: 6px; cursor: pointer;
+    margin-top: 16px; transition: opacity 0.15s;
+    display: flex; align-items: center; gap: 8px;
   }
-  #admin-shell.visible { display: block; }
+  .btn-save:hover { opacity: 0.85; }
+  .btn-save.saving { opacity: 0.6; pointer-events: none; }
 
-  .admin-header {
-    position: sticky; top: 0;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 56px;
-    display: flex; align-items: center; justify-content: space-between;
-    z-index: 50;
+  .btn-icon {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; padding: 5px 10px;
+    border-radius: 5px; cursor: pointer; font-family: var(--font-mono);
+    letter-spacing: 0.05em; transition: color 0.15s, border-color 0.15s;
   }
-  .admin-header-left {
-    display: flex; align-items: center; gap: 16px;
-  }
-  .admin-wordmark {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-  .admin-badge {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 3px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
+  .btn-icon:hover { color: var(--white); border-color: var(--border-hi); }
+  .btn-icon:disabled { opacity: 0.3; pointer-events: none; }
+  .btn-icon.danger:hover { color: var(--red); border-color: var(--red); }
+
   .btn-logout {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
   }
   .btn-logout:hover { color: var(--white); border-color: var(--border-hi); }
 
-  /* ── MAIN CONTENT ── */
-  .admin-main {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 40px 32px 80px;
+  /* ── ADMIN SHELL ── */
+  #admin-shell { display: none; min-height: 100vh; }
+  #admin-shell.visible { display: block; }
+
+  .admin-header {
+    position: sticky; top: 0;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 0 32px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 50;
   }
+  .admin-header-left { display: flex; align-items: center; gap: 16px; }
+  .admin-wordmark {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 900;
+    letter-spacing: 0.15em; text-transform: uppercase; color: var(--white);
+  }
+  .admin-badge {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em;
+    color: var(--muted); background: var(--surface);
+    border: 1px solid var(--border); padding: 3px 8px; border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── TABS ── */
+  .admin-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .tab-btn {
+    background: transparent; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); font-family: var(--font-ui); font-size: 9px;
+    font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 14px 20px; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--white); }
+  .tab-btn.active { color: var(--white); border-bottom-color: var(--white); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── MAIN CONTENT ── */
+  .admin-main { max-width: 960px; margin: 0 auto; padding: 40px 32px 80px; }
 
   .section-header {
     display: flex; align-items: baseline; justify-content: space-between;
     margin-bottom: 20px;
   }
   .section-title {
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--muted);
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
   }
-
-  .btn-add {
-    background: var(--red);
-    border: none;
-    color: var(--white);
-    font-family: var(--font-ui);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-add:hover { opacity: 0.85; }
 
   /* ── PHOTO CARDS ── */
-  #photo-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
+  #photo-list { display: flex; flex-direction: column; gap: 2px; }
 
   .photo-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
     transition: border-color 0.15s;
   }
   .photo-card:hover { border-color: var(--border-hi); }
+  .photo-card.unpublished { opacity: 0.55; }
 
   .photo-card-header {
     display: flex; align-items: center; gap: 16px;
-    padding: 14px 18px;
-    cursor: pointer;
-    user-select: none;
+    padding: 14px 18px; cursor: pointer; user-select: none;
   }
-
-  .drag-handle {
-    color: var(--muted);
-    font-size: 14px;
-    cursor: grab;
-    flex-shrink: 0;
-    opacity: 0.4;
-  }
+  .drag-handle { color: var(--muted); font-size: 14px; cursor: grab; flex-shrink: 0; opacity: 0.4; }
 
   .photo-thumb {
-    width: 44px; height: 44px;
-    object-fit: cover;
-    border-radius: 6px;
-    background: #1a1a1a;
-    flex-shrink: 0;
+    width: 44px; height: 44px; object-fit: cover;
+    border-radius: 6px; background: #1a1a1a; flex-shrink: 0;
   }
-
-  .photo-card-info {
-    flex: 1; min-width: 0;
-  }
+  .photo-card-info { flex: 1; min-width: 0; }
   .photo-card-name {
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--white);
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.05em; color: var(--white);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .photo-card-meta {
+    display: flex; gap: 10px; align-items: center; margin-top: 3px;
   }
   .photo-card-src {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin-top: 3px;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.04em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-
-  .photo-card-actions {
-    display: flex; gap: 8px; align-items: center;
-    flex-shrink: 0;
+  .badge-published {
+    font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 3px; flex-shrink: 0;
+    font-family: var(--font-ui); font-weight: 700;
   }
+  .badge-published.yes { background: rgba(0,200,160,0.15); color: var(--cyan); }
+  .badge-published.no  { background: rgba(200,0,30,0.15);  color: var(--red);  }
 
-  .btn-icon {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 11px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: var(--font-mono);
-    letter-spacing: 0.05em;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .btn-icon:hover { color: var(--white); border-color: var(--border-hi); }
-  .btn-icon.danger:hover { color: var(--red); border-color: var(--red); }
-
+  .photo-card-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
   .expand-arrow {
-    color: var(--muted);
-    font-size: 10px;
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
+    color: var(--muted); font-size: 10px; transition: transform 0.2s ease; flex-shrink: 0;
   }
   .photo-card.open .expand-arrow { transform: rotate(180deg); }
 
   /* ── EXPANDED EDITOR ── */
-  .photo-card-editor {
-    display: none;
-    padding: 0 18px 18px;
-    border-top: 1px solid var(--border);
-  }
+  .photo-card-editor { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
   .photo-card.open .photo-card-editor { display: block; }
 
-  .editor-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .editor-grid.single { grid-template-columns: 1fr; }
+  .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
   .editor-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
 
-  .field {
-    display: flex; flex-direction: column; gap: 6px;
-  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
   .field label {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-weight: 700;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); font-family: var(--font-ui); font-weight: 700;
   }
   .field input[type="text"],
   .field input[type="number"] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--white);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 9px 12px;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.15s;
-    letter-spacing: 0.03em;
-    width: 100%;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 12px; padding: 9px 12px; border-radius: 6px;
+    outline: none; transition: border-color 0.15s; letter-spacing: 0.03em; width: 100%;
   }
   .field input:focus { border-color: var(--border-hi); }
+  .field input[type="range"] {
+    -webkit-appearance: none; width: 100%; height: 2px;
+    background: var(--border-hi); border-radius: 1px; outline: none; cursor: pointer; margin-top: 6px;
+  }
+  .field input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--white); cursor: pointer;
+  }
+  .slider-val { font-size: 10px; color: var(--muted); font-family: var(--font-mono); float: right; }
 
-  /* Zoom anchor picker */
+  /* Published toggle */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+  }
+  .toggle-label {
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+  }
+  .toggle {
+    position: relative; width: 36px; height: 20px; cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0; border-radius: 10px;
+    background: var(--border-hi); transition: background 0.2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--cyan); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--white); transition: transform 0.2s;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+
+  /* Collections checkboxes */
+  .collections-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .collection-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer;
+    transition: border-color 0.15s;
+    font-size: 10px; font-family: var(--font-ui);
+    font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); user-select: none;
+  }
+  .collection-chip:hover { border-color: var(--border-hi); color: var(--white); }
+  .collection-chip.active { border-color: var(--cyan); color: var(--cyan); }
+  .collection-chip input { display: none; }
+
+  /* Credits */
+  .credits-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .credit-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px;
+  }
+  .credit-name { font-size: 11px; font-family: var(--font-ui); font-weight: 700; flex: 1; }
+  .credit-role {
+    font-size: 10px; color: var(--muted);
+    font-family: var(--font-mono); letter-spacing: 0.05em;
+  }
+
+  /* People search */
+  .people-search-wrap { position: relative; }
+  .people-search-wrap input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 12px; padding: 9px 12px; border-radius: 6px;
+    outline: none; width: 100%; transition: border-color 0.15s;
+  }
+  .people-search-wrap input:focus { border-color: var(--border-hi); }
+  .people-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface2); border: 1px solid var(--border-hi);
+    border-radius: 6px; z-index: 30; overflow: hidden;
+    display: none;
+  }
+  .people-dropdown.open { display: block; }
+  .people-option {
+    padding: 10px 12px; cursor: pointer; font-size: 11px;
+    font-family: var(--font-ui); font-weight: 700;
+    letter-spacing: 0.05em; transition: background 0.1s;
+  }
+  .people-option:hover { background: var(--border); }
+  .people-option.create-new { color: var(--cyan); }
+
+  /* Zoom anchor */
   .zoom-anchor-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3/4;
-    border-radius: 6px;
-    overflow: hidden;
-    cursor: crosshair;
-    background: #1a1a1a;
-    border: 1px solid var(--border);
+    position: relative; width: 100%; aspect-ratio: 3/4;
+    border-radius: 6px; overflow: hidden; cursor: crosshair;
+    background: #1a1a1a; border: 1px solid var(--border);
   }
-  .zoom-anchor-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    pointer-events: none;
-    image-rendering: pixelated;
-  }
+  .zoom-anchor-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; image-rendering: pixelated; }
   .zoom-anchor-dot {
-    position: absolute;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--cyan);
-    border: 2px solid var(--white);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--cyan); border: 2px solid var(--white);
+    transform: translate(-50%, -50%); pointer-events: none;
     box-shadow: 0 0 0 3px rgba(0,200,160,0.3);
     transition: left 0.15s ease, top 0.15s ease;
   }
-  .zoom-anchor-hint {
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    margin-top: 4px;
+  .zoom-anchor-hint { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; margin-top: 4px; }
+
+  /* ── PEOPLE TAB ── */
+  #people-list { display: flex; flex-direction: column; gap: 2px; }
+  .person-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; transition: border-color 0.15s;
+  }
+  .person-card:hover { border-color: var(--border-hi); }
+  .person-card-header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 18px; cursor: pointer; user-select: none;
+  }
+  .person-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 900;
+    color: var(--muted); flex-shrink: 0;
+  }
+  .person-name {
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.05em; color: var(--white); flex: 1;
+  }
+  .person-handle { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .person-editor { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+  .person-card.open .person-editor { display: block; }
+  .person-card.open .expand-arrow { transform: rotate(180deg); }
+
+  /* ── NEW PANELS ── */
+  .new-panel {
+    display: none; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .new-panel.visible { display: block; }
+  .new-panel-title {
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--white); margin-bottom: 16px;
   }
 
-  /* Sliders */
-  .field input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 2px;
-    background: var(--border-hi);
-    border-radius: 1px;
-    outline: none;
-    cursor: pointer;
-    margin-top: 6px;
-  }
-  .field input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: var(--white);
-    cursor: pointer;
-  }
-  .slider-val {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    text-align: right;
+  /* ── LOADING ── */
+  .loading-row {
+    padding: 40px; text-align: center; color: var(--muted);
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
   }
 
-  /* Save button */
-  .btn-save {
-    background: var(--cyan);
-    color: var(--bg);
-    border: none;
-    font-family: var(--font-ui);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: opacity 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .btn-save:hover { opacity: 0.85; }
-  .btn-save.saving { opacity: 0.6; pointer-events: none; }
-
-  /* ── NEW PHOTO FORM ── */
-  #new-photo-panel {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-  #new-photo-panel.visible { display: block; }
-
-  .new-photo-title {
-    font-family: var(--font-ui);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 16px;
-  }
-
-  /* ── STATUS TOAST ── */
+  /* ── TOAST ── */
   #toast {
-    position: fixed;
-    bottom: 32px; left: 50%;
+    position: fixed; bottom: 32px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--surface);
-    border: 1px solid var(--border-hi);
-    color: var(--white);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    padding: 10px 20px;
-    border-radius: 8px;
-    opacity: 0;
-    pointer-events: none;
+    background: var(--surface); border: 1px solid var(--border-hi);
+    color: var(--white); font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.08em; padding: 10px 20px; border-radius: 8px;
+    opacity: 0; pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s var(--ease);
-    z-index: 200;
-    white-space: nowrap;
+    z-index: 200; white-space: nowrap;
   }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.success { border-color: var(--cyan); color: var(--cyan); }
   #toast.error   { border-color: var(--red);  color: var(--red);  }
-
-  /* ── LOADING STATE ── */
-  .loading-row {
-    padding: 40px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo">jnb visions</div>
   <div class="login-title">Admin</div>
@@ -484,77 +425,101 @@
     <button class="btn-logout" onclick="logout()">Log out</button>
   </header>
 
-  <main class="admin-main">
+  <nav class="admin-tabs">
+    <button class="tab-btn active" onclick="switchTab('photos')">Photos</button>
+    <button class="tab-btn" onclick="switchTab('people')">People</button>
+  </nav>
 
-    <!-- UNREGISTERED PHOTOS -->
-    <div id="unregistered-section" style="display:none;margin-bottom:32px">
-      <div class="section-header" style="margin-bottom:12px">
-        <span class="section-title">Unregistered Photos</span>
-        <span id="unregistered-count" class="admin-badge"></span>
+  <!-- PHOTOS TAB -->
+  <div id="tab-photos" class="tab-panel active">
+    <div class="admin-main">
+
+      <!-- UNREGISTERED -->
+      <div id="unregistered-section" style="display:none;margin-bottom:32px">
+        <div class="section-header" style="margin-bottom:12px">
+          <span class="section-title">Unregistered Photos</span>
+          <span id="unregistered-count" class="admin-badge"></span>
+        </div>
+        <div id="unregistered-list" style="display:flex;flex-direction:column;gap:2px"></div>
       </div>
-      <div id="unregistered-list" style="display:flex;flex-direction:column;gap:2px"></div>
-    </div>
 
-    <!-- NEW PHOTO PANEL -->
-    <div id="new-photo-panel">
-      <div class="new-photo-title">Add Photo</div>
-      <div class="editor-grid">
-        <div class="field">
-          <label>Filename</label>
-          <input type="text" id="new-src" placeholder="photo.jpg">
+      <!-- NEW PHOTO PANEL -->
+      <div id="new-photo-panel" class="new-panel">
+        <div class="new-panel-title">Add Photo</div>
+        <div class="editor-grid">
+          <div class="field">
+            <label>Filename</label>
+            <input type="text" id="new-src" placeholder="photo.jpg">
+          </div>
+          <div class="field">
+            <label>Published</label>
+            <label class="toggle" style="margin-top:8px">
+              <input type="checkbox" id="new-published" checked>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
         </div>
-        <div class="field">
-          <label>Collection</label>
-          <input type="text" id="new-collection" value="portraits">
-        </div>
-        <div class="field">
-          <label>First Name</label>
-          <input type="text" id="new-first">
-        </div>
-        <div class="field">
-          <label>Last Name</label>
-          <input type="text" id="new-last">
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn-save" onclick="createPhoto()">Save Photo</button>
+          <button class="btn-icon" onclick="closeNewPanel()">Cancel</button>
         </div>
       </div>
-      <div style="display:flex;gap:10px;margin-top:12px;">
-        <button class="btn-save" onclick="createPhoto()">Save Photo</button>
-        <button class="btn-icon" onclick="closeNewPanel()">Cancel</button>
+
+      <!-- PHOTO LIST -->
+      <div class="section-header">
+        <span class="section-title">Photos</span>
+        <button class="btn-add" onclick="openNewPanel()">+ Add Photo</button>
       </div>
-    </div>
+      <div id="photo-list"><div class="loading-row">Loading...</div></div>
 
-    <!-- PHOTO LIST -->
-    <div class="section-header">
-      <span class="section-title">Portraits</span>
-      <button class="btn-add" onclick="openNewPanel()">+ Add Photo</button>
     </div>
-    <div id="photo-list">
-      <div class="loading-row">Loading...</div>
-    </div>
+  </div>
 
-  </main>
+  <!-- PEOPLE TAB -->
+  <div id="tab-people" class="tab-panel">
+    <div class="admin-main">
+
+      <!-- NEW PERSON PANEL -->
+      <div id="new-person-panel" class="new-panel">
+        <div class="new-panel-title">Add Person</div>
+        <div class="editor-grid">
+          <div class="field"><label>First Name</label><input type="text" id="np-first"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="np-last"></div>
+          <div class="field"><label>Instagram</label><input type="text" id="np-instagram" placeholder="@handle"></div>
+          <div class="field"><label>Website</label><input type="text" id="np-website" placeholder="https://"></div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Notes</label>
+          <input type="text" id="np-notes" placeholder="Optional notes">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn-save" onclick="createPerson()">Save Person</button>
+          <button class="btn-icon" onclick="closeNewPersonPanel()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">People</span>
+        <button class="btn-add" onclick="openNewPersonPanel()">+ Add Person</button>
+      </div>
+      <div id="people-list"><div class="loading-row">Loading...</div></div>
+
+    </div>
+  </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
 /* =====================================================
    CONFIG
    ===================================================== */
-const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
-
-/* Change this password in the file if needed.
-   Keep this file at an obscure, unlinked URL. */
+const SUPABASE_URL  = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
 const ADMIN_PASSWORD = 'taxnbaxn';
 
-/* =====================================================
-   PATHS — update here if folder structure changes
-   ===================================================== */
-const PATHS = {
-  images: 'images/',
-  logo:   'jnb-2026_sq.svg'
-};
+const PATHS = { images: 'images/', logo: 'jnb-2026_sq.svg' };
 const PHOTO_PATH = PATHS.images;
 
 /* =====================================================
@@ -562,41 +527,42 @@ const PHOTO_PATH = PATHS.images;
    ===================================================== */
 function attemptLogin(e) {
   e.preventDefault();
-  const pw = document.getElementById('pw-input').value;
-  if (pw === ADMIN_PASSWORD) {
+  if (document.getElementById('pw-input').value === ADMIN_PASSWORD) {
     sessionStorage.setItem('jnb_admin', '1');
     document.getElementById('login-screen').classList.add('hidden');
     setTimeout(() => {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('admin-shell').classList.add('visible');
-      loadPhotos();
+      init();
     }, 400);
   } else {
     const input = document.getElementById('pw-input');
-    const err   = document.getElementById('login-error');
     input.classList.add('error');
-    err.textContent = 'Incorrect password.';
-    setTimeout(() => {
-      input.classList.remove('error');
-      err.textContent = '';
-    }, 2000);
+    document.getElementById('login-error').textContent = 'Incorrect password.';
+    setTimeout(() => { input.classList.remove('error'); document.getElementById('login-error').textContent = ''; }, 2000);
   }
 }
+function logout() { sessionStorage.removeItem('jnb_admin'); location.reload(); }
 
-function logout() {
-  sessionStorage.removeItem('jnb_admin');
-  location.reload();
-}
-
-// Auto-login if session exists
 if (sessionStorage.getItem('jnb_admin') === '1') {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-shell').classList.add('visible');
-  loadPhotos();
+  init();
 }
 
 /* =====================================================
-   SUPABASE HELPERS
+   TABS
+   ===================================================== */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['photos','people'][i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+/* =====================================================
+   SUPABASE
    ===================================================== */
 const SB_HEADERS = {
   'apikey': SUPABASE_KEY,
@@ -606,242 +572,257 @@ const SB_HEADERS = {
 };
 
 async function sbFetch(path, opts = {}) {
-  const res = await fetch(SUPABASE_URL + path, {
-    headers: SB_HEADERS,
-    ...opts
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
-  }
+  const res = await fetch(SUPABASE_URL + path, { headers: SB_HEADERS, ...opts });
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
 
 /* =====================================================
-   DATA
+   STATE
    ===================================================== */
-let photos = [];
+let photos      = [];
+let people      = [];
+let collections = [];
+// Map of photo_id -> array of {collection_id, display_order}
+let photoCollectionsMap = {};
+// Map of photo_id -> array of {person_id, role, people:{first_name,last_name}}
+let photoCreditsMap = {};
 
+/* =====================================================
+   INIT
+   ===================================================== */
+async function init() {
+  await Promise.all([ loadCollections(), loadPeople() ]);
+  loadPhotos();
+}
+
+/* =====================================================
+   LOAD COLLECTIONS
+   ===================================================== */
+async function loadCollections() {
+  try {
+    collections = await sbFetch('/rest/v1/collections?select=*&order=display_order.asc');
+  } catch (err) {
+    console.warn('Could not load collections:', err.message);
+    collections = [];
+  }
+}
+
+/* =====================================================
+   LOAD PEOPLE
+   ===================================================== */
+async function loadPeople(attempt = 1) {
+  try {
+    people = await sbFetch('/rest/v1/people?select=*&order=last_name.asc,first_name.asc');
+    renderPeopleList();
+  } catch (err) {
+    if (attempt < 3) setTimeout(() => loadPeople(attempt + 1), 2000);
+    else document.getElementById('people-list').innerHTML =
+      `<div class="loading-row" style="color:var(--red)">Could not load people. <button class="btn-add" onclick="loadPeople()" style="margin-left:8px">Retry</button></div>`;
+  }
+}
+
+/* =====================================================
+   LOAD PHOTOS
+   ===================================================== */
 async function loadPhotos(attempt = 1) {
   const list = document.getElementById('photo-list');
-  const maxAttempts = 3;
-
-  // Show a calm loading state (not an error) while trying
-  if (attempt === 1) {
-    list.innerHTML = '<div class="loading-row">Loading...</div>';
-  } else {
-    list.innerHTML = `<div class="loading-row">Connecting... (attempt ${attempt} of ${maxAttempts})</div>`;
-  }
+  list.innerHTML = attempt === 1
+    ? '<div class="loading-row">Loading...</div>'
+    : `<div class="loading-row">Connecting... (attempt ${attempt} of 3)</div>`;
 
   try {
-    photos = await sbFetch('/rest/v1/photos?select=*&order=display_order.asc');
+    // Load photos, their collection memberships, and their credits in parallel
+    const [rawPhotos, rawCollMemberships, rawCredits] = await Promise.all([
+      sbFetch('/rest/v1/photos?select=*&order=display_order.asc'),
+      sbFetch('/rest/v1/photo_collections?select=*'),
+      sbFetch('/rest/v1/photo_credits?select=photo_id,role,person_id,people(id,first_name,last_name)')
+    ]);
+
+    photos = rawPhotos;
+
+    // Build photo -> collections map
+    photoCollectionsMap = {};
+    rawCollMemberships.forEach(m => {
+      if (!photoCollectionsMap[m.photo_id]) photoCollectionsMap[m.photo_id] = [];
+      photoCollectionsMap[m.photo_id].push(m);
+    });
+
+    // Build photo -> credits map
+    photoCreditsMap = {};
+    rawCredits.forEach(c => {
+      if (!photoCreditsMap[c.photo_id]) photoCreditsMap[c.photo_id] = [];
+      photoCreditsMap[c.photo_id].push(c);
+    });
+
     renderPhotoList();
-    loadUnregistered(); // check for image files with no metadata
+    loadUnregistered();
   } catch (err) {
-    if (attempt < maxAttempts) {
-      // Wait 2 seconds then retry — handles Supabase wake-up delay
-      setTimeout(() => loadPhotos(attempt + 1), 2000);
-    } else {
-      // All attempts failed — show error with retry button
-      list.innerHTML = `
-        <div class="loading-row" style="display:flex;flex-direction:column;gap:14px;align-items:center">
-          <span style="color:var(--red)">Could not reach the database.</span>
-          <span style="color:var(--muted);font-size:10px">${err.message}</span>
-          <button class="btn-add" onclick="loadPhotos()" style="margin-top:4px">Try Again</button>
-        </div>`;
-    }
+    if (attempt < 3) { setTimeout(() => loadPhotos(attempt + 1), 2000); return; }
+    list.innerHTML = `
+      <div class="loading-row" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+        <span style="color:var(--red)">Could not reach the database.</span>
+        <span style="color:var(--muted);font-size:10px">${err.message}</span>
+        <button class="btn-add" onclick="loadPhotos()">Try Again</button>
+      </div>`;
   }
 }
 
 /* =====================================================
    UNREGISTERED PHOTOS
-   Calls /api/photos to get all image filenames in the
-   images/ folder, then compares against Supabase records.
-   Files with no metadata entry are shown for quick registration.
    ===================================================== */
 async function loadUnregistered() {
   try {
     const res = await fetch('/api/photos');
     if (!res.ok) throw new Error('API unavailable');
-    const { files } = await res.json();
-
-    // Get filenames already in Supabase (bare filename, no path prefix)
+    const data = await res.json();
+    const files = data.files || [];
     const registered = new Set(photos.map(p => p.src));
-
     const unregistered = files.filter(f => !registered.has(f));
 
     const section = document.getElementById('unregistered-section');
-    const list    = document.getElementById('unregistered-list');
+    const listEl  = document.getElementById('unregistered-list');
     const count   = document.getElementById('unregistered-count');
 
-    if (!unregistered.length) {
-      section.style.display = 'none';
-      return;
-    }
+    if (!unregistered.length) { section.style.display = 'none'; return; }
 
     section.style.display = 'block';
     count.textContent = `${unregistered.length} new`;
 
-    list.innerHTML = unregistered.map(filename => `
-      <div class="photo-card" style="display:flex;align-items:center;
-           gap:16px;padding:12px 18px">
-        <img style="width:44px;height:44px;object-fit:cover;border-radius:6px;
-                    background:#1a1a1a;flex-shrink:0"
+    listEl.innerHTML = unregistered.map(filename => `
+      <div class="photo-card" style="display:flex;align-items:center;gap:16px;padding:12px 18px">
+        <img style="width:44px;height:44px;object-fit:cover;border-radius:6px;background:#1a1a1a;flex-shrink:0"
              src="${PHOTO_PATH}${filename}"
-             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')"
-             alt="">
+             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
         <div style="flex:1;min-width:0">
-          <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;
-                      color:var(--white);white-space:nowrap;overflow:hidden;
-                      text-overflow:ellipsis">${filename}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px">
-            No metadata — not shown in gallery
-          </div>
+          <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${filename}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">No metadata — not shown in gallery</div>
         </div>
-        <button class="btn-add"
-                onclick="quickRegister('${filename}')"
-                style="flex-shrink:0">
-          Register
-        </button>
-      </div>
-    `).join('');
-
+        <button class="btn-add" onclick="quickRegister('${filename}')" style="flex-shrink:0">Register</button>
+      </div>`).join('');
   } catch (err) {
-    // API not available (local dev without Vercel, etc.) — silently skip
     console.warn('[admin] Directory scan unavailable:', err.message);
   }
 }
 
 function quickRegister(filename) {
-  // Pre-fill the new photo form and scroll to it
   openNewPanel();
   document.getElementById('new-src').value = filename;
-  document.getElementById('new-first').focus();
-  // Scroll the form into view
-  document.getElementById('new-photo-panel').scrollIntoView({
-    behavior: 'smooth', block: 'start'
-  });
-}
-
-async function savePhoto(id, data) {
-  await sbFetch(`/rest/v1/photos?id=eq.${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(data)
-  });
-}
-
-async function createPhoto() {
-  const src        = document.getElementById('new-src').value.trim();
-  const collection = document.getElementById('new-collection').value.trim() || 'portraits';
-  const first      = document.getElementById('new-first').value.trim();
-  const last       = document.getElementById('new-last').value.trim();
-  if (!src) { showToast('Filename is required', 'error'); return; }
-
-  try {
-    const order = photos.length ? Math.max(...photos.map(p => p.display_order)) + 1 : 1;
-    await sbFetch('/rest/v1/photos', {
-      method: 'POST',
-      body: JSON.stringify({
-        src, first_name: first, last_name: last,
-        collection, display_order: order,
-        logo_y: 50, info_y: 55,
-        zoom_anchor_x: 50, zoom_anchor_y: 50, zoom_ratio: 0.65
-      })
-    });
-    showToast('Photo added', 'success');
-    closeNewPanel();
-    await loadPhotos();
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
-  }
-}
-
-async function deletePhoto(id) {
-  if (!confirm('Delete this photo entry? The image file is unaffected.')) return;
-  try {
-    await sbFetch(`/rest/v1/photos?id=eq.${id}`, { method: 'DELETE' });
-    showToast('Deleted', 'success');
-    await loadPhotos();
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
-  }
-}
-
-async function movePhoto(id, direction) {
-  const idx = photos.findIndex(p => p.id === id);
-  const swapIdx = idx + direction;
-  if (swapIdx < 0 || swapIdx >= photos.length) return;
-
-  const a = photos[idx];
-  const b = photos[swapIdx];
-  try {
-    await Promise.all([
-      savePhoto(a.id, { display_order: b.display_order }),
-      savePhoto(b.id, { display_order: a.display_order })
-    ]);
-    await loadPhotos();
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
-  }
+  document.getElementById('new-photo-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* =====================================================
-   RENDER
+   RENDER PHOTOS
    ===================================================== */
 function renderPhotoList() {
   const list = document.getElementById('photo-list');
-  if (!photos.length) {
-    list.innerHTML = '<div class="loading-row">No photos yet. Add one above.</div>';
-    return;
-  }
+  if (!photos.length) { list.innerHTML = '<div class="loading-row">No photos yet.</div>'; return; }
 
-  list.innerHTML = photos.map((p, i) => `
-    <div class="photo-card" id="card-${p.id}">
+  list.innerHTML = photos.map((p, i) => {
+    const credits = photoCreditsMap[p.id] || [];
+    const subjects = credits.filter(c => c.role === 'subject' && c.people);
+    const name = subjects.length
+      ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
+      : (p.first_name ? `${p.first_name} ${p.last_name}` : '—');
+
+    return `
+    <div class="photo-card ${p.published ? '' : 'unpublished'}" id="card-${p.id}">
       <div class="photo-card-header" onclick="toggleCard('${p.id}')">
         <span class="drag-handle">⠿</span>
-        <img class="photo-thumb"
-             src="${PHOTO_PATH}${p.src}"
-             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')"
-             alt="">
+        <img class="photo-thumb" src="${PHOTO_PATH}${p.src}"
+             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
         <div class="photo-card-info">
-          <div class="photo-card-name">${p.first_name} ${p.last_name}</div>
-          <div class="photo-card-src">${p.src}</div>
+          <div class="photo-card-name">${name}</div>
+          <div class="photo-card-meta">
+            <span class="photo-card-src">${p.src}</span>
+            <span class="badge-published ${p.published ? 'yes' : 'no'}">${p.published ? 'Live' : 'Draft'}</span>
+          </div>
         </div>
         <div class="photo-card-actions" onclick="event.stopPropagation()">
-          <button class="btn-icon" onclick="movePhoto('${p.id}', -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
-          <button class="btn-icon" onclick="movePhoto('${p.id}', 1)" ${i === photos.length-1 ? 'disabled' : ''}>↓</button>
+          <button class="btn-icon" onclick="movePhoto('${p.id}',-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="btn-icon" onclick="movePhoto('${p.id}',1)" ${i===photos.length-1?'disabled':''}>↓</button>
           <button class="btn-icon danger" onclick="deletePhoto('${p.id}')">Delete</button>
         </div>
         <span class="expand-arrow">▼</span>
       </div>
-      <div class="photo-card-editor">
-        ${renderEditor(p)}
-      </div>
-    </div>
-  `).join('');
+      <div class="photo-card-editor">${renderEditor(p)}</div>
+    </div>`;
+  }).join('');
 
-  // Attach zoom anchor pickers
   photos.forEach(p => attachZoomPicker(p));
 }
 
 function renderEditor(p) {
+  const credits = photoCreditsMap[p.id] || [];
+  const myCollIds = new Set((photoCollectionsMap[p.id] || []).map(m => m.collection_id));
+
+  const collectionsHtml = collections.map(c => `
+    <div class="collection-chip ${myCollIds.has(c.id) ? 'active' : ''}"
+         onclick="toggleCollection('${p.id}','${c.id}',this)">
+      ${c.label}
+    </div>`).join('');
+
+  const creditsHtml = credits.length
+    ? credits.map(c => `
+      <div class="credit-row">
+        <span class="credit-name">${c.people ? c.people.first_name + ' ' + c.people.last_name : '—'}</span>
+        <span class="credit-role">${c.role}</span>
+        <button class="btn-icon danger" onclick="removeCredit('${p.id}','${c.person_id}','${c.role}')">×</button>
+      </div>`).join('')
+    : '<div style="font-size:10px;color:var(--muted);padding:4px 0">No credits yet.</div>';
+
   return `
-    <div class="editor-grid">
+    <!-- Published toggle -->
+    <div class="toggle-row" style="margin-top:16px">
+      <span class="toggle-label">Published</span>
+      <label class="toggle">
+        <input type="checkbox" id="pub-${p.id}" ${p.published ? 'checked' : ''}
+               onchange="togglePublished('${p.id}', this.checked)">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+    </div>
+
+    <!-- Collections -->
+    <div class="field" style="margin-top:14px">
+      <label>Collections</label>
+      <div class="collections-list">${collectionsHtml}</div>
+    </div>
+
+    <!-- Credits -->
+    <div class="field" style="margin-top:14px">
+      <label>Credits</label>
+      <div class="credits-list" id="credits-${p.id}">${creditsHtml}</div>
+    </div>
+
+    <!-- Add credit -->
+    <div class="editor-grid" style="margin-top:10px">
       <div class="field">
-        <label>First Name</label>
-        <input type="text" id="first-${p.id}" value="${p.first_name}">
+        <label>Add Person</label>
+        <div class="people-search-wrap">
+          <input type="text" id="credit-search-${p.id}"
+                 placeholder="Search by name..."
+                 oninput="searchPeople('${p.id}', this.value)"
+                 onfocus="openDropdown('${p.id}')"
+                 autocomplete="off">
+          <div class="people-dropdown" id="people-drop-${p.id}"></div>
+        </div>
       </div>
       <div class="field">
-        <label>Last Name</label>
-        <input type="text" id="last-${p.id}" value="${p.last_name}">
+        <label>Role</label>
+        <input type="text" id="credit-role-${p.id}" placeholder="subject" value="subject">
       </div>
+    </div>
+
+    <!-- Photo config -->
+    <div class="editor-grid" style="margin-top:14px">
       <div class="field">
         <label>Filename</label>
         <input type="text" id="src-${p.id}" value="${p.src}">
       </div>
       <div class="field">
-        <label>Zoom Ratio (h/w, landscape mode)</label>
+        <label>Zoom Ratio</label>
         <input type="number" id="ratio-${p.id}" value="${p.zoom_ratio}" step="0.01" min="0.3" max="2">
       </div>
     </div>
@@ -859,7 +840,7 @@ function renderEditor(p) {
       </div>
       <div class="field">
         <label>Zoom Ratio <span class="slider-val" id="ratio-val-${p.id}">${p.zoom_ratio}</span></label>
-        <input type="range" id="ratio-slider-${p.id}" min="0.3" max="1.5" step="0.01" value="${p.zoom_ratio}"
+        <input type="range" id="ratio-s-${p.id}" min="0.3" max="1.5" step="0.01" value="${p.zoom_ratio}"
           oninput="document.getElementById('ratio-val-${p.id}').textContent=parseFloat(this.value).toFixed(2);document.getElementById('ratio-${p.id}').value=this.value">
       </div>
     </div>
@@ -867,34 +848,358 @@ function renderEditor(p) {
     <div style="margin-top:16px">
       <div class="field">
         <label>Zoom Anchor — click to set focal point</label>
-        <div class="zoom-anchor-wrap" id="anchor-wrap-${p.id}"
-             onclick="setZoomAnchor('${p.id}', event)">
-          <img src="${PHOTO_PATH}${p.src}"
-               onerror="this.style.display='none'"
-               alt="">
+        <div class="zoom-anchor-wrap" id="anchor-wrap-${p.id}" onclick="setZoomAnchor('${p.id}',event)">
+          <img src="${PHOTO_PATH}${p.src}" onerror="this.style.display='none'" alt="">
           <div class="zoom-anchor-dot" id="anchor-dot-${p.id}"
                style="left:${p.zoom_anchor_x}%;top:${p.zoom_anchor_y}%"></div>
         </div>
-        <div class="zoom-anchor-hint">
-          Anchor: <span id="anchor-val-${p.id}">${p.zoom_anchor_x}%, ${p.zoom_anchor_y}%</span>
-        </div>
+        <div class="zoom-anchor-hint">Anchor: <span id="anchor-val-${p.id}">${p.zoom_anchor_x}%, ${p.zoom_anchor_y}%</span></div>
       </div>
     </div>
 
-    <button class="btn-save" onclick="saveSinglePhoto('${p.id}')">
-      Save Changes
-    </button>
-  `;
+    <button class="btn-save" onclick="savePhoto('${p.id}')">Save Changes</button>`;
 }
 
-function attachZoomPicker(p) {
-  // Zoom anchor is set via onclick on the wrap element (already in renderEditor)
-  // Just ensure dot is positioned correctly
-  const dot = document.getElementById(`anchor-dot-${p.id}`);
-  if (dot) {
-    dot.style.left = p.zoom_anchor_x + '%';
-    dot.style.top  = p.zoom_anchor_y + '%';
+/* =====================================================
+   RENDER PEOPLE
+   ===================================================== */
+function renderPeopleList() {
+  const list = document.getElementById('people-list');
+  if (!people.length) { list.innerHTML = '<div class="loading-row">No people yet.</div>'; return; }
+
+  list.innerHTML = people.map(p => {
+    const initials = ((p.first_name[0] || '') + (p.last_name[0] || '')).toUpperCase();
+    return `
+    <div class="person-card" id="pcard-${p.id}">
+      <div class="person-card-header" onclick="togglePersonCard('${p.id}')">
+        <div class="person-avatar">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <div class="person-name">${p.first_name} ${p.last_name}</div>
+          ${p.instagram ? `<div class="person-handle">${p.instagram}</div>` : ''}
+        </div>
+        <button class="btn-icon danger" onclick="event.stopPropagation();deletePerson('${p.id}')">Delete</button>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="person-editor">
+        <div class="editor-grid" style="margin-top:16px">
+          <div class="field"><label>First Name</label><input type="text" id="pfirst-${p.id}" value="${p.first_name}"></div>
+          <div class="field"><label>Last Name</label><input type="text" id="plast-${p.id}" value="${p.last_name}"></div>
+          <div class="field"><label>Instagram</label><input type="text" id="pig-${p.id}" value="${p.instagram}" placeholder="@handle"></div>
+          <div class="field"><label>Website</label><input type="text" id="pweb-${p.id}" value="${p.website}" placeholder="https://"></div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Notes</label>
+          <input type="text" id="pnotes-${p.id}" value="${p.notes}">
+        </div>
+        <button class="btn-save" onclick="savePerson('${p.id}')">Save Changes</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =====================================================
+   PHOTO ACTIONS
+   ===================================================== */
+async function togglePublished(photoId, val) {
+  try {
+    await sbFetch(`/rest/v1/photos?id=eq.${photoId}`, {
+      method: 'PATCH', body: JSON.stringify({ published: val })
+    });
+    const p = photos.find(x => x.id === photoId);
+    if (p) p.published = val;
+    const card = document.getElementById(`card-${photoId}`);
+    if (card) {
+      card.classList.toggle('unpublished', !val);
+      const badge = card.querySelector('.badge-published');
+      if (badge) { badge.textContent = val ? 'Live' : 'Draft'; badge.className = `badge-published ${val?'yes':'no'}`; }
+    }
+    showToast(val ? 'Published' : 'Unpublished', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function toggleCollection(photoId, collectionId, chipEl) {
+  const isActive = chipEl.classList.contains('active');
+  try {
+    if (isActive) {
+      await sbFetch(`/rest/v1/photo_collections?photo_id=eq.${photoId}&collection_id=eq.${collectionId}`,
+        { method: 'DELETE' });
+      if (photoCollectionsMap[photoId])
+        photoCollectionsMap[photoId] = photoCollectionsMap[photoId].filter(m => m.collection_id !== collectionId);
+      chipEl.classList.remove('active');
+    } else {
+      const order = (photoCollectionsMap[photoId] || []).length + 1;
+      await sbFetch('/rest/v1/photo_collections', {
+        method: 'POST',
+        body: JSON.stringify({ photo_id: photoId, collection_id: collectionId, display_order: order })
+      });
+      if (!photoCollectionsMap[photoId]) photoCollectionsMap[photoId] = [];
+      photoCollectionsMap[photoId].push({ photo_id: photoId, collection_id: collectionId, display_order: order });
+      chipEl.classList.add('active');
+    }
+    showToast(isActive ? 'Removed from collection' : 'Added to collection', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function removeCredit(photoId, personId, role) {
+  try {
+    await sbFetch(`/rest/v1/photo_credits?photo_id=eq.${photoId}&person_id=eq.${personId}&role=eq.${role}`,
+      { method: 'DELETE' });
+    if (photoCreditsMap[photoId])
+      photoCreditsMap[photoId] = photoCreditsMap[photoId].filter(
+        c => !(c.person_id === personId && c.role === role));
+    // Re-render credits list only
+    const credEl = document.getElementById(`credits-${photoId}`);
+    if (credEl) {
+      const credits = photoCreditsMap[photoId] || [];
+      credEl.innerHTML = credits.length
+        ? credits.map(c => `
+          <div class="credit-row">
+            <span class="credit-name">${c.people ? c.people.first_name+' '+c.people.last_name : '—'}</span>
+            <span class="credit-role">${c.role}</span>
+            <button class="btn-icon danger" onclick="removeCredit('${photoId}','${c.person_id}','${c.role}')">×</button>
+          </div>`).join('')
+        : '<div style="font-size:10px;color:var(--muted);padding:4px 0">No credits yet.</div>';
+    }
+    showToast('Credit removed', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function addCredit(photoId, personId) {
+  const role = document.getElementById(`credit-role-${photoId}`).value.trim() || 'subject';
+  try {
+    await sbFetch('/rest/v1/photo_credits', {
+      method: 'POST',
+      body: JSON.stringify({ photo_id: photoId, person_id: personId, role })
+    });
+    const person = people.find(p => p.id === personId);
+    if (!photoCreditsMap[photoId]) photoCreditsMap[photoId] = [];
+    photoCreditsMap[photoId].push({ photo_id: photoId, person_id: personId, role, people: person });
+    // Re-render credits list
+    const credEl = document.getElementById(`credits-${photoId}`);
+    if (credEl) {
+      const credits = photoCreditsMap[photoId];
+      credEl.innerHTML = credits.map(c => `
+        <div class="credit-row">
+          <span class="credit-name">${c.people ? c.people.first_name+' '+c.people.last_name : '—'}</span>
+          <span class="credit-role">${c.role}</span>
+          <button class="btn-icon danger" onclick="removeCredit('${photoId}','${c.person_id}','${c.role}')">×</button>
+        </div>`).join('');
+    }
+    document.getElementById(`credit-search-${photoId}`).value = '';
+    closeDropdown(photoId);
+    showToast('Credit added', 'success');
+  } catch (err) {
+    if (err.message.includes('duplicate') || err.message.includes('unique')) {
+      showToast('This person already has this role', 'error');
+    } else {
+      showToast('Error: ' + err.message, 'error');
+    }
   }
+}
+
+async function savePhoto(id) {
+  const btn = document.querySelector(`#card-${id} .btn-save`);
+  btn.classList.add('saving'); btn.textContent = 'Saving...';
+  const dot = document.getElementById(`anchor-dot-${id}`);
+  const p   = photos.find(x => x.id === id);
+  const ax  = dot.dataset.x !== undefined ? parseInt(dot.dataset.x) : parseFloat(p?.zoom_anchor_x ?? 50);
+  const ay  = dot.dataset.y !== undefined ? parseInt(dot.dataset.y) : parseFloat(p?.zoom_anchor_y ?? 50);
+  try {
+    await sbFetch(`/rest/v1/photos?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        src:           document.getElementById(`src-${id}`).value.trim(),
+        logo_y:        parseFloat(document.getElementById(`logoY-${id}`).value),
+        info_y:        parseFloat(document.getElementById(`infoY-${id}`).value),
+        zoom_anchor_x: ax, zoom_anchor_y: ay,
+        zoom_ratio:    parseFloat(document.getElementById(`ratio-${id}`).value)
+      })
+    });
+    showToast('Saved', 'success');
+    await loadPhotos();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.classList.remove('saving'); btn.textContent = 'Save Changes';
+  }
+}
+
+async function createPhoto() {
+  const src       = document.getElementById('new-src').value.trim();
+  const published = document.getElementById('new-published').checked;
+  if (!src) { showToast('Filename is required', 'error'); return; }
+  try {
+    const order = photos.length ? Math.max(...photos.map(p => p.display_order)) + 1 : 1;
+    const [newPhoto] = await sbFetch('/rest/v1/photos', {
+      method: 'POST',
+      body: JSON.stringify({
+        src, published, display_order: order,
+        logo_y: 50, info_y: 55, zoom_anchor_x: 50, zoom_anchor_y: 50, zoom_ratio: 0.65
+      })
+    });
+    // Auto-add to portraits collection
+    const portraits = collections.find(c => c.slug === 'portraits');
+    if (portraits && newPhoto) {
+      await sbFetch('/rest/v1/photo_collections', {
+        method: 'POST',
+        body: JSON.stringify({ photo_id: newPhoto.id, collection_id: portraits.id, display_order: order })
+      });
+    }
+    showToast('Photo added', 'success');
+    closeNewPanel();
+    await loadPhotos();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function deletePhoto(id) {
+  if (!confirm('Delete this photo entry? The image file is unaffected.')) return;
+  try {
+    await sbFetch(`/rest/v1/photos?id=eq.${id}`, { method: 'DELETE' });
+    showToast('Deleted', 'success');
+    await loadPhotos();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function movePhoto(id, direction) {
+  const idx = photos.findIndex(p => p.id === id);
+  const swapIdx = idx + direction;
+  if (swapIdx < 0 || swapIdx >= photos.length) return;
+  const a = photos[idx], b = photos[swapIdx];
+  try {
+    await Promise.all([
+      sbFetch(`/rest/v1/photos?id=eq.${a.id}`, { method: 'PATCH', body: JSON.stringify({ display_order: b.display_order }) }),
+      sbFetch(`/rest/v1/photos?id=eq.${b.id}`, { method: 'PATCH', body: JSON.stringify({ display_order: a.display_order }) })
+    ]);
+    await loadPhotos();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* =====================================================
+   PEOPLE ACTIONS
+   ===================================================== */
+async function createPerson() {
+  const first = document.getElementById('np-first').value.trim();
+  const last  = document.getElementById('np-last').value.trim();
+  if (!first && !last) { showToast('Name is required', 'error'); return; }
+  try {
+    await sbFetch('/rest/v1/people', {
+      method: 'POST',
+      body: JSON.stringify({
+        first_name: first, last_name: last,
+        instagram: document.getElementById('np-instagram').value.trim(),
+        website:   document.getElementById('np-website').value.trim(),
+        notes:     document.getElementById('np-notes').value.trim()
+      })
+    });
+    showToast('Person added', 'success');
+    closeNewPersonPanel();
+    await loadPeople();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function savePerson(id) {
+  const btn = document.querySelector(`#pcard-${id} .btn-save`);
+  btn.classList.add('saving'); btn.textContent = 'Saving...';
+  try {
+    await sbFetch(`/rest/v1/people?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        first_name: document.getElementById(`pfirst-${id}`).value.trim(),
+        last_name:  document.getElementById(`plast-${id}`).value.trim(),
+        instagram:  document.getElementById(`pig-${id}`).value.trim(),
+        website:    document.getElementById(`pweb-${id}`).value.trim(),
+        notes:      document.getElementById(`pnotes-${id}`).value.trim()
+      })
+    });
+    showToast('Saved', 'success');
+    await loadPeople();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.classList.remove('saving'); btn.textContent = 'Save Changes';
+  }
+}
+
+async function deletePerson(id) {
+  if (!confirm('Delete this person? Their credits will also be removed.')) return;
+  try {
+    await sbFetch(`/rest/v1/people?id=eq.${id}`, { method: 'DELETE' });
+    showToast('Deleted', 'success');
+    await Promise.all([ loadPeople(), loadPhotos() ]);
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* =====================================================
+   PEOPLE SEARCH / DROPDOWN
+   ===================================================== */
+function searchPeople(photoId, query) {
+  const drop = document.getElementById(`people-drop-${photoId}`);
+  const q = query.toLowerCase().trim();
+
+  const matches = q.length < 1 ? people : people.filter(p =>
+    `${p.first_name} ${p.last_name}`.toLowerCase().includes(q)
+  );
+
+  drop.innerHTML = [
+    ...matches.slice(0, 6).map(p => `
+      <div class="people-option"
+           onclick="selectPerson('${photoId}','${p.id}','${p.first_name} ${p.last_name}')">
+        ${p.first_name} ${p.last_name}
+        ${p.instagram ? `<span style="color:var(--muted);font-size:9px;margin-left:6px">${p.instagram}</span>` : ''}
+      </div>`),
+    q.length > 1 ? `<div class="people-option create-new"
+      onclick="createPersonAndCredit('${photoId}','${q}')">
+      + Create "${query}"</div>` : ''
+  ].join('');
+
+  drop.classList.toggle('open', matches.length > 0 || q.length > 1);
+}
+
+function openDropdown(photoId) {
+  searchPeople(photoId, document.getElementById(`credit-search-${photoId}`).value);
+}
+
+function closeDropdown(photoId) {
+  const drop = document.getElementById(`people-drop-${photoId}`);
+  if (drop) drop.classList.remove('open');
+}
+
+function selectPerson(photoId, personId, name) {
+  document.getElementById(`credit-search-${photoId}`).value = name;
+  closeDropdown(photoId);
+  addCredit(photoId, personId);
+}
+
+async function createPersonAndCredit(photoId, query) {
+  // Split query into first/last if space present
+  const parts = query.trim().split(' ');
+  const first = parts[0] || '';
+  const last  = parts.slice(1).join(' ') || '';
+  try {
+    const [newPerson] = await sbFetch('/rest/v1/people', {
+      method: 'POST',
+      body: JSON.stringify({ first_name: first, last_name: last })
+    });
+    people.push(newPerson);
+    people.sort((a, b) => a.last_name.localeCompare(b.last_name));
+    renderPeopleList();
+    closeDropdown(photoId);
+    document.getElementById(`credit-search-${photoId}`).value = `${first} ${last}`.trim();
+    await addCredit(photoId, newPerson.id);
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.people-search-wrap')) {
+    document.querySelectorAll('.people-dropdown').forEach(d => d.classList.remove('open'));
+  }
+});
+
+/* =====================================================
+   ZOOM ANCHOR
+   ===================================================== */
+function attachZoomPicker(p) {
+  const dot = document.getElementById(`anchor-dot-${p.id}`);
+  if (dot) { dot.style.left = p.zoom_anchor_x + '%'; dot.style.top = p.zoom_anchor_y + '%'; }
 }
 
 function setZoomAnchor(id, event) {
@@ -903,57 +1208,19 @@ function setZoomAnchor(id, event) {
   const x = Math.round(((event.clientX - rect.left) / rect.width)  * 100);
   const y = Math.round(((event.clientY - rect.top)  / rect.height) * 100);
   const dot = document.getElementById(`anchor-dot-${id}`);
-  dot.style.left = x + '%';
-  dot.style.top  = y + '%';
+  dot.style.left = x + '%'; dot.style.top = y + '%';
   document.getElementById(`anchor-val-${id}`).textContent = `${x}%, ${y}%`;
-  // Store on dot for save to read
-  dot.dataset.x = x;
-  dot.dataset.y = y;
-}
-
-function toggleCard(id) {
-  const card = document.getElementById(`card-${id}`);
-  card.classList.toggle('open');
+  dot.dataset.x = x; dot.dataset.y = y;
 }
 
 /* =====================================================
-   SAVE
+   CARD TOGGLES
    ===================================================== */
-async function saveSinglePhoto(id) {
-  const btn = document.querySelector(`#card-${id} .btn-save`);
-  btn.classList.add('saving');
-  btn.textContent = 'Saving...';
-
-  const dot = document.getElementById(`anchor-dot-${id}`);
-  const ax = dot.dataset.x !== undefined ? parseInt(dot.dataset.x) :
-             parseFloat(photos.find(p => p.id === id)?.zoom_anchor_x ?? 50);
-  const ay = dot.dataset.y !== undefined ? parseInt(dot.dataset.y) :
-             parseFloat(photos.find(p => p.id === id)?.zoom_anchor_y ?? 50);
-
-  const data = {
-    src:           document.getElementById(`src-${id}`).value.trim(),
-    first_name:    document.getElementById(`first-${id}`).value.trim(),
-    last_name:     document.getElementById(`last-${id}`).value.trim(),
-    logo_y:        parseFloat(document.getElementById(`logoY-${id}`).value),
-    info_y:        parseFloat(document.getElementById(`infoY-${id}`).value),
-    zoom_anchor_x: ax,
-    zoom_anchor_y: ay,
-    zoom_ratio:    parseFloat(document.getElementById(`ratio-${id}`).value)
-  };
-
-  try {
-    await savePhoto(id, data);
-    showToast('Saved', 'success');
-    await loadPhotos();
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
-    btn.classList.remove('saving');
-    btn.textContent = 'Save Changes';
-  }
-}
+function toggleCard(id) { document.getElementById(`card-${id}`).classList.toggle('open'); }
+function togglePersonCard(id) { document.getElementById(`pcard-${id}`).classList.toggle('open'); }
 
 /* =====================================================
-   NEW PHOTO PANEL
+   NEW PANELS
    ===================================================== */
 function openNewPanel() {
   document.getElementById('new-photo-panel').classList.add('visible');
@@ -961,10 +1228,18 @@ function openNewPanel() {
 }
 function closeNewPanel() {
   document.getElementById('new-photo-panel').classList.remove('visible');
-  ['new-src','new-first','new-last'].forEach(id => {
+  document.getElementById('new-src').value = '';
+  document.getElementById('new-published').checked = true;
+}
+function openNewPersonPanel() {
+  document.getElementById('new-person-panel').classList.add('visible');
+  document.getElementById('np-first').focus();
+}
+function closeNewPersonPanel() {
+  document.getElementById('new-person-panel').classList.remove('visible');
+  ['np-first','np-last','np-instagram','np-website','np-notes'].forEach(id => {
     document.getElementById(id).value = '';
   });
-  document.getElementById('new-collection').value = 'portraits';
 }
 
 /* =====================================================

@@ -380,6 +380,13 @@
     letter-spacing: 0.2em; text-transform: uppercase; color: var(--white); margin-bottom: 16px;
   }
 
+  /* ── COLLECTION PHOTO ROW ── */
+  .coll-photo-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px;
+  }
+
   /* ── LOADING ── */
   .loading-row {
     padding: 40px; text-align: center; color: var(--muted);
@@ -428,6 +435,7 @@
   <nav class="admin-tabs">
     <button class="tab-btn active" onclick="switchTab('photos')">Photos</button>
     <button class="tab-btn" onclick="switchTab('people')">People</button>
+    <button class="tab-btn" onclick="switchTab('collections')">Collections</button>
   </nav>
 
   <!-- PHOTOS TAB -->
@@ -507,6 +515,38 @@
 
     </div>
   </div>
+<!-- COLLECTIONS TAB -->
+  <div id="tab-collections" class="tab-panel">
+    <div class="admin-main">
+
+      <!-- NEW COLLECTION PANEL -->
+      <div id="new-collection-panel" class="new-panel">
+        <div class="new-panel-title">Add Collection</div>
+        <div class="editor-grid">
+          <div class="field">
+            <label>Label</label>
+            <input type="text" id="nc-label" placeholder="Portraits">
+          </div>
+          <div class="field">
+            <label>Slug</label>
+            <input type="text" id="nc-slug" placeholder="portraits">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn-save" onclick="createCollection()">Save Collection</button>
+          <button class="btn-icon" onclick="closeNewCollectionPanel()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Collections</span>
+        <button class="btn-add" onclick="openNewCollectionPanel()">+ Add Collection</button>
+      </div>
+      <div id="collections-list"><div class="loading-row">Loading...</div></div>
+
+    </div>
+  </div>
+
 </div>
 
 <div id="toast"></div>
@@ -555,10 +595,11 @@ if (sessionStorage.getItem('jnb_admin') === '1') {
    ===================================================== */
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['photos','people'][i] === name);
+    b.classList.toggle('active', ['photos','people','collections'][i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'collections') renderCollectionsList();
 }
 
 /* =====================================================
@@ -1241,6 +1282,309 @@ function closeNewPersonPanel() {
     document.getElementById(id).value = '';
   });
 }
+
+/* =====================================================
+   COLLECTIONS TAB
+   ===================================================== */
+
+function renderCollectionsList() {
+  const list = document.getElementById('collections-list');
+  if (!list) return;
+
+  if (!collections.length) {
+    list.innerHTML = '<div class="loading-row">No collections yet.</div>';
+    return;
+  }
+
+  list.innerHTML = collections.map(c => {
+    // Get all photos in this collection, sorted by their display_order
+    const members = (Object.entries(photoCollectionsMap)
+      .filter(([, memberships]) => memberships.some(m => m.collection_id === c.id))
+      .map(([photoId, memberships]) => {
+        const membership = memberships.find(m => m.collection_id === c.id);
+        const photo = photos.find(p => p.id === photoId);
+        return photo ? { ...photo, coll_order: membership.display_order } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.coll_order - b.coll_order));
+
+    const photosHtml = members.length
+      ? members.map((p, i) => {
+          const credits = photoCreditsMap[p.id] || [];
+          const subjects = credits.filter(c => c.role === 'subject' && c.people);
+          const name = subjects.length
+            ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
+            : (p.first_name ? `${p.first_name} ${p.last_name}` : p.src);
+          return `
+            <div class="coll-photo-row" id="collrow-${c.id}-${p.id}">
+              <span class="drag-handle" style="opacity:0.4;font-size:14px">⠿</span>
+              <img style="width:36px;height:36px;object-fit:cover;border-radius:5px;background:#1a1a1a;flex-shrink:0"
+                   src="${PHOTO_PATH}${p.src}"
+                   onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;
+                            color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
+                <div style="font-size:10px;color:var(--muted)">${p.src}
+                  ${!p.published ? '<span style="color:var(--red);margin-left:6px;font-family:var(--font-ui);font-size:8px;font-weight:700;letter-spacing:0.1em">DRAFT</span>' : ''}
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;flex-shrink:0">
+                <button class="btn-icon" onclick="moveInCollection('${c.id}','${p.id}',-1)" ${i===0?'disabled':''}>↑</button>
+                <button class="btn-icon" onclick="moveInCollection('${c.id}','${p.id}',1)" ${i===members.length-1?'disabled':''}>↓</button>
+                <button class="btn-icon danger" onclick="removeFromCollection('${c.id}','${p.id}')">Remove</button>
+              </div>
+            </div>`;
+        }).join('')
+      : '<div style="font-size:10px;color:var(--muted);padding:8px 0">No photos in this collection.</div>';
+
+    return `
+    <div class="person-card" id="collcard-${c.id}">
+      <div class="person-card-header" onclick="toggleCollCard('${c.id}')">
+        <div class="person-avatar" style="border-radius:6px;font-size:10px;letter-spacing:0.05em">${members.length}</div>
+        <div style="flex:1;min-width:0">
+          <div class="person-name">${c.label}</div>
+          <div class="person-handle">${c.slug}</div>
+        </div>
+        <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
+          <button class="btn-icon danger" onclick="deleteCollection('${c.id}')">Delete</button>
+        </div>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="person-editor" id="colleditor-${c.id}">
+
+        <!-- Collection label/slug edit -->
+        <div class="editor-grid" style="margin-top:16px">
+          <div class="field">
+            <label>Label</label>
+            <input type="text" id="clabel-${c.id}" value="${c.label}">
+          </div>
+          <div class="field">
+            <label>Slug</label>
+            <input type="text" id="cslug-${c.id}" value="${c.slug}">
+          </div>
+        </div>
+        <button class="btn-save" onclick="saveCollection('${c.id}')" style="margin-bottom:16px">
+          Save Collection
+        </button>
+
+        <!-- Photos in collection -->
+        <div style="font-family:var(--font-ui);font-size:9px;font-weight:700;
+                    letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
+                    margin-bottom:10px">Photos in this collection</div>
+        <div id="coll-photos-${c.id}" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+          ${photosHtml}
+        </div>
+
+        <!-- Add photo to collection -->
+        <div class="field">
+          <label>Add Photo</label>
+          <div class="people-search-wrap">
+            <input type="text" id="coll-search-${c.id}"
+                   placeholder="Search by name or filename..."
+                   oninput="searchPhotosForCollection('${c.id}', this.value)"
+                   onfocus="openCollDropdown('${c.id}')"
+                   autocomplete="off">
+            <div class="people-dropdown" id="coll-drop-${c.id}"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCollCard(id) {
+  const card = document.getElementById(`collcard-${id}`);
+  card.classList.toggle('open');
+}
+
+/* Search photos to add to a collection */
+function searchPhotosForCollection(collId, query) {
+  const drop = document.getElementById(`coll-drop-${collId}`);
+  const q = query.toLowerCase().trim();
+
+  const candidates = q.length < 1 ? photos : photos.filter(p => {
+    const credits = photoCreditsMap[p.id] || [];
+    const subjects = credits.filter(c => c.role === 'subject' && c.people);
+    const name = subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(' ').toLowerCase();
+    return name.includes(q) || p.src.toLowerCase().includes(q) ||
+           (p.first_name + ' ' + p.last_name).toLowerCase().includes(q);
+  });
+
+  drop.innerHTML = candidates.slice(0, 8).map(p => {
+    const credits = photoCreditsMap[p.id] || [];
+    const subjects = credits.filter(c => c.role === 'subject' && c.people);
+    const name = subjects.length
+      ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
+      : (p.first_name ? `${p.first_name} ${p.last_name}` : p.src);
+    const alreadyIn = (photoCollectionsMap[p.id] || []).some(m => {
+      const coll = collections.find(c => c.id === collId);
+      return coll && m.collection_id === coll.id;
+    });
+    return `
+      <div class="people-option ${alreadyIn ? '' : ''}"
+           onclick="addPhotoToCollection('${collId}','${p.id}')">
+        <span style="display:flex;align-items:center;gap:8px">
+          <img style="width:24px;height:24px;object-fit:cover;border-radius:3px;background:#1a1a1a"
+               src="${PHOTO_PATH}${p.src}" onerror="this.style.background='#333';this.removeAttribute('src')">
+          ${name}
+          ${alreadyIn ? '<span style="color:var(--muted);font-size:9px;margin-left:4px">already in</span>' : ''}
+        </span>
+      </div>`;
+  }).join('');
+
+  drop.classList.toggle('open', candidates.length > 0);
+}
+
+function openCollDropdown(collId) {
+  searchPhotosForCollection(collId, document.getElementById(`coll-search-${collId}`).value);
+}
+
+async function addPhotoToCollection(collId, photoId) {
+  const coll = collections.find(c => c.id === collId);
+  if (!coll) return;
+  document.getElementById(`coll-drop-${collId}`).classList.remove('open');
+  document.getElementById(`coll-search-${collId}`).value = '';
+
+  const existingOrders = (Object.values(photoCollectionsMap)
+    .flat()
+    .filter(m => m.collection_id === collId)
+    .map(m => m.display_order));
+  const nextOrder = existingOrders.length ? Math.max(...existingOrders) + 1 : 1;
+
+  try {
+    await sbFetch('/rest/v1/photo_collections', {
+      method: 'POST',
+      body: JSON.stringify({ photo_id: photoId, collection_id: collId, display_order: nextOrder })
+    });
+    // Update local map
+    if (!photoCollectionsMap[photoId]) photoCollectionsMap[photoId] = [];
+    photoCollectionsMap[photoId].push({ photo_id: photoId, collection_id: collId, display_order: nextOrder });
+    showToast('Added to collection', 'success');
+    renderCollectionsList();
+    renderPhotoList(); // refresh chips
+  } catch (err) {
+    if (err.message.includes('duplicate') || err.message.includes('unique')) {
+      showToast('Already in this collection', 'error');
+    } else {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+}
+
+async function removeFromCollection(collId, photoId) {
+  try {
+    await sbFetch(`/rest/v1/photo_collections?photo_id=eq.${photoId}&collection_id=eq.${collId}`,
+      { method: 'DELETE' });
+    if (photoCollectionsMap[photoId])
+      photoCollectionsMap[photoId] = photoCollectionsMap[photoId].filter(m => m.collection_id !== collId);
+    showToast('Removed from collection', 'success');
+    renderCollectionsList();
+    renderPhotoList();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function moveInCollection(collId, photoId, direction) {
+  const members = Object.entries(photoCollectionsMap)
+    .filter(([, memberships]) => memberships.some(m => m.collection_id === collId))
+    .map(([pid, memberships]) => {
+      const m = memberships.find(m => m.collection_id === collId);
+      return { photoId: pid, order: m.display_order };
+    })
+    .sort((a, b) => a.order - b.order);
+
+  const idx = members.findIndex(m => m.photoId === photoId);
+  const swapIdx = idx + direction;
+  if (swapIdx < 0 || swapIdx >= members.length) return;
+
+  const a = members[idx], b = members[swapIdx];
+  try {
+    await Promise.all([
+      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${a.photoId}&collection_id=eq.${collId}`,
+        { method: 'PATCH', body: JSON.stringify({ display_order: b.order }) }),
+      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${b.photoId}&collection_id=eq.${collId}`,
+        { method: 'PATCH', body: JSON.stringify({ display_order: a.order }) })
+    ]);
+    // Update local map
+    const updateOrder = (pid, newOrder) => {
+      const m = (photoCollectionsMap[pid] || []).find(m => m.collection_id === collId);
+      if (m) m.display_order = newOrder;
+    };
+    updateOrder(a.photoId, b.order);
+    updateOrder(b.photoId, a.order);
+    renderCollectionsList();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function saveCollection(id) {
+  const btn = document.querySelector(`#collcard-${id} .btn-save`);
+  btn.classList.add('saving'); btn.textContent = 'Saving...';
+  try {
+    await sbFetch(`/rest/v1/collections?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        label: document.getElementById(`clabel-${id}`).value.trim(),
+        slug:  document.getElementById(`cslug-${id}`).value.trim()
+      })
+    });
+    await loadCollections();
+    showToast('Saved', 'success');
+    renderCollectionsList();
+    btn.classList.remove('saving'); btn.textContent = 'Save Collection';
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.classList.remove('saving'); btn.textContent = 'Save Collection';
+  }
+}
+
+async function deleteCollection(id) {
+  if (!confirm('Delete this collection? Photos will not be deleted, only removed from this collection.')) return;
+  try {
+    await sbFetch(`/rest/v1/collections?id=eq.${id}`, { method: 'DELETE' });
+    showToast('Collection deleted', 'success');
+    await loadCollections();
+    renderCollectionsList();
+    renderPhotoList();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function createCollection() {
+  const label = document.getElementById('nc-label').value.trim();
+  const slug  = document.getElementById('nc-slug').value.trim()
+    || label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  if (!label) { showToast('Label is required', 'error'); return; }
+  try {
+    const order = collections.length ? Math.max(...collections.map(c => c.display_order)) + 1 : 1;
+    await sbFetch('/rest/v1/collections', {
+      method: 'POST',
+      body: JSON.stringify({ label, slug, display_order: order })
+    });
+    showToast('Collection created', 'success');
+    closeNewCollectionPanel();
+    await loadCollections();
+    renderCollectionsList();
+  } catch (err) {
+    if (err.message.includes('unique')) showToast('A collection with this slug already exists', 'error');
+    else showToast('Error: ' + err.message, 'error');
+  }
+}
+
+function openNewCollectionPanel() {
+  document.getElementById('new-collection-panel').classList.add('visible');
+  document.getElementById('nc-label').focus();
+  // Auto-generate slug from label as jnb types
+  document.getElementById('nc-label').oninput = function() {
+    document.getElementById('nc-slug').value =
+      this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  };
+}
+function closeNewCollectionPanel() {
+  document.getElementById('new-collection-panel').classList.remove('visible');
+  document.getElementById('nc-label').value = '';
+  document.getElementById('nc-slug').value = '';
+}
+
+
 
 /* =====================================================
    TOAST

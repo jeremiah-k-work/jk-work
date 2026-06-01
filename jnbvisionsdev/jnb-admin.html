@@ -486,6 +486,15 @@
 
   <main class="admin-main">
 
+    <!-- UNREGISTERED PHOTOS -->
+    <div id="unregistered-section" style="display:none;margin-bottom:32px">
+      <div class="section-header" style="margin-bottom:12px">
+        <span class="section-title">Unregistered Photos</span>
+        <span id="unregistered-count" class="admin-badge"></span>
+      </div>
+      <div id="unregistered-list" style="display:flex;flex-direction:column;gap:2px"></div>
+    </div>
+
     <!-- NEW PHOTO PANEL -->
     <div id="new-photo-panel">
       <div class="new-photo-title">Add Photo</div>
@@ -539,8 +548,14 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
    Keep this file at an obscure, unlinked URL. */
 const ADMIN_PASSWORD = 'taxnbaxn';
 
-/* Path prefix for photos — adjust if images live in a subfolder */
-const PHOTO_PATH = './';
+/* =====================================================
+   PATHS — update here if folder structure changes
+   ===================================================== */
+const PATHS = {
+  images: 'images/',
+  logo:   'jnb-2026_sq.svg'
+};
+const PHOTO_PATH = PATHS.images;
 
 /* =====================================================
    AUTH
@@ -622,6 +637,7 @@ async function loadPhotos(attempt = 1) {
   try {
     photos = await sbFetch('/rest/v1/photos?select=*&order=display_order.asc');
     renderPhotoList();
+    loadUnregistered(); // check for image files with no metadata
   } catch (err) {
     if (attempt < maxAttempts) {
       // Wait 2 seconds then retry — handles Supabase wake-up delay
@@ -636,6 +652,76 @@ async function loadPhotos(attempt = 1) {
         </div>`;
     }
   }
+}
+
+/* =====================================================
+   UNREGISTERED PHOTOS
+   Calls /api/photos to get all image filenames in the
+   images/ folder, then compares against Supabase records.
+   Files with no metadata entry are shown for quick registration.
+   ===================================================== */
+async function loadUnregistered() {
+  try {
+    const res = await fetch('/api/photos');
+    if (!res.ok) throw new Error('API unavailable');
+    const { files } = await res.json();
+
+    // Get filenames already in Supabase (bare filename, no path prefix)
+    const registered = new Set(photos.map(p => p.src));
+
+    const unregistered = files.filter(f => !registered.has(f));
+
+    const section = document.getElementById('unregistered-section');
+    const list    = document.getElementById('unregistered-list');
+    const count   = document.getElementById('unregistered-count');
+
+    if (!unregistered.length) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    count.textContent = `${unregistered.length} new`;
+
+    list.innerHTML = unregistered.map(filename => `
+      <div class="photo-card" style="display:flex;align-items:center;
+           gap:16px;padding:12px 18px">
+        <img style="width:44px;height:44px;object-fit:cover;border-radius:6px;
+                    background:#1a1a1a;flex-shrink:0"
+             src="${PHOTO_PATH}${filename}"
+             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')"
+             alt="">
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;
+                      color:var(--white);white-space:nowrap;overflow:hidden;
+                      text-overflow:ellipsis">${filename}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">
+            No metadata — not shown in gallery
+          </div>
+        </div>
+        <button class="btn-add"
+                onclick="quickRegister('${filename}')"
+                style="flex-shrink:0">
+          Register
+        </button>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    // API not available (local dev without Vercel, etc.) — silently skip
+    console.warn('[admin] Directory scan unavailable:', err.message);
+  }
+}
+
+function quickRegister(filename) {
+  // Pre-fill the new photo form and scroll to it
+  openNewPanel();
+  document.getElementById('new-src').value = filename;
+  document.getElementById('new-first').focus();
+  // Scroll the form into view
+  document.getElementById('new-photo-panel').scrollIntoView({
+    behavior: 'smooth', block: 'start'
+  });
 }
 
 async function savePhoto(id, data) {

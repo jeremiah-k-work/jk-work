@@ -7,14 +7,14 @@
 <style>
   @font-face {
     font-family: 'Archivo';
-    src: url('Archivo-VariableFont_wdth,wght.ttf') format('truetype');
+    src: url('fonts/Archivo-VariableFont_wdth,wght.ttf') format('truetype');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
   }
   @font-face {
     font-family: 'Unbounded';
-    src: url('Unbounded-Variable.ttf') format('truetype');
+    src: url('fonts/Unbounded-Variable.ttf') format('truetype');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
@@ -631,7 +631,7 @@
      In gallery: centred via translate(-50%,-50%). -->
 <div id="unified-frame">
   <div id="frame-inner">
-    <img id="intro-photo" src="9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+    <img id="intro-photo" src="images/9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
     <!-- Dark plate sits between intro-photo and gallery-photo.
          Fades in when entering gallery (covers jnb),
          fades out when exiting (reveals jnb under overlay). -->
@@ -721,7 +721,7 @@
                  Omit (or set to [50,50]) to zoom into the center.
 */
 
-const LOGO = 'jnb-2026_sq.svg';
+const LOGO = PATHS.logo;
 
 /* Logo width in each state (px).
    Change these to resize the logo across all positions at once. */
@@ -737,14 +737,22 @@ const LOGO_SIZES = {
 const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
 
+/* =====================================================
+   PATHS — update here if folder structure changes
+   ===================================================== */
+const PATHS = {
+  images: 'images/',   // trailing slash required
+  logo:   'jnb-2026_sq.svg'
+};
+
 /* Fallback used if Supabase is unreachable */
 const GALLERY_FALLBACK = {
   portraits: [
-    { src: 'CA5D6891_CA_L_no-logo.jpg', first: 'Freddie', last: 'Andrews',
+    { src: 'images/CA5D6891_CA_L_no-logo.jpg', first: 'Freddie', last: 'Andrews',
       logoY: 50, infoY: 70, zoomAnchor: [60, 14], zoomRatio: 0.65 },
-    { src: 'CA5D6948.jpg', first: 'Rebecca', last: 'Deboer',
+    { src: 'images/CA5D6948.jpg', first: 'Rebecca', last: 'Deboer',
       logoY: 44, infoY: 68, zoomAnchor: [60, 30], zoomRatio: 0.65 },
-    { src: 'CA5D6942_S_CA_.jpg', first: 'Rebecca', last: 'Deboer',
+    { src: 'images/CA5D6942_S_CA_.jpg', first: 'Rebecca', last: 'Deboer',
       logoY: 64, infoY: 44, zoomAnchor: [70, 78], zoomRatio: 0.65 }
   ]
 };
@@ -769,7 +777,7 @@ async function fetchGallery() {
     const portraits = rows
       .filter(r => r.collection === 'portraits')
       .map(r => ({
-        src:        r.src,
+        src:        PATHS.images + r.src,
         first:      r.first_name,
         last:       r.last_name,
         logoY:      r.logo_y,

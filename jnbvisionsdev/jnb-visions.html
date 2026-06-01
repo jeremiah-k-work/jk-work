@@ -763,8 +763,22 @@ let GALLERY = GALLERY_FALLBACK;
 
 async function fetchGallery() {
   try {
+    // Query photo_collections joined to photos (published only) and
+    // their subject credits, ordered by display_order in the collection.
+    // Supabase nested select syntax pulls related rows in one request.
+    const params = new URLSearchParams({
+      select: [
+        'display_order',
+        'photos!inner(id,src,logo_y,info_y,zoom_anchor_x,zoom_anchor_y,zoom_ratio,published)',
+        'collections!inner(slug)'
+      ].join(','),
+      'collections.slug': 'eq.portraits',
+      'photos.published': 'eq.true',
+      order: 'display_order.asc'
+    });
+
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/photos?select=*&order=display_order.asc`,
+      `${SUPABASE_URL}/rest/v1/photo_collections?${params}`,
       { headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`
@@ -772,20 +786,48 @@ async function fetchGallery() {
     );
     if (!res.ok) throw new Error('Supabase fetch failed');
     const rows = await res.json();
-    if (!rows.length) throw new Error('No rows returned');
 
-    // Map Supabase column names to the format the site expects
-    const portraits = rows
-      .filter(r => r.collection === 'portraits')
-      .map(r => ({
-        src:        PATHS.images + r.src,
-        first:      r.first_name,
-        last:       r.last_name,
-        logoY:      r.logo_y,
-        infoY:      r.info_y,
-        zoomAnchor: [r.zoom_anchor_x, r.zoom_anchor_y],
-        zoomRatio:  r.zoom_ratio
-      }));
+    // For each photo, fetch its subject credits separately
+    // (Supabase free tier doesn't support deep nested joins via REST easily)
+    const photoIds = rows.map(r => r.photos.id);
+    let credits = [];
+    if (photoIds.length) {
+      const credParams = new URLSearchParams({
+        select: 'photo_id,role,people(first_name,last_name)',
+        'photo_id': `in.(${photoIds.join(',')})`,
+        role: 'eq.subject'
+      });
+      const credRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/photo_credits?${credParams}`,
+        { headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+        }}
+      );
+      if (credRes.ok) credits = await credRes.json();
+    }
+
+    // Build a map of photo_id -> first subject found
+    const subjectMap = {};
+    credits.forEach(c => {
+      if (!subjectMap[c.photo_id] && c.people) {
+        subjectMap[c.photo_id] = c.people;
+      }
+    });
+
+    const portraits = rows.map(r => {
+      const p       = r.photos;
+      const subject = subjectMap[p.id] || {};
+      return {
+        src:        PATHS.images + p.src,
+        first:      subject.first_name || '',
+        last:       subject.last_name  || '',
+        logoY:      p.logo_y,
+        infoY:      p.info_y,
+        zoomAnchor: [p.zoom_anchor_x, p.zoom_anchor_y],
+        zoomRatio:  p.zoom_ratio
+      };
+    });
 
     GALLERY = { portraits };
     console.log('[jnb] Gallery loaded from Supabase:', portraits.length, 'photos');

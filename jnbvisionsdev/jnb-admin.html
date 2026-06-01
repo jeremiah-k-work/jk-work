@@ -461,6 +461,21 @@
     outline: 2px solid transparent;
     background: #1a1a1a;
   }
+  /* Drop indicator — vertical bar to the left of target card */
+  .filmstrip-card.drop-before::before {
+    content: '';
+    position: absolute; top: 8px; bottom: 8px; left: -8px;
+    width: 2px; border-radius: 1px;
+    background: var(--cyan);
+    z-index: 10;
+  }
+  .filmstrip-card.drop-after::after {
+    content: '';
+    position: absolute; top: 8px; bottom: 8px; right: -8px;
+    width: 2px; border-radius: 1px;
+    background: var(--cyan);
+    z-index: 10;
+  }
   .filmstrip-card img {
     height: 100%; width: auto; display: block;
     object-fit: cover; image-rendering: pixelated;
@@ -473,14 +488,26 @@
   .filmstrip-card.dragging { opacity: 0.4; }
   .filmstrip-card-label {
     position: absolute; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.7));
-    padding: 16px 10px 8px;
-    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--white);
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 24px 10px 10px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 6px;
     opacity: 0; transition: opacity 0.15s;
   }
   .filmstrip-card:hover .filmstrip-card-label,
   .filmstrip-card.selected .filmstrip-card-label { opacity: 1; }
+  .filmstrip-card-label-left { min-width: 0; }
+  .filmstrip-card-label-name {
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--white);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .filmstrip-card-label-src {
+    font-family: var(--font-mono); font-size: 8px; color: rgba(255,255,255,0.5);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 2px; letter-spacing: 0.02em;
+  }
+  .filmstrip-card-label-right { flex-shrink: 0; }
   .filmstrip-empty {
     width: 100%; display: flex; align-items: center; justify-content: center;
     color: var(--muted); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
@@ -505,23 +532,46 @@
     padding: 8px; border-radius: 6px; cursor: pointer;
     transition: background 0.12s; margin-bottom: 2px;
     border: 1px solid transparent;
+    position: relative; overflow: hidden;
   }
+  /* Drop indicator — horizontal bar above target row */
+  .manage-panel-row.drop-above::before {
+    content: '';
+    position: absolute; top: -1px; left: 8px; right: 8px;
+    height: 2px; border-radius: 1px;
+    background: var(--cyan);
+  }
+  .manage-panel-row.drop-below::after {
+    content: ''; /* overrides the diagonal slice pseudo-element temporarily */
+    position: absolute; bottom: -1px; left: 8px; right: 8px;
+    height: 2px; border-radius: 1px;
+    background: var(--cyan);
+    /* Reset triangle styles */
+    border: none; width: auto;
+  }
+  /* Diagonal slice — draft = red corner, live = cyan corner */
+  .manage-panel-row::after {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 18px 18px 0;
+    border-color: transparent var(--row-slice-color, transparent) transparent transparent;
+    transition: border-color 0.2s;
+  }
+  .manage-panel-row.draft::after  { --row-slice-color: var(--red); }
+  .manage-panel-row.live::after   { --row-slice-color: rgba(0,200,160,0.5); }
   .manage-panel-row:hover { background: var(--surface); }
   .manage-panel-row.selected { background: var(--surface); border-color: var(--cyan); }
   .manage-panel-row.dragging-row { opacity: 0.4; }
 
   .manage-panel-thumb {
-    width: 36px; height: 36px; border-radius: 4px;
+    width: 40px; height: 40px; border-radius: 4px;
     object-fit: cover; background: #1a1a1a; flex-shrink: 0;
     image-rendering: pixelated;
+    /* Prevent browser image drag */
+    -webkit-user-drag: none; user-drag: none; pointer-events: none;
   }
-  .manage-panel-info { flex: 1; min-width: 0; }
-  .manage-panel-name {
-    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    color: var(--white);
-  }
-  .manage-panel-src { font-size: 9px; color: var(--muted); letter-spacing: 0.03em; }
   .manage-panel-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
   /* Edit modal */
@@ -1678,17 +1728,26 @@ function renderFilmstrip() {
            id="fcard-${m.photoId}"
            data-photoid="${m.photoId}"
            data-idx="${i}"
-           onclick="selectPhoto('${m.photoId}')"
+           onclick="handleFilmstripClick(event,'${m.photoId}')"
            draggable="true"
            ondragstart="filmstripDragStart(event,'${m.photoId}')"
            ondragover="filmstripDragOver(event)"
            ondrop="filmstripDrop(event,'${m.photoId}')"
            ondragend="filmstripDragEnd(event)">
         <img src="${PHOTO_PATH}${photo.src}"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-             alt="">
+             draggable="false"
+             onerror="this.style.display='none'" alt="">
         <div class="filmstrip-card-label">
-          ${name}${isDraft ? ' <span style="color:var(--red)">·DRAFT</span>' : ''}
+          <div class="filmstrip-card-label-left">
+            <div class="filmstrip-card-label-name">${name}</div>
+            <div class="filmstrip-card-label-src">${photo.src}</div>
+          </div>
+          <div class="filmstrip-card-label-right">
+            <span class="badge-published ${isDraft ? 'no' : 'yes'}"
+                  style="font-size:7px;padding:2px 5px">
+              ${isDraft ? 'Draft' : 'Live'}
+            </span>
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -1706,30 +1765,24 @@ function renderManagePanel() {
   list.innerHTML = manageMembers.map((m, i) => {
     const photo    = photos.find(p => p.id === m.photoId);
     if (!photo) return '';
-    const name     = getPhotoName(m.photoId);
-    const selected = selectedPhotoId === m.photoId;
+    const selected  = selectedPhotoId === m.photoId;
+    const draftClass = photo.published ? 'live' : 'draft';
 
     return `
-      <div class="manage-panel-row ${selected ? 'selected' : ''}"
+      <div class="manage-panel-row ${selected ? 'selected' : ''} ${draftClass}"
            id="prow-${m.photoId}"
-           onclick="selectPhoto('${m.photoId}')"
+           onclick="handlePanelRowClick(event,'${m.photoId}')"
            draggable="true"
            ondragstart="panelDragStart(event,'${m.photoId}')"
-           ondragover="panelDragOver(event)"
+           ondragover="panelDragOver(event,'${m.photoId}')"
            ondrop="panelDrop(event,'${m.photoId}')"
            ondragend="panelDragEnd(event)">
-        <span class="drag-handle" style="font-size:12px;opacity:0.4;flex-shrink:0">⠿</span>
+        <span class="drag-handle" style="font-size:12px;opacity:0.35;flex-shrink:0;cursor:grab">⠿</span>
         <img class="manage-panel-thumb"
+             draggable="false"
              src="${PHOTO_PATH}${photo.src}"
              onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
-        <div class="manage-panel-info">
-          <div class="manage-panel-name">${name}</div>
-          <div class="manage-panel-src">${photo.src}</div>
-        </div>
-        <div class="manage-panel-actions">
-          <span class="badge-published ${photo.published?'yes':'no'}" style="font-size:7px;padding:2px 5px">
-            ${photo.published?'Live':'Draft'}
-          </span>
+        <div class="manage-panel-actions" style="margin-left:auto">
           <button class="btn-icon" onclick="event.stopPropagation();panelMoveUp('${m.photoId}')" ${i===0?'disabled':''}>↑</button>
           <button class="btn-icon" onclick="event.stopPropagation();panelMoveDown('${m.photoId}')" ${i===manageMembers.length-1?'disabled':''}>↓</button>
           <button class="btn-icon danger" onclick="event.stopPropagation();removeFromManage('${m.photoId}')">×</button>
@@ -1743,23 +1796,42 @@ function renderManagePanel() {
 function selectPhoto(photoId) {
   selectedPhotoId = photoId;
 
-  // Update filmstrip
   document.querySelectorAll('.filmstrip-card').forEach(el => {
     el.classList.toggle('selected', el.dataset.photoid === photoId);
   });
-
-  // Update panel
   document.querySelectorAll('.manage-panel-row').forEach(el => {
     el.classList.toggle('selected', el.id === `prow-${photoId}`);
   });
 
-  // Scroll filmstrip card into view
   const fcard = document.getElementById(`fcard-${photoId}`);
   if (fcard) fcard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-  // Scroll panel row into view
   const prow = document.getElementById(`prow-${photoId}`);
   if (prow) prow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function deselectPhoto() {
+  selectedPhotoId = null;
+  document.querySelectorAll('.filmstrip-card').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.manage-panel-row').forEach(el => el.classList.remove('selected'));
+}
+
+// Click a filmstrip card — select or deselect
+function handleFilmstripClick(event, photoId) {
+  if (selectedPhotoId === photoId) {
+    deselectPhoto();
+  } else {
+    selectPhoto(photoId);
+  }
+}
+
+// Click a panel row — select or deselect
+function handlePanelRowClick(event, photoId) {
+  if (selectedPhotoId === photoId) {
+    deselectPhoto();
+  } else {
+    selectPhoto(photoId);
+  }
 }
 
 /* ── Panel arrow reorder ── */
@@ -1889,17 +1961,40 @@ function filmstripDragStart(e, photoId) {
   e.dataTransfer.effectAllowed = 'move';
   document.getElementById(`fcard-${photoId}`)?.classList.add('dragging');
 }
-function filmstripDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function filmstripDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  // Clear all indicators then set on the target card
+  document.querySelectorAll('.filmstrip-card').forEach(el => {
+    el.classList.remove('drop-before', 'drop-after');
+  });
+  const card = e.currentTarget;
+  if (!card) return;
+  const rect   = card.getBoundingClientRect();
+  const isLeft = e.clientX < rect.left + rect.width / 2;
+  card.classList.add(isLeft ? 'drop-before' : 'drop-after');
+}
 function filmstripDrop(e, targetPhotoId) {
   e.preventDefault();
+  document.querySelectorAll('.filmstrip-card').forEach(el => {
+    el.classList.remove('drop-before', 'drop-after');
+  });
   if (!filmDragId || filmDragId === targetPhotoId) return;
+  const card    = e.currentTarget;
+  const rect    = card.getBoundingClientRect();
+  const isLeft  = e.clientX < rect.left + rect.width / 2;
   const fromIdx = manageMembers.findIndex(m => m.photoId === filmDragId);
-  const toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
+  let   toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
   if (fromIdx < 0 || toIdx < 0) return;
+  // Adjust toIdx based on which side of the target we dropped
+  if (!isLeft && toIdx < fromIdx) toIdx += 1;
+  if (isLeft  && toIdx > fromIdx) toIdx -= 1;
   reorderMembers(fromIdx, toIdx);
 }
 function filmstripDragEnd(e) {
-  document.querySelectorAll('.filmstrip-card').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.filmstrip-card').forEach(el => {
+    el.classList.remove('dragging', 'drop-before', 'drop-after');
+  });
   filmDragId = null;
 }
 
@@ -1911,17 +2006,38 @@ function panelDragStart(e, photoId) {
   e.dataTransfer.effectAllowed = 'move';
   document.getElementById(`prow-${photoId}`)?.classList.add('dragging-row');
 }
-function panelDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function panelDragOver(e, targetPhotoId) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.manage-panel-row').forEach(el => {
+    el.classList.remove('drop-above', 'drop-below');
+  });
+  const row = document.getElementById(`prow-${targetPhotoId}`);
+  if (!row) return;
+  const rect    = row.getBoundingClientRect();
+  const isAbove = e.clientY < rect.top + rect.height / 2;
+  row.classList.add(isAbove ? 'drop-above' : 'drop-below');
+}
 function panelDrop(e, targetPhotoId) {
   e.preventDefault();
+  document.querySelectorAll('.manage-panel-row').forEach(el => {
+    el.classList.remove('drop-above', 'drop-below');
+  });
   if (!panelDragId || panelDragId === targetPhotoId) return;
+  const row     = document.getElementById(`prow-${targetPhotoId}`);
+  const rect    = row?.getBoundingClientRect();
+  const isAbove = rect ? e.clientY < rect.top + rect.height / 2 : true;
   const fromIdx = manageMembers.findIndex(m => m.photoId === panelDragId);
-  const toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
+  let   toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
   if (fromIdx < 0 || toIdx < 0) return;
+  if (!isAbove && toIdx < fromIdx) toIdx += 1;
+  if (isAbove  && toIdx > fromIdx) toIdx -= 1;
   reorderMembers(fromIdx, toIdx);
 }
 function panelDragEnd(e) {
-  document.querySelectorAll('.manage-panel-row').forEach(el => el.classList.remove('dragging-row'));
+  document.querySelectorAll('.manage-panel-row').forEach(el => {
+    el.classList.remove('dragging-row', 'drop-above', 'drop-below');
+  });
   panelDragId = null;
 }
 

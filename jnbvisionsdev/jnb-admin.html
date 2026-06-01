@@ -438,6 +438,15 @@
   #manage-filmstrip {
     display: flex; gap: 12px; align-items: center;
     padding: 24px; overflow-x: auto; height: 100%;
+    /* scroll-behavior set dynamically — smooth for programmatic, instant for drag */
+    cursor: grab;
+    user-select: none;
+  }
+  #manage-filmstrip.dragging-scroll {
+    cursor: grabbing;
+    scroll-behavior: auto;
+  }
+  #manage-filmstrip:not(.dragging-scroll) {
     scroll-behavior: smooth;
   }
   #manage-filmstrip::-webkit-scrollbar { height: 4px; }
@@ -861,12 +870,29 @@ async function init() {
 /* =====================================================
    LOAD COLLECTIONS
    ===================================================== */
-async function loadCollections() {
+async function loadCollections(attempt = 1) {
+  // Show a loading state in the collections list if it exists
+  const list = document.getElementById('collections-list');
+  if (list && attempt === 1) {
+    list.innerHTML = '<div class="loading-row">Loading...</div>';
+  } else if (list) {
+    list.innerHTML = `<div class="loading-row">Connecting... (attempt ${attempt} of 3)</div>`;
+  }
+
   try {
     collections = await sbFetch('/rest/v1/collections?select=*&order=display_order.asc');
   } catch (err) {
+    if (attempt < 3) {
+      await new Promise(r => setTimeout(r, 2000));
+      return loadCollections(attempt + 1);
+    }
     console.warn('Could not load collections:', err.message);
     collections = [];
+    if (list) list.innerHTML = `
+      <div class="loading-row" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+        <span style="color:var(--red)">Could not load collections.</span>
+        <button class="btn-add" onclick="loadCollections()">Try Again</button>
+      </div>`;
   }
 }
 
@@ -1609,6 +1635,8 @@ function openManageOverlay(collId) {
 
   renderFilmstrip();
   renderManagePanel();
+  // Set up wheel intercept and click-to-drag after filmstrip is in the DOM
+  requestAnimationFrame(() => initFilmstripScroll());
 }
 
 function closeManageOverlay() {
@@ -1616,6 +1644,7 @@ function closeManageOverlay() {
   document.getElementById('tab-collections').style.display = 'block';
   document.querySelector('.admin-tabs').style.display = 'flex';
   document.querySelector('.admin-header').style.display = 'flex';
+  destroyFilmstripScroll();
   manageCollId = null;
   selectedPhotoId = null;
   renderCollectionsList();
@@ -2011,6 +2040,80 @@ document.addEventListener('click', e => {
     document.getElementById('manage-add-drop')?.classList.remove('open');
   }
 });
+
+/* =====================================================
+   FILMSTRIP SCROLL — wheel intercept + click-to-drag
+   ===================================================== */
+
+(function() {
+  // We set these up once when the manage overlay is opened.
+  // They're stored so we can cleanly remove them when the overlay closes.
+  let strip        = null;
+  let isDragging   = false;
+  let dragStartX   = 0;
+  let dragScrollX  = 0;
+
+  /* Wheel: redirect vertical scroll to horizontal */
+  function onWheel(e) {
+    // Only intercept if the scroll is primarily vertical
+    // (allows native horizontal scroll from trackpads to still work)
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      strip.scrollLeft += e.deltaY * 1.2; // 1.2 feels slightly faster than 1:1
+    }
+  }
+
+  /* Click-to-drag: mousedown starts a drag session */
+  function onMouseDown(e) {
+    // Don't intercept clicks on filmstrip cards themselves (those select photos)
+    // Only start drag if clicking the filmstrip background or between cards
+    if (e.target.closest('.filmstrip-card')) return;
+    isDragging  = true;
+    dragStartX  = e.clientX;
+    dragScrollX = strip.scrollLeft;
+    strip.classList.add('dragging-scroll');
+    e.preventDefault();
+  }
+
+  function onMouseMove(e) {
+    if (!isDragging) return;
+    const delta = e.clientX - dragStartX;
+    strip.scrollLeft = dragScrollX - delta;
+  }
+
+  function onMouseUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    strip.classList.remove('dragging-scroll');
+  }
+
+  /* Called by openManageOverlay after the strip is rendered */
+  window.initFilmstripScroll = function() {
+    strip = document.getElementById('manage-filmstrip');
+    if (!strip) return;
+
+    // Remove any previous listeners (in case overlay was reopened)
+    strip.removeEventListener('wheel',     onWheel);
+    strip.removeEventListener('mousedown', onMouseDown);
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup',   onMouseUp);
+
+    // Attach fresh
+    strip.addEventListener('wheel',     onWheel,     { passive: false });
+    strip.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup',   onMouseUp);
+  };
+
+  window.destroyFilmstripScroll = function() {
+    if (!strip) return;
+    strip.removeEventListener('wheel',     onWheel);
+    strip.removeEventListener('mousedown', onMouseDown);
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup',   onMouseUp);
+    strip = null;
+  };
+})();
 
 /* =====================================================
    TOAST

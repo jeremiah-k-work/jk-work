@@ -608,13 +608,33 @@ async function sbFetch(path, opts = {}) {
    ===================================================== */
 let photos = [];
 
-async function loadPhotos() {
+async function loadPhotos(attempt = 1) {
+  const list = document.getElementById('photo-list');
+  const maxAttempts = 3;
+
+  // Show a calm loading state (not an error) while trying
+  if (attempt === 1) {
+    list.innerHTML = '<div class="loading-row">Loading...</div>';
+  } else {
+    list.innerHTML = `<div class="loading-row">Connecting... (attempt ${attempt} of ${maxAttempts})</div>`;
+  }
+
   try {
     photos = await sbFetch('/rest/v1/photos?select=*&order=display_order.asc');
     renderPhotoList();
   } catch (err) {
-    document.getElementById('photo-list').innerHTML =
-      `<div class="loading-row" style="color:var(--red)">Failed to load: ${err.message}</div>`;
+    if (attempt < maxAttempts) {
+      // Wait 2 seconds then retry — handles Supabase wake-up delay
+      setTimeout(() => loadPhotos(attempt + 1), 2000);
+    } else {
+      // All attempts failed — show error with retry button
+      list.innerHTML = `
+        <div class="loading-row" style="display:flex;flex-direction:column;gap:14px;align-items:center">
+          <span style="color:var(--red)">Could not reach the database.</span>
+          <span style="color:var(--muted);font-size:10px">${err.message}</span>
+          <button class="btn-add" onclick="loadPhotos()" style="margin-top:4px">Try Again</button>
+        </div>`;
+    }
   }
 }
 

@@ -387,6 +387,145 @@
     border-radius: 6px; padding: 8px 12px;
   }
 
+  /* ── COLLECTION LIST ROWS ── */
+  .coll-list-row {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px; margin-bottom: 2px;
+    transition: border-color 0.15s;
+  }
+  .coll-list-row:hover { border-color: var(--border-hi); }
+
+  .coll-stack {
+    position: relative; width: 56px; height: 72px; flex-shrink: 0;
+  }
+  .coll-stack-card {
+    position: absolute; border-radius: 5px; background: #1a1a1a;
+    object-fit: cover; border: 1px solid var(--border);
+  }
+
+  .coll-list-info { flex: 1; min-width: 0; }
+  .coll-list-name {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 900;
+    letter-spacing: -0.01em; color: var(--white);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .coll-list-meta { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.04em; }
+  .coll-list-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* ── MANAGE OVERLAY ── */
+  #manage-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    z-index: 60; flex-direction: column;
+  }
+  #manage-overlay[style*="flex"] { display: flex !important; }
+
+  .manage-header {
+    height: 56px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; flex-shrink: 0; gap: 16px;
+  }
+
+  .manage-body {
+    flex: 1; display: flex; overflow: hidden;
+  }
+
+  /* Filmstrip */
+  .manage-filmstrip-wrap {
+    flex: 1; overflow: hidden; display: flex; flex-direction: column;
+    border-right: 1px solid var(--border);
+  }
+  #manage-filmstrip {
+    display: flex; gap: 12px; align-items: center;
+    padding: 24px; overflow-x: auto; height: 100%;
+    scroll-behavior: smooth;
+  }
+  #manage-filmstrip::-webkit-scrollbar { height: 4px; }
+  #manage-filmstrip::-webkit-scrollbar-track { background: transparent; }
+  #manage-filmstrip::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+  .filmstrip-card {
+    flex-shrink: 0; height: calc(100% - 48px);
+    max-height: 480px; min-height: 200px;
+    border-radius: 10px; overflow: hidden; position: relative;
+    cursor: pointer; transition: outline 0.15s, transform 0.15s;
+    outline: 2px solid transparent;
+    background: #1a1a1a;
+  }
+  .filmstrip-card img {
+    height: 100%; width: auto; display: block;
+    object-fit: cover; image-rendering: pixelated;
+    pointer-events: none;
+  }
+  .filmstrip-card.selected {
+    outline: 2px solid var(--cyan);
+    transform: scale(1.02);
+  }
+  .filmstrip-card.dragging { opacity: 0.4; }
+  .filmstrip-card-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    padding: 16px 10px 8px;
+    font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--white);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .filmstrip-card:hover .filmstrip-card-label,
+  .filmstrip-card.selected .filmstrip-card-label { opacity: 1; }
+  .filmstrip-empty {
+    width: 100%; display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+  }
+
+  /* Manage panel (right side list) */
+  .manage-panel {
+    width: 300px; flex-shrink: 0; display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .manage-panel-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #manage-panel-list {
+    flex: 1; overflow-y: auto; padding: 8px;
+  }
+  #manage-panel-list::-webkit-scrollbar { width: 4px; }
+  #manage-panel-list::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+  .manage-panel-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px; border-radius: 6px; cursor: pointer;
+    transition: background 0.12s; margin-bottom: 2px;
+    border: 1px solid transparent;
+  }
+  .manage-panel-row:hover { background: var(--surface); }
+  .manage-panel-row.selected { background: var(--surface); border-color: var(--cyan); }
+  .manage-panel-row.dragging-row { opacity: 0.4; }
+
+  .manage-panel-thumb {
+    width: 36px; height: 36px; border-radius: 4px;
+    object-fit: cover; background: #1a1a1a; flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  .manage-panel-info { flex: 1; min-width: 0; }
+  .manage-panel-name {
+    font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--white);
+  }
+  .manage-panel-src { font-size: 9px; color: var(--muted); letter-spacing: 0.03em; }
+  .manage-panel-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+  /* Edit modal */
+  #edit-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 70;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .edit-modal {
+    background: var(--surface); border: 1px solid var(--border-hi);
+    border-radius: var(--radius); padding: 28px; width: 440px; max-width: 90vw;
+  }
+
   /* ── LOADING ── */
   .loading-row {
     padding: 40px; text-align: center; color: var(--muted);
@@ -542,8 +681,84 @@
         <span class="section-title">Collections</span>
         <button class="btn-add" onclick="openNewCollectionPanel()">+ Add Collection</button>
       </div>
+
+      <!-- Search -->
+      <div style="margin-bottom:20px">
+        <input type="text" id="coll-filter"
+               placeholder="Search collections..."
+               oninput="filterCollections(this.value)"
+               style="background:var(--surface);border:1px solid var(--border);
+                      color:var(--white);font-family:var(--font-mono);font-size:12px;
+                      padding:10px 14px;border-radius:var(--radius);outline:none;
+                      width:280px;transition:border-color 0.15s;letter-spacing:0.03em">
+      </div>
+
       <div id="collections-list"><div class="loading-row">Loading...</div></div>
 
+    </div>
+  </div>
+
+  <!-- MANAGE PHOTOS OVERLAY -->
+  <div id="manage-overlay" style="display:none">
+    <div class="manage-header">
+      <div style="display:flex;align-items:center;gap:16px">
+        <button class="btn-icon" onclick="closeManageOverlay()">← Back</button>
+        <span id="manage-title" class="admin-wordmark"></span>
+        <span id="manage-count" class="admin-badge"></span>
+      </div>
+      <!-- Add photo search -->
+      <div class="people-search-wrap" style="width:260px">
+        <input type="text" id="manage-add-search"
+               placeholder="Add photo by name or filename..."
+               oninput="searchPhotosForManage(this.value)"
+               onfocus="openManageDrop()"
+               autocomplete="off">
+        <div class="people-dropdown" id="manage-add-drop"></div>
+      </div>
+    </div>
+
+    <div class="manage-body">
+      <!-- FILMSTRIP -->
+      <div class="manage-filmstrip-wrap">
+        <div id="manage-filmstrip"></div>
+      </div>
+
+      <!-- PANEL -->
+      <div class="manage-panel">
+        <div class="manage-panel-header">
+          <span style="font-family:var(--font-ui);font-size:9px;font-weight:700;
+                       letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)">
+            Sequence
+          </span>
+        </div>
+        <div id="manage-panel-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT DETAILS MODAL -->
+  <div id="edit-modal-bg" style="display:none"
+       onclick="if(event.target===this)closeEditModal()">
+    <div class="edit-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <span class="admin-wordmark" id="edit-modal-title"></span>
+        <button class="btn-icon" onclick="closeEditModal()">✕</button>
+      </div>
+      <div class="editor-grid">
+        <div class="field">
+          <label>Label</label>
+          <input type="text" id="edit-label">
+        </div>
+        <div class="field">
+          <label>Slug</label>
+          <input type="text" id="edit-slug">
+        </div>
+      </div>
+      <div style="margin-top:8px;padding:12px;background:var(--bg);border:1px solid var(--border);
+                  border-radius:6px;color:var(--muted);font-size:10px;letter-spacing:0.05em">
+        More fields coming — assigned dates, collaborators, and more.
+      </div>
+      <button class="btn-save" onclick="saveEditModal()">Save Details</button>
     </div>
   </div>
 
@@ -1287,148 +1502,311 @@ function closeNewPersonPanel() {
    COLLECTIONS TAB
    ===================================================== */
 
+/* ── State ── */
+let manageCollId    = null;   // collection currently open in manage overlay
+let manageMembers   = [];     // ordered array of {photoId, order} for current collection
+let selectedPhotoId = null;   // currently highlighted photo (filmstrip + panel in sync)
+let editCollId      = null;   // collection open in edit modal
+
+/* ── Collections list ── */
+
+function filterCollections(query) {
+  const q = query.toLowerCase().trim();
+  const rows = document.querySelectorAll('.coll-list-row');
+  rows.forEach(row => {
+    const name = row.dataset.name || '';
+    row.style.display = (!q || name.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
 function renderCollectionsList() {
   const list = document.getElementById('collections-list');
   if (!list) return;
-
   if (!collections.length) {
     list.innerHTML = '<div class="loading-row">No collections yet.</div>';
     return;
   }
 
   list.innerHTML = collections.map(c => {
-    // Get all photos in this collection, sorted by their display_order
-    const members = (Object.entries(photoCollectionsMap)
-      .filter(([, memberships]) => memberships.some(m => m.collection_id === c.id))
-      .map(([photoId, memberships]) => {
-        const membership = memberships.find(m => m.collection_id === c.id);
-        const photo = photos.find(p => p.id === photoId);
-        return photo ? { ...photo, coll_order: membership.display_order } : null;
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.coll_order - b.coll_order));
+    // Get ordered members for this collection
+    const members = getOrderedMembers(c.id);
+    const count   = members.length;
 
-    const photosHtml = members.length
-      ? members.map((p, i) => {
-          const credits = photoCreditsMap[p.id] || [];
-          const subjects = credits.filter(c => c.role === 'subject' && c.people);
-          const name = subjects.length
-            ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
-            : (p.first_name ? `${p.first_name} ${p.last_name}` : p.src);
-          return `
-            <div class="coll-photo-row" id="collrow-${c.id}-${p.id}">
-              <span class="drag-handle" style="opacity:0.4;font-size:14px">⠿</span>
-              <img style="width:36px;height:36px;object-fit:cover;border-radius:5px;background:#1a1a1a;flex-shrink:0"
-                   src="${PHOTO_PATH}${p.src}"
-                   onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
-              <div style="flex:1;min-width:0">
-                <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;
-                            color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div>
-                <div style="font-size:10px;color:var(--muted)">${p.src}
-                  ${!p.published ? '<span style="color:var(--red);margin-left:6px;font-family:var(--font-ui);font-size:8px;font-weight:700;letter-spacing:0.1em">DRAFT</span>' : ''}
-                </div>
-              </div>
-              <div style="display:flex;gap:6px;flex-shrink:0">
-                <button class="btn-icon" onclick="moveInCollection('${c.id}','${p.id}',-1)" ${i===0?'disabled':''}>↑</button>
-                <button class="btn-icon" onclick="moveInCollection('${c.id}','${p.id}',1)" ${i===members.length-1?'disabled':''}>↓</button>
-                <button class="btn-icon danger" onclick="removeFromCollection('${c.id}','${p.id}')">Remove</button>
-              </div>
-            </div>`;
-        }).join('')
-      : '<div style="font-size:10px;color:var(--muted);padding:8px 0">No photos in this collection.</div>';
+    // Stack preview — up to 3 photos, offset like a deck
+    const stackPhotos = members.slice(0, 3).map(m => photos.find(p => p.id === m.photoId)).filter(Boolean);
+    const stackHtml = stackPhotos.length
+      ? stackPhotos.map((p, i) => {
+          const offset = (stackPhotos.length - 1 - i) * 5;
+          const scale  = 1 - (stackPhotos.length - 1 - i) * 0.06;
+          return `<img class="coll-stack-card"
+            src="${PHOTO_PATH}${p.src}"
+            onerror="this.style.background='#2a2a2a';this.removeAttribute('src')"
+            style="width:${40 + offset}px;height:${52 + offset * 1.3}px;
+                   bottom:0;left:0;
+                   transform:scale(${scale}) translateX(${i * 4}px);
+                   transform-origin:bottom left;
+                   z-index:${i + 1}">`;
+        }).reverse().join('')
+      : `<div class="coll-stack-card" style="width:40px;height:52px;bottom:0;left:0;z-index:1;
+              display:flex;align-items:center;justify-content:center;
+              color:var(--muted);font-size:16px">◻</div>`;
 
     return `
-    <div class="person-card" id="collcard-${c.id}">
-      <div class="person-card-header" onclick="toggleCollCard('${c.id}')">
-        <div class="person-avatar" style="border-radius:6px;font-size:10px;letter-spacing:0.05em">${members.length}</div>
-        <div style="flex:1;min-width:0">
-          <div class="person-name">${c.label}</div>
-          <div class="person-handle">${c.slug}</div>
-        </div>
-        <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
-          <button class="btn-icon danger" onclick="deleteCollection('${c.id}')">Delete</button>
-        </div>
-        <span class="expand-arrow">▼</span>
+    <div class="coll-list-row" data-name="${c.label}">
+      <div class="coll-stack">${stackHtml}</div>
+      <div class="coll-list-info">
+        <div class="coll-list-name">${c.label}</div>
+        <div class="coll-list-meta">${count} photo${count !== 1 ? 's' : ''} · ${c.slug}</div>
       </div>
-      <div class="person-editor" id="colleditor-${c.id}">
-
-        <!-- Collection label/slug edit -->
-        <div class="editor-grid" style="margin-top:16px">
-          <div class="field">
-            <label>Label</label>
-            <input type="text" id="clabel-${c.id}" value="${c.label}">
-          </div>
-          <div class="field">
-            <label>Slug</label>
-            <input type="text" id="cslug-${c.id}" value="${c.slug}">
-          </div>
-        </div>
-        <button class="btn-save" onclick="saveCollection('${c.id}')" style="margin-bottom:16px">
-          Save Collection
-        </button>
-
-        <!-- Photos in collection -->
-        <div style="font-family:var(--font-ui);font-size:9px;font-weight:700;
-                    letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
-                    margin-bottom:10px">Photos in this collection</div>
-        <div id="coll-photos-${c.id}" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
-          ${photosHtml}
-        </div>
-
-        <!-- Add photo to collection -->
-        <div class="field">
-          <label>Add Photo</label>
-          <div class="people-search-wrap">
-            <input type="text" id="coll-search-${c.id}"
-                   placeholder="Search by name or filename..."
-                   oninput="searchPhotosForCollection('${c.id}', this.value)"
-                   onfocus="openCollDropdown('${c.id}')"
-                   autocomplete="off">
-            <div class="people-dropdown" id="coll-drop-${c.id}"></div>
-          </div>
-        </div>
-
+      <div class="coll-list-actions">
+        <button class="btn-icon" onclick="openManageOverlay('${c.id}')">Manage Photos</button>
+        <button class="btn-icon" onclick="openEditModal('${c.id}')">Edit Details</button>
+        <button class="btn-icon danger" onclick="deleteCollection('${c.id}')">Delete</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function toggleCollCard(id) {
-  const card = document.getElementById(`collcard-${id}`);
-  card.classList.toggle('open');
+/* ── Helpers ── */
+
+function getOrderedMembers(collId) {
+  const result = [];
+  Object.entries(photoCollectionsMap).forEach(([photoId, memberships]) => {
+    const m = memberships.find(m => m.collection_id === collId);
+    if (m) result.push({ photoId, order: m.display_order });
+  });
+  return result.sort((a, b) => a.order - b.order);
 }
 
-/* Search photos to add to a collection */
-function searchPhotosForCollection(collId, query) {
-  const drop = document.getElementById(`coll-drop-${collId}`);
-  const q = query.toLowerCase().trim();
+function getPhotoName(photoId) {
+  const credits  = photoCreditsMap[photoId] || [];
+  const subjects = credits.filter(c => c.role === 'subject' && c.people);
+  const photo    = photos.find(p => p.id === photoId);
+  return subjects.length
+    ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
+    : (photo?.first_name ? `${photo.first_name} ${photo.last_name}` : photo?.src || '—');
+}
 
-  const candidates = q.length < 1 ? photos : photos.filter(p => {
-    const credits = photoCreditsMap[p.id] || [];
-    const subjects = credits.filter(c => c.role === 'subject' && c.people);
-    const name = subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(' ').toLowerCase();
-    return name.includes(q) || p.src.toLowerCase().includes(q) ||
-           (p.first_name + ' ' + p.last_name).toLowerCase().includes(q);
+/* ── Manage overlay ── */
+
+function openManageOverlay(collId) {
+  manageCollId  = collId;
+  selectedPhotoId = null;
+  const coll    = collections.find(c => c.id === collId);
+  manageMembers = getOrderedMembers(collId);
+
+  document.getElementById('manage-title').textContent = coll?.label || '';
+  document.getElementById('manage-overlay').style.display = 'flex';
+  document.getElementById('tab-collections').style.display = 'none';
+  document.querySelector('.admin-tabs').style.display = 'none';
+  document.querySelector('.admin-header').style.display = 'none';
+
+  renderFilmstrip();
+  renderManagePanel();
+}
+
+function closeManageOverlay() {
+  document.getElementById('manage-overlay').style.display = 'none';
+  document.getElementById('tab-collections').style.display = 'block';
+  document.querySelector('.admin-tabs').style.display = 'flex';
+  document.querySelector('.admin-header').style.display = 'flex';
+  manageCollId = null;
+  selectedPhotoId = null;
+  renderCollectionsList();
+}
+
+function updateManageCount() {
+  const el = document.getElementById('manage-count');
+  if (el) el.textContent = `${manageMembers.length} photo${manageMembers.length !== 1 ? 's' : ''}`;
+}
+
+/* ── Filmstrip ── */
+
+function renderFilmstrip() {
+  const strip = document.getElementById('manage-filmstrip');
+  updateManageCount();
+
+  if (!manageMembers.length) {
+    strip.innerHTML = '<div class="filmstrip-empty">No photos in this collection yet.</div>';
+    return;
+  }
+
+  strip.innerHTML = manageMembers.map((m, i) => {
+    const photo = photos.find(p => p.id === m.photoId);
+    if (!photo) return '';
+    const name     = getPhotoName(m.photoId);
+    const isDraft  = !photo.published;
+    const selected = selectedPhotoId === m.photoId;
+
+    return `
+      <div class="filmstrip-card ${selected ? 'selected' : ''}"
+           id="fcard-${m.photoId}"
+           data-photoid="${m.photoId}"
+           data-idx="${i}"
+           onclick="selectPhoto('${m.photoId}')"
+           draggable="true"
+           ondragstart="filmstripDragStart(event,'${m.photoId}')"
+           ondragover="filmstripDragOver(event)"
+           ondrop="filmstripDrop(event,'${m.photoId}')"
+           ondragend="filmstripDragEnd(event)">
+        <img src="${PHOTO_PATH}${photo.src}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+             alt="">
+        <div class="filmstrip-card-label">
+          ${name}${isDraft ? ' <span style="color:var(--red)">·DRAFT</span>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Panel list ── */
+
+function renderManagePanel() {
+  const list = document.getElementById('manage-panel-list');
+  if (!manageMembers.length) {
+    list.innerHTML = '<div style="padding:16px;font-size:10px;color:var(--muted);text-align:center">No photos yet.</div>';
+    return;
+  }
+
+  list.innerHTML = manageMembers.map((m, i) => {
+    const photo    = photos.find(p => p.id === m.photoId);
+    if (!photo) return '';
+    const name     = getPhotoName(m.photoId);
+    const selected = selectedPhotoId === m.photoId;
+
+    return `
+      <div class="manage-panel-row ${selected ? 'selected' : ''}"
+           id="prow-${m.photoId}"
+           onclick="selectPhoto('${m.photoId}')"
+           draggable="true"
+           ondragstart="panelDragStart(event,'${m.photoId}')"
+           ondragover="panelDragOver(event)"
+           ondrop="panelDrop(event,'${m.photoId}')"
+           ondragend="panelDragEnd(event)">
+        <span class="drag-handle" style="font-size:12px;opacity:0.4;flex-shrink:0">⠿</span>
+        <img class="manage-panel-thumb"
+             src="${PHOTO_PATH}${photo.src}"
+             onerror="this.style.background='#2a2a2a';this.removeAttribute('src')" alt="">
+        <div class="manage-panel-info">
+          <div class="manage-panel-name">${name}</div>
+          <div class="manage-panel-src">${photo.src}</div>
+        </div>
+        <div class="manage-panel-actions">
+          <span class="badge-published ${photo.published?'yes':'no'}" style="font-size:7px;padding:2px 5px">
+            ${photo.published?'Live':'Draft'}
+          </span>
+          <button class="btn-icon" onclick="event.stopPropagation();panelMoveUp('${m.photoId}')" ${i===0?'disabled':''}>↑</button>
+          <button class="btn-icon" onclick="event.stopPropagation();panelMoveDown('${m.photoId}')" ${i===manageMembers.length-1?'disabled':''}>↓</button>
+          <button class="btn-icon danger" onclick="event.stopPropagation();removeFromManage('${m.photoId}')">×</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Selection (shared highlight) ── */
+
+function selectPhoto(photoId) {
+  selectedPhotoId = photoId;
+
+  // Update filmstrip
+  document.querySelectorAll('.filmstrip-card').forEach(el => {
+    el.classList.toggle('selected', el.dataset.photoid === photoId);
+  });
+
+  // Update panel
+  document.querySelectorAll('.manage-panel-row').forEach(el => {
+    el.classList.toggle('selected', el.id === `prow-${photoId}`);
+  });
+
+  // Scroll filmstrip card into view
+  const fcard = document.getElementById(`fcard-${photoId}`);
+  if (fcard) fcard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  // Scroll panel row into view
+  const prow = document.getElementById(`prow-${photoId}`);
+  if (prow) prow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ── Panel arrow reorder ── */
+
+async function panelMoveUp(photoId) {
+  const idx = manageMembers.findIndex(m => m.photoId === photoId);
+  if (idx <= 0) return;
+  await swapManageMembers(idx, idx - 1);
+}
+
+async function panelMoveDown(photoId) {
+  const idx = manageMembers.findIndex(m => m.photoId === photoId);
+  if (idx < 0 || idx >= manageMembers.length - 1) return;
+  await swapManageMembers(idx, idx + 1);
+}
+
+async function swapManageMembers(idxA, idxB) {
+  const a = manageMembers[idxA];
+  const b = manageMembers[idxB];
+  try {
+    await Promise.all([
+      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${a.photoId}&collection_id=eq.${manageCollId}`,
+        { method: 'PATCH', body: JSON.stringify({ display_order: b.order }) }),
+      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${b.photoId}&collection_id=eq.${manageCollId}`,
+        { method: 'PATCH', body: JSON.stringify({ display_order: a.order }) })
+    ]);
+    // Swap in local state
+    [manageMembers[idxA].order, manageMembers[idxB].order] = [b.order, a.order];
+    manageMembers.sort((x, y) => x.order - y.order);
+    // Update photoCollectionsMap
+    const updateMap = (m) => {
+      const entry = (photoCollectionsMap[m.photoId] || []).find(e => e.collection_id === manageCollId);
+      if (entry) entry.display_order = m.order;
+    };
+    updateMap(manageMembers[idxA]);
+    updateMap(manageMembers[idxB]);
+    renderFilmstrip();
+    renderManagePanel();
+    if (selectedPhotoId) selectPhoto(selectedPhotoId);
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── Remove from collection ── */
+
+async function removeFromManage(photoId) {
+  try {
+    await sbFetch(`/rest/v1/photo_collections?photo_id=eq.${photoId}&collection_id=eq.${manageCollId}`,
+      { method: 'DELETE' });
+    manageMembers = manageMembers.filter(m => m.photoId !== photoId);
+    if (photoCollectionsMap[photoId])
+      photoCollectionsMap[photoId] = photoCollectionsMap[photoId].filter(m => m.collection_id !== manageCollId);
+    if (selectedPhotoId === photoId) selectedPhotoId = null;
+    renderFilmstrip();
+    renderManagePanel();
+    updateManageCount();
+    showToast('Removed from collection', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── Add photo search (manage overlay) ── */
+
+function searchPhotosForManage(query) {
+  const drop = document.getElementById('manage-add-drop');
+  const q    = query.toLowerCase().trim();
+  const inCollection = new Set(manageMembers.map(m => m.photoId));
+
+  const candidates = photos.filter(p => {
+    if (q.length < 1) return true;
+    const name = getPhotoName(p.id).toLowerCase();
+    return name.includes(q) || p.src.toLowerCase().includes(q);
   });
 
   drop.innerHTML = candidates.slice(0, 8).map(p => {
-    const credits = photoCreditsMap[p.id] || [];
-    const subjects = credits.filter(c => c.role === 'subject' && c.people);
-    const name = subjects.length
-      ? subjects.map(s => `${s.people.first_name} ${s.people.last_name}`).join(', ')
-      : (p.first_name ? `${p.first_name} ${p.last_name}` : p.src);
-    const alreadyIn = (photoCollectionsMap[p.id] || []).some(m => {
-      const coll = collections.find(c => c.id === collId);
-      return coll && m.collection_id === coll.id;
-    });
+    const name      = getPhotoName(p.id);
+    const alreadyIn = inCollection.has(p.id);
     return `
-      <div class="people-option ${alreadyIn ? '' : ''}"
-           onclick="addPhotoToCollection('${collId}','${p.id}')">
+      <div class="people-option" onclick="addPhotoToManage('${p.id}')">
         <span style="display:flex;align-items:center;gap:8px">
           <img style="width:24px;height:24px;object-fit:cover;border-radius:3px;background:#1a1a1a"
                src="${PHOTO_PATH}${p.src}" onerror="this.style.background='#333';this.removeAttribute('src')">
           ${name}
-          ${alreadyIn ? '<span style="color:var(--muted);font-size:9px;margin-left:4px">already in</span>' : ''}
+          ${alreadyIn ? '<span style="color:var(--muted);font-size:9px">already in</span>' : ''}
         </span>
       </div>`;
   }).join('');
@@ -1436,117 +1814,143 @@ function searchPhotosForCollection(collId, query) {
   drop.classList.toggle('open', candidates.length > 0);
 }
 
-function openCollDropdown(collId) {
-  searchPhotosForCollection(collId, document.getElementById(`coll-search-${collId}`).value);
+function openManageDrop() {
+  searchPhotosForManage(document.getElementById('manage-add-search').value);
 }
 
-async function addPhotoToCollection(collId, photoId) {
-  const coll = collections.find(c => c.id === collId);
-  if (!coll) return;
-  document.getElementById(`coll-drop-${collId}`).classList.remove('open');
-  document.getElementById(`coll-search-${collId}`).value = '';
+async function addPhotoToManage(photoId) {
+  document.getElementById('manage-add-drop').classList.remove('open');
+  document.getElementById('manage-add-search').value = '';
 
-  const existingOrders = (Object.values(photoCollectionsMap)
-    .flat()
-    .filter(m => m.collection_id === collId)
-    .map(m => m.display_order));
-  const nextOrder = existingOrders.length ? Math.max(...existingOrders) + 1 : 1;
+  const nextOrder = manageMembers.length
+    ? Math.max(...manageMembers.map(m => m.order)) + 1 : 1;
 
   try {
     await sbFetch('/rest/v1/photo_collections', {
       method: 'POST',
-      body: JSON.stringify({ photo_id: photoId, collection_id: collId, display_order: nextOrder })
+      body: JSON.stringify({ photo_id: photoId, collection_id: manageCollId, display_order: nextOrder })
     });
-    // Update local map
+    manageMembers.push({ photoId, order: nextOrder });
     if (!photoCollectionsMap[photoId]) photoCollectionsMap[photoId] = [];
-    photoCollectionsMap[photoId].push({ photo_id: photoId, collection_id: collId, display_order: nextOrder });
+    photoCollectionsMap[photoId].push({ photo_id: photoId, collection_id: manageCollId, display_order: nextOrder });
+    renderFilmstrip();
+    renderManagePanel();
+    updateManageCount();
     showToast('Added to collection', 'success');
-    renderCollectionsList();
-    renderPhotoList(); // refresh chips
+    // Select and scroll to the new photo
+    setTimeout(() => selectPhoto(photoId), 50);
   } catch (err) {
-    if (err.message.includes('duplicate') || err.message.includes('unique')) {
+    if (err.message.includes('duplicate') || err.message.includes('unique'))
       showToast('Already in this collection', 'error');
-    } else {
-      showToast('Error: ' + err.message, 'error');
-    }
+    else showToast('Error: ' + err.message, 'error');
   }
 }
 
-async function removeFromCollection(collId, photoId) {
-  try {
-    await sbFetch(`/rest/v1/photo_collections?photo_id=eq.${photoId}&collection_id=eq.${collId}`,
-      { method: 'DELETE' });
-    if (photoCollectionsMap[photoId])
-      photoCollectionsMap[photoId] = photoCollectionsMap[photoId].filter(m => m.collection_id !== collId);
-    showToast('Removed from collection', 'success');
-    renderCollectionsList();
-    renderPhotoList();
-  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+/* ── Filmstrip drag-and-drop ── */
+let filmDragId = null;
+
+function filmstripDragStart(e, photoId) {
+  filmDragId = photoId;
+  e.dataTransfer.effectAllowed = 'move';
+  document.getElementById(`fcard-${photoId}`)?.classList.add('dragging');
+}
+function filmstripDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function filmstripDrop(e, targetPhotoId) {
+  e.preventDefault();
+  if (!filmDragId || filmDragId === targetPhotoId) return;
+  const fromIdx = manageMembers.findIndex(m => m.photoId === filmDragId);
+  const toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  reorderMembers(fromIdx, toIdx);
+}
+function filmstripDragEnd(e) {
+  document.querySelectorAll('.filmstrip-card').forEach(el => el.classList.remove('dragging'));
+  filmDragId = null;
 }
 
-async function moveInCollection(collId, photoId, direction) {
-  const members = Object.entries(photoCollectionsMap)
-    .filter(([, memberships]) => memberships.some(m => m.collection_id === collId))
-    .map(([pid, memberships]) => {
-      const m = memberships.find(m => m.collection_id === collId);
-      return { photoId: pid, order: m.display_order };
-    })
-    .sort((a, b) => a.order - b.order);
+/* ── Panel drag-and-drop ── */
+let panelDragId = null;
 
-  const idx = members.findIndex(m => m.photoId === photoId);
-  const swapIdx = idx + direction;
-  if (swapIdx < 0 || swapIdx >= members.length) return;
-
-  const a = members[idx], b = members[swapIdx];
-  try {
-    await Promise.all([
-      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${a.photoId}&collection_id=eq.${collId}`,
-        { method: 'PATCH', body: JSON.stringify({ display_order: b.order }) }),
-      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${b.photoId}&collection_id=eq.${collId}`,
-        { method: 'PATCH', body: JSON.stringify({ display_order: a.order }) })
-    ]);
-    // Update local map
-    const updateOrder = (pid, newOrder) => {
-      const m = (photoCollectionsMap[pid] || []).find(m => m.collection_id === collId);
-      if (m) m.display_order = newOrder;
-    };
-    updateOrder(a.photoId, b.order);
-    updateOrder(b.photoId, a.order);
-    renderCollectionsList();
-  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+function panelDragStart(e, photoId) {
+  panelDragId = photoId;
+  e.dataTransfer.effectAllowed = 'move';
+  document.getElementById(`prow-${photoId}`)?.classList.add('dragging-row');
+}
+function panelDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function panelDrop(e, targetPhotoId) {
+  e.preventDefault();
+  if (!panelDragId || panelDragId === targetPhotoId) return;
+  const fromIdx = manageMembers.findIndex(m => m.photoId === panelDragId);
+  const toIdx   = manageMembers.findIndex(m => m.photoId === targetPhotoId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  reorderMembers(fromIdx, toIdx);
+}
+function panelDragEnd(e) {
+  document.querySelectorAll('.manage-panel-row').forEach(el => el.classList.remove('dragging-row'));
+  panelDragId = null;
 }
 
-async function saveCollection(id) {
-  const btn = document.querySelector(`#collcard-${id} .btn-save`);
-  btn.classList.add('saving'); btn.textContent = 'Saving...';
+/* ── Shared reorder logic (called after drop from either zone) ── */
+async function reorderMembers(fromIdx, toIdx) {
+  // Reorder local array
+  const moved = manageMembers.splice(fromIdx, 1)[0];
+  manageMembers.splice(toIdx, 0, moved);
+
+  // Reassign sequential display_order values
+  manageMembers.forEach((m, i) => { m.order = i + 1; });
+
+  // Persist all changed orders
   try {
-    await sbFetch(`/rest/v1/collections?id=eq.${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        label: document.getElementById(`clabel-${id}`).value.trim(),
-        slug:  document.getElementById(`cslug-${id}`).value.trim()
-      })
+    await Promise.all(manageMembers.map(m =>
+      sbFetch(`/rest/v1/photo_collections?photo_id=eq.${m.photoId}&collection_id=eq.${manageCollId}`,
+        { method: 'PATCH', body: JSON.stringify({ display_order: m.order }) })
+    ));
+    // Sync photoCollectionsMap
+    manageMembers.forEach(m => {
+      const entry = (photoCollectionsMap[m.photoId] || []).find(e => e.collection_id === manageCollId);
+      if (entry) entry.display_order = m.order;
     });
-    await loadCollections();
-    showToast('Saved', 'success');
-    renderCollectionsList();
-    btn.classList.remove('saving'); btn.textContent = 'Save Collection';
-  } catch (err) {
-    showToast('Error: ' + err.message, 'error');
-    btn.classList.remove('saving'); btn.textContent = 'Save Collection';
-  }
+    renderFilmstrip();
+    renderManagePanel();
+    if (selectedPhotoId) setTimeout(() => selectPhoto(selectedPhotoId), 30);
+  } catch (err) { showToast('Error saving order: ' + err.message, 'error'); }
 }
 
-async function deleteCollection(id) {
-  if (!confirm('Delete this collection? Photos will not be deleted, only removed from this collection.')) return;
+/* ── Edit Details modal ── */
+
+function openEditModal(collId) {
+  editCollId = collId;
+  const coll = collections.find(c => c.id === collId);
+  if (!coll) return;
+  document.getElementById('edit-modal-title').textContent = coll.label;
+  document.getElementById('edit-label').value = coll.label;
+  document.getElementById('edit-slug').value  = coll.slug;
+  document.getElementById('edit-modal-bg').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal-bg').style.display = 'none';
+  editCollId = null;
+}
+
+async function saveEditModal() {
+  if (!editCollId) return;
+  const label = document.getElementById('edit-label').value.trim();
+  const slug  = document.getElementById('edit-slug').value.trim();
+  if (!label) { showToast('Label is required', 'error'); return; }
   try {
-    await sbFetch(`/rest/v1/collections?id=eq.${id}`, { method: 'DELETE' });
-    showToast('Collection deleted', 'success');
-    await loadCollections();
+    await sbFetch(`/rest/v1/collections?id=eq.${editCollId}`, {
+      method: 'PATCH', body: JSON.stringify({ label, slug })
+    });
+    const coll = collections.find(c => c.id === editCollId);
+    if (coll) { coll.label = label; coll.slug = slug; }
+    showToast('Saved', 'success');
+    closeEditModal();
     renderCollectionsList();
-    renderPhotoList();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
+
+/* ── Create / Delete collection ── */
 
 async function createCollection() {
   const label = document.getElementById('nc-label').value.trim();
@@ -1555,13 +1959,12 @@ async function createCollection() {
   if (!label) { showToast('Label is required', 'error'); return; }
   try {
     const order = collections.length ? Math.max(...collections.map(c => c.display_order)) + 1 : 1;
-    await sbFetch('/rest/v1/collections', {
-      method: 'POST',
-      body: JSON.stringify({ label, slug, display_order: order })
+    const [newColl] = await sbFetch('/rest/v1/collections', {
+      method: 'POST', body: JSON.stringify({ label, slug, display_order: order })
     });
+    if (newColl) collections.push(newColl);
     showToast('Collection created', 'success');
     closeNewCollectionPanel();
-    await loadCollections();
     renderCollectionsList();
   } catch (err) {
     if (err.message.includes('unique')) showToast('A collection with this slug already exists', 'error');
@@ -1569,10 +1972,22 @@ async function createCollection() {
   }
 }
 
+async function deleteCollection(id) {
+  if (!confirm('Delete this collection? Photos will not be deleted.')) return;
+  try {
+    await sbFetch(`/rest/v1/collections?id=eq.${id}`, { method: 'DELETE' });
+    collections = collections.filter(c => c.id !== id);
+    showToast('Collection deleted', 'success');
+    renderCollectionsList();
+    renderPhotoList();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── New collection panel ── */
+
 function openNewCollectionPanel() {
   document.getElementById('new-collection-panel').classList.add('visible');
   document.getElementById('nc-label').focus();
-  // Auto-generate slug from label as jnb types
   document.getElementById('nc-label').oninput = function() {
     document.getElementById('nc-slug').value =
       this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -1581,10 +1996,15 @@ function openNewCollectionPanel() {
 function closeNewCollectionPanel() {
   document.getElementById('new-collection-panel').classList.remove('visible');
   document.getElementById('nc-label').value = '';
-  document.getElementById('nc-slug').value = '';
+  document.getElementById('nc-slug').value  = '';
 }
 
-
+/* ── Close manage dropdowns when clicking outside ── */
+document.addEventListener('click', e => {
+  if (!e.target.closest('#manage-add-search') && !e.target.closest('#manage-add-drop')) {
+    document.getElementById('manage-add-drop')?.classList.remove('open');
+  }
+});
 
 /* =====================================================
    TOAST

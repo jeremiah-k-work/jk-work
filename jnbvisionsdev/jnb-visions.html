@@ -1256,17 +1256,7 @@ function navigate(dir) {
 /* =====================================================
    KEYBOARD
    ===================================================== */
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' && (state === 'gallery' || state === 'expanded')) navigate(1);
-  if (e.key === 'ArrowLeft'  && (state === 'gallery' || state === 'expanded')) navigate(-1);
-  if (e.key === 'Escape') {
-    if (state === 'expanded') {
-      toggleExpanded(); // handles collapse cleanly
-    } else if (state === 'gallery') {
-      exitGallery();
-    }
-  }
-});
+
 
 /* =====================================================
    NAV POSITIONING

@@ -651,6 +651,24 @@
     color-scheme: dark; width: 100%;
   }
 
+  /* ── BOOKING SUB-TABS ── */
+  .booking-subtabs {
+    display: flex; border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .booking-subtab {
+    background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted); font-family: var(--font-ui); font-size: 9px;
+    font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 12px 16px; cursor: pointer; margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .booking-subtab:hover { color: var(--white); }
+  .booking-subtab.active { color: var(--white); border-bottom-color: var(--white); }
+  .booking-subpanel { display: none; }
+  .booking-subpanel.active { display: block; }
+
   /* ── LOADING ── */
   .loading-row {
     padding: 40px; text-align: center; color: var(--muted);
@@ -892,70 +910,85 @@
 
 <!-- BOOKINGS TAB -->
   <div id="tab-bookings" class="tab-panel">
-    <div class="admin-main">
 
-      <!-- TICKET CONFIG -->
-      <div class="section-header" style="margin-bottom:12px">
-        <span class="section-title">Tickets</span>
-      </div>
-      <div id="ticket-config-card" class="photo-card" style="margin-bottom:32px;padding:18px">
-        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-          <div class="field" style="flex:0 0 auto">
-            <label>Total Tickets Available</label>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
-              <input type="number" id="ticket-total" min="1" max="99"
-                     style="width:80px;background:var(--bg);border:1px solid var(--border);
-                            color:var(--white);font-family:var(--font-mono);font-size:16px;
-                            padding:8px 12px;border-radius:6px;outline:none;text-align:center">
-              <button class="btn-save" style="margin-top:0" onclick="saveTicketConfig()">Save</button>
+    <!-- Bookings sub-tabs -->
+    <div class="booking-subtabs">
+      <button class="booking-subtab active" onclick="switchBookingSubtab('availability')">Availability</button>
+      <button class="booking-subtab" onclick="switchBookingSubtab('inquiries')">Inquiries</button>
+    </div>
+
+    <!-- AVAILABILITY SUB-TAB -->
+    <div id="booking-sub-availability" class="booking-subpanel active">
+      <div class="admin-main">
+
+        <!-- TICKET CONFIG -->
+        <div class="section-header" style="margin-bottom:12px">
+          <span class="section-title">Tickets</span>
+        </div>
+        <div id="ticket-config-card" class="photo-card" style="margin-bottom:32px;padding:18px">
+          <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+            <div class="field" style="flex:0 0 auto">
+              <label>Total Tickets Available</label>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+                <input type="number" id="ticket-total" min="1" max="99"
+                       style="width:80px;background:var(--bg);border:1px solid var(--border);
+                              color:var(--white);font-family:var(--font-mono);font-size:16px;
+                              padding:8px 12px;border-radius:6px;outline:none;text-align:center">
+                <button class="btn-save" style="margin-top:0" onclick="saveTicketConfig()">Save</button>
+              </div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);
+                        letter-spacing:0.05em;line-height:1.6">
+              <div id="ticket-secured-display"></div>
+              <div id="ticket-available-display"></div>
             </div>
           </div>
-          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);
-                      letter-spacing:0.05em;line-height:1.6">
-            <div id="ticket-secured-display"></div>
-            <div id="ticket-available-display"></div>
+        </div>
+
+        <!-- POCKETS -->
+        <div class="section-header">
+          <span class="section-title">Availability Pockets</span>
+          <button class="btn-add" onclick="openNewPocketPanel()">+ Add Pocket</button>
+        </div>
+
+        <div id="new-pocket-panel" class="new-panel">
+          <div class="new-panel-title">Add Availability Pocket</div>
+          <div class="editor-grid">
+            <div class="field">
+              <label>Date</label>
+              <input type="date" id="pocket-date" class="booking-admin-input">
+            </div>
+            <div class="field" style="opacity:0"></div>
+            <div class="field">
+              <label>Start Time</label>
+              <input type="time" id="pocket-start" class="booking-admin-input">
+            </div>
+            <div class="field">
+              <label>End Time</label>
+              <input type="time" id="pocket-end" class="booking-admin-input">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn-save" onclick="createPocket()">Save Pocket</button>
+            <button class="btn-icon" onclick="closeNewPocketPanel()">Cancel</button>
           </div>
         </div>
+
+        <div id="pockets-list"><div class="loading-row">Loading...</div></div>
+
       </div>
-
-      <!-- AVAILABILITY POCKETS -->
-      <div class="section-header">
-        <span class="section-title">Availability</span>
-        <button class="btn-add" onclick="openNewPocketPanel()">+ Add Pocket</button>
-      </div>
-
-      <div id="new-pocket-panel" class="new-panel">
-        <div class="new-panel-title">Add Availability Pocket</div>
-        <div class="editor-grid">
-          <div class="field">
-            <label>Date</label>
-            <input type="date" id="pocket-date" class="booking-admin-input">
-          </div>
-          <div class="field" style="opacity:0"></div>
-          <div class="field">
-            <label>Start Time</label>
-            <input type="time" id="pocket-start" class="booking-admin-input">
-          </div>
-          <div class="field">
-            <label>End Time</label>
-            <input type="time" id="pocket-end" class="booking-admin-input">
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <button class="btn-save" onclick="createPocket()">Save Pocket</button>
-          <button class="btn-icon" onclick="closeNewPocketPanel()">Cancel</button>
-        </div>
-      </div>
-
-      <div id="pockets-list"><div class="loading-row">Loading...</div></div>
-
-      <!-- INQUIRIES -->
-      <div class="section-header" style="margin-top:48px">
-        <span class="section-title">Inquiries</span>
-      </div>
-      <div id="inquiries-list"><div class="loading-row">Loading...</div></div>
-
     </div>
+
+    <!-- INQUIRIES SUB-TAB -->
+    <div id="booking-sub-inquiries" class="booking-subpanel">
+      <div class="admin-main">
+        <div class="section-header">
+          <span class="section-title">Inquiries</span>
+        </div>
+        <div id="inquiries-list"><div class="loading-row">Loading...</div></div>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -2353,6 +2386,14 @@ document.addEventListener('keydown', e => {
    BOOKINGS TAB
    ===================================================== */
 
+function switchBookingSubtab(name) {
+  document.querySelectorAll('.booking-subtab').forEach((b, i) => {
+    b.classList.toggle('active', ['availability','inquiries'][i] === name);
+  });
+  document.querySelectorAll('.booking-subpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`booking-sub-${name}`).classList.add('active');
+}
+
 let pockets   = [];
 let inquiries = [];
 let ticketConfig = { id: 1, total: 3 };
@@ -2429,6 +2470,37 @@ function formatPocketTime(t) {
   return `${h12}${min ? ':' + String(min).padStart(2,'0') : ''} ${ampm}`;
 }
 
+function timeToMins(t) {
+  // "HH:MM" or "HH:MM:SS" → total minutes
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minsToTime(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function mergePocketsForDate(dayPockets) {
+  // Sort by start time, then merge overlapping/adjacent windows
+  const sorted = [...dayPockets].sort((a, b) => timeToMins(a.start_time) - timeToMins(b.start_time));
+  const merged = [];
+  for (const p of sorted) {
+    const last = merged[merged.length - 1];
+    if (last && timeToMins(p.start_time) <= timeToMins(last.end_time)) {
+      // Overlapping or adjacent — extend the last pocket's end time
+      if (timeToMins(p.end_time) > timeToMins(last.end_time)) {
+        last.end_time = p.end_time;
+        last._mergedIds = [...(last._mergedIds || [last.id]), p.id];
+      }
+    } else {
+      merged.push({ ...p, _mergedIds: [p.id] });
+    }
+  }
+  return merged;
+}
+
 function renderPockets() {
   const list = document.getElementById('pockets-list');
   if (!pockets.length) {
@@ -2443,29 +2515,176 @@ function renderPockets() {
     byDate[p.date].push(p);
   });
 
-  list.innerHTML = Object.entries(byDate).map(([date, dayPockets]) => `
+  list.innerHTML = Object.entries(byDate).map(([date, dayPockets]) => {
+    const merged = mergePocketsForDate(dayPockets);
+    return `
     <div style="margin-bottom:16px">
       <div style="font-family:var(--font-ui);font-size:9px;font-weight:700;
                   letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
                   margin-bottom:6px;padding-left:2px">${formatPocketDate(date)}</div>
-      ${dayPockets.map(p => `
-        <div class="pocket-card ${p.active ? '' : 'inactive'}">
-          <div style="flex:1">
-            <div class="pocket-date-label">
-              ${formatPocketTime(p.start_time)} – ${formatPocketTime(p.end_time)}
+      ${merged.map(p => `
+        <div class="pocket-card ${p.active ? '' : 'inactive'}" id="pcard-${p.id}">
+          <!-- View mode -->
+          <div id="pview-${p.id}" style="display:flex;align-items:center;width:100%;gap:12px">
+            <div style="flex:1">
+              <div class="pocket-date-label">
+                ${formatPocketTime(p.start_time)} – ${formatPocketTime(p.end_time)}
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+              <span style="font-size:9px;font-family:var(--font-ui);font-weight:700;
+                           letter-spacing:0.1em;color:${p.active ? 'var(--cyan)' : 'var(--muted)'};
+                           text-transform:uppercase">${p.active ? 'Active' : 'Hidden'}</span>
+              <button class="btn-icon" onclick="editPocket('${p.id}')">Edit</button>
+              <button class="btn-icon" onclick="splitPocketUI('${p.id}')">Split</button>
+              <button class="btn-icon" onclick="togglePocketActive('${p.id}',${p.active})">
+                ${p.active ? 'Hide' : 'Show'}
+              </button>
+              <button class="btn-icon danger" onclick="deletePocket('${p.id}')">Delete</button>
             </div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span style="font-size:9px;font-family:var(--font-ui);font-weight:700;
-                         letter-spacing:0.1em;color:${p.active ? 'var(--cyan)' : 'var(--muted)'};
-                         text-transform:uppercase">${p.active ? 'Active' : 'Hidden'}</span>
-            <button class="btn-icon" onclick="togglePocketActive('${p.id}',${p.active})">
-              ${p.active ? 'Hide' : 'Show'}
-            </button>
-            <button class="btn-icon danger" onclick="deletePocket('${p.id}')">Delete</button>
+          <!-- Edit mode (hidden by default) -->
+          <div id="pedit-${p.id}" style="display:none;width:100%">
+            <div class="editor-grid" style="margin-bottom:10px">
+              <div class="field">
+                <label>Start Time</label>
+                <input type="time" id="pedit-start-${p.id}" class="booking-admin-input"
+                       value="${p.start_time.slice(0,5)}">
+              </div>
+              <div class="field">
+                <label>End Time</label>
+                <input type="time" id="pedit-end-${p.id}" class="booking-admin-input"
+                       value="${p.end_time.slice(0,5)}">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-save" style="margin-top:0" onclick="savePocketEdit('${p.id}')">Save</button>
+              <button class="btn-icon" onclick="cancelPocketEdit('${p.id}')">Cancel</button>
+            </div>
+          </div>
+          <!-- Split mode (hidden by default) -->
+          <div id="psplit-${p.id}" style="display:none;width:100%">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:0.04em">
+              Split ${formatPocketTime(p.start_time)}–${formatPocketTime(p.end_time)} at:
+            </div>
+            <div class="editor-grid">
+              <div class="field">
+                <label>Split at</label>
+                <input type="time" id="psplit-at-${p.id}" class="booking-admin-input">
+              </div>
+              <div class="field">
+                <label>Gap (minutes)</label>
+                <input type="number" id="psplit-gap-${p.id}" class="booking-admin-input"
+                       value="5" min="0" max="120" placeholder="5">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn-save" style="margin-top:0" onclick="splitPocket('${p.id}')">Split</button>
+              <button class="btn-icon" onclick="cancelSplit('${p.id}')">Cancel</button>
+            </div>
           </div>
         </div>`).join('')}
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function editPocket(id) {
+  document.getElementById(`pview-${id}`).style.display = 'none';
+  document.getElementById(`pedit-${id}`).style.display = 'block';
+}
+function cancelPocketEdit(id) {
+  document.getElementById(`pview-${id}`).style.display = 'flex';
+  document.getElementById(`pedit-${id}`).style.display = 'none';
+}
+
+async function savePocketEdit(id) {
+  const start = document.getElementById(`pedit-start-${id}`).value;
+  const end   = document.getElementById(`pedit-end-${id}`).value;
+  if (!start || !end) { showToast('Both times required', 'error'); return; }
+  if (start >= end)   { showToast('End must be after start', 'error'); return; }
+  try {
+    await sbFetch(`/rest/v1/availability_pockets?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ start_time: start, end_time: end })
+    });
+    showToast('Saved', 'success');
+    await loadPockets();
+    await mergePocketsOnServer(id); // merge with any newly overlapping pockets
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+function splitPocketUI(id) {
+  document.getElementById(`pview-${id}`).style.display = 'none';
+  document.getElementById(`psplit-${id}`).style.display = 'block';
+}
+function cancelSplit(id) {
+  document.getElementById(`pview-${id}`).style.display = 'flex';
+  document.getElementById(`psplit-${id}`).style.display = 'none';
+}
+
+async function splitPocket(id) {
+  const pocket  = pockets.find(p => p.id === id);
+  if (!pocket) return;
+  const splitAt = document.getElementById(`psplit-at-${id}`).value;
+  const gap     = parseInt(document.getElementById(`psplit-gap-${id}`).value) || 0;
+  if (!splitAt) { showToast('Enter a split time', 'error'); return; }
+
+  const startMins = timeToMins(pocket.start_time);
+  const endMins   = timeToMins(pocket.end_time);
+  const splitMins = timeToMins(splitAt);
+
+  if (splitMins <= startMins || splitMins >= endMins) {
+    showToast('Split time must be within the pocket', 'error'); return;
+  }
+
+  const firstEnd  = minsToTime(splitMins - gap);
+  const secondStart = minsToTime(splitMins);
+
+  if (timeToMins(firstEnd) <= startMins) {
+    showToast('Gap is too large for this pocket', 'error'); return;
+  }
+
+  try {
+    // Update existing pocket to first half
+    await sbFetch(`/rest/v1/availability_pockets?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ end_time: firstEnd })
+    });
+    // Create second half
+    await sbFetch('/rest/v1/availability_pockets', {
+      method: 'POST',
+      body: JSON.stringify({
+        date: pocket.date,
+        start_time: secondStart,
+        end_time: pocket.end_time,
+        active: pocket.active
+      })
+    });
+    showToast('Pocket split', 'success');
+    await loadPockets();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function mergePocketsOnServer(changedId) {
+  // After an edit, check if any pockets on the same date now overlap and merge them
+  const changed = pockets.find(p => p.id === changedId);
+  if (!changed) return;
+  const sameDayPockets = pockets.filter(p => p.date === changed.date);
+  const merged = mergePocketsForDate(sameDayPockets);
+
+  for (const m of merged) {
+    if (!m._mergedIds || m._mergedIds.length <= 1) continue;
+    // Keep the first pocket, update its end time, delete the rest
+    const [keepId, ...deleteIds] = m._mergedIds;
+    await sbFetch(`/rest/v1/availability_pockets?id=eq.${keepId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ end_time: m.end_time })
+    });
+    for (const delId of deleteIds) {
+      await sbFetch(`/rest/v1/availability_pockets?id=eq.${delId}`, { method: 'DELETE' });
+    }
+  }
+  await loadPockets();
 }
 
 async function createPocket() {
@@ -2482,6 +2701,9 @@ async function createPocket() {
     showToast('Pocket added', 'success');
     closeNewPocketPanel();
     await loadPockets();
+    // Auto-merge any overlapping pockets on this date
+    const newPocket = pockets.find(p => p.date === date && p.start_time.startsWith(start));
+    if (newPocket) await mergePocketsOnServer(newPocket.id);
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 
@@ -2502,6 +2724,7 @@ async function deletePocket(id) {
     await loadPockets();
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
+
 
 function openNewPocketPanel() {
   document.getElementById('new-pocket-panel').classList.add('visible');

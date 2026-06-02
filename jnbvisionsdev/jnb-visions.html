@@ -1274,7 +1274,7 @@ async function goBook() {
   // Render after slide begins
   setTimeout(() => renderBookingView(), 400);
 
-  // Position logo in booking view (deferred internally until after slide)
+  // Logo moves immediately alongside the slide transition
   positionLogoBooking();
 }
 
@@ -1302,18 +1302,15 @@ function exitBook() {
 }
 
 function positionLogoBooking() {
-  // Logo sits at a stable fixed position in booking state.
-  // Deferred until after the slide transition completes (750ms)
-  // to avoid reading geometry mid-animation.
-  setTimeout(() => {
-    const logo  = document.getElementById('logo');
-    const logoW = LOGO_SIZES.gallery;
-    logo.style.width     = logoW + 'px';
-    logo.style.left      = '24px';
-    logo.style.top       = '24px';
-    logo.style.opacity   = '1';
-    logo.style.transform = 'none';
-  }, 780);
+  // Logo transitions to top-left immediately when booking opens,
+  // moving alongside the slide. Called directly — no defer.
+  const logo  = document.getElementById('logo');
+  const logoW = LOGO_SIZES.gallery;
+  logo.style.width     = logoW + 'px';
+  logo.style.left      = '24px';
+  logo.style.top       = '24px';
+  logo.style.opacity   = '1';
+  logo.style.transform = 'none';
 }
 
 /* ── Booking view rendering ── */
@@ -2102,6 +2099,7 @@ window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     if (state === 'intro') positionIntroAll();
+    if (state === 'booking') positionLogoBooking();
     if (state === 'gallery' || state === 'expanded') {
       const vw = window.innerWidth, vh = window.innerHeight;
       const gap = vh * 0.04;

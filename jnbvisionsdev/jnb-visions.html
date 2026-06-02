@@ -603,34 +603,47 @@
 
   /* =====================================================
      SITE SLIDER
+     The slider is viewport-sized with overflow hidden.
+     Sheet-1 and booking-scene sit side by side inside it
+     via absolute positioning. The slider itself never
+     overflows, so fixed-position children are unaffected.
      ===================================================== */
   #site-slider {
-    display: flex;
-    width: 200vw;
+    position: relative;
+    width: 100vw;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  #sheet-1 {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
     min-height: 100vh;
     transition: transform 0.75s var(--ease-expo);
     will-change: transform;
   }
-  #sheet-1 {
-    width: 100vw;
-    min-height: 100vh;
-    position: relative;
-    flex-shrink: 0;
+  #sheet-1.slide-out {
+    transform: translateX(-100vw);
   }
 
   /* =====================================================
      BOOKING SCENE
      ===================================================== */
   #booking-scene {
+    position: absolute;
+    top: 0; left: 100vw;
     width: 100vw;
     min-height: 100vh;
-    flex-shrink: 0;
     display: flex;
     align-items: flex-start;
     justify-content: center;
     padding: 80px 48px 80px;
     overflow-y: auto;
-    position: relative;
+    transition: transform 0.75s var(--ease-expo);
+    will-change: transform;
+  }
+  #booking-scene.slide-in {
+    transform: translateX(-100vw);
   }
 
   #booking-inner {
@@ -641,11 +654,11 @@
     gap: 40px;
   }
 
-  /* Back button */
+  /* Back button — sticky inside booking-scene */
   #booking-back {
     position: fixed;
     top: 24px;
-    left: calc(100vw + 24px);
+    right: 24px;
     font-family: var(--font-secondary);
     font-size: clamp(9px, 1vw, 11px);
     font-weight: 400;
@@ -656,7 +669,13 @@
     border: none;
     cursor: pointer;
     z-index: 20;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #booking-back.visible {
+    opacity: 1;
+    pointer-events: all;
   }
   #booking-back:hover { color: rgba(255,255,255,0.85); }
 
@@ -1235,14 +1254,20 @@ async function goBook() {
   document.getElementById('unified-frame').style.opacity = '0';
   document.getElementById('outline-rect').classList.remove('rect-visible');
 
-  // Slide scene right → left
+  // Slide booking scene in
   const scene = document.getElementById('booking-scene');
   scene.style.display = 'flex';
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      document.getElementById('site-slider').style.transform = 'translateX(-100vw)';
+      document.getElementById('sheet-1').classList.add('slide-out');
+      scene.classList.add('slide-in');
     });
   });
+
+  // Show back button
+  setTimeout(() => {
+    document.getElementById('booking-back').classList.add('visible');
+  }, 500);
 
   // Render after slide begins
   setTimeout(() => renderBookingView(), 400);
@@ -1256,7 +1281,8 @@ function exitBook() {
   state = 'intro';
 
   // Slide back
-  document.getElementById('site-slider').style.transform = 'translateX(0)';
+  document.getElementById('sheet-1').classList.remove('slide-out');
+  document.getElementById('booking-scene').classList.remove('slide-in');
 
   // Restore intro chrome
   setTimeout(() => {
@@ -1264,6 +1290,8 @@ function exitBook() {
     positionIntroAll();
     document.getElementById('visions-label').style.opacity = '1';
   }, 400);
+
+  document.getElementById('booking-back').classList.remove('visible');
 
   setTimeout(() => {
     document.getElementById('booking-scene').style.display = 'none';

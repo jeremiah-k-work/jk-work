@@ -599,9 +599,331 @@
     75%  { transform: rotate(-15deg) translate(-6px, -4px); }
     100% { transform: rotate(-15deg) translate(0px,   0px); }
   }
+
+
+  /* =====================================================
+     SITE SLIDER
+     ===================================================== */
+  #site-slider {
+    display: flex;
+    width: 200vw;
+    min-height: 100vh;
+    transition: transform 0.75s var(--ease-expo);
+    will-change: transform;
+  }
+  #sheet-1 {
+    width: 100vw;
+    min-height: 100vh;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* =====================================================
+     BOOKING SCENE
+     ===================================================== */
+  #booking-scene {
+    width: 100vw;
+    min-height: 100vh;
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 48px 80px;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  #booking-inner {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* Back button */
+  #booking-back {
+    position: fixed;
+    top: 24px;
+    left: calc(100vw + 24px);
+    font-family: var(--font-secondary);
+    font-size: clamp(9px, 1vw, 11px);
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+    transition: color 0.2s ease;
+  }
+  #booking-back:hover { color: rgba(255,255,255,0.85); }
+
+  /* Ticket status */
+  #booking-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-top: 8px;
+  }
+  .booking-ticket-label {
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 8px;
+  }
+  .booking-ticket-count {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .booking-secured {
+    font-family: var(--font-secondary);
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .booking-ticket-sep {
+    font-family: var(--font-secondary);
+    font-size: clamp(20px, 3vw, 32px);
+    color: rgba(255,255,255,0.2);
+    line-height: 1;
+  }
+  .booking-total {
+    font-family: var(--font-secondary);
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.35);
+    line-height: 1;
+  }
+  .booking-ticket-word {
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    align-self: flex-end;
+    margin-bottom: 6px;
+  }
+
+  /* Sold out */
+  #booking-soldout {
+    text-align: center;
+    padding: 60px 0;
+  }
+  .booking-soldout-msg {
+    font-family: var(--font-secondary);
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .booking-soldout-sub {
+    font-family: var(--font-primary);
+    font-size: 13px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+  }
+
+  /* Month navigation */
+  #booking-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .booking-month-label {
+    font-family: var(--font-secondary);
+    font-size: clamp(11px, 1.6vw, 16px);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .booking-month-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.5);
+    font-family: var(--font-primary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+  .booking-month-btn:hover { color: var(--white); }
+
+  /* Day cards */
+  #booking-days {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .booking-day-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .booking-day-card:hover {
+    border-color: rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.05);
+  }
+  .booking-day-card.selected {
+    border-color: var(--red);
+    background: rgba(200,0,30,0.05);
+  }
+  .booking-day-date {
+    font-family: var(--font-secondary);
+    font-size: clamp(11px, 1.4vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .booking-day-windows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .booking-window {
+    font-family: var(--font-primary);
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.06em;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    padding: 3px 8px;
+  }
+
+  /* Inquiry form */
+  #booking-inquiry-wrap {
+    animation: slideUp 0.35s var(--ease-expo);
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #booking-inquiry-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .booking-inquiry-title {
+    font-family: var(--font-secondary);
+    font-size: clamp(11px, 1.4vw, 14px);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+  .booking-label {
+    display: block;
+    font-family: var(--font-secondary);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 6px;
+  }
+  .booking-field { display: flex; flex-direction: column; }
+  .booking-field-row { display: flex; gap: 12px; }
+  .booking-field-row .booking-field { flex: 1; }
+
+  .booking-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    color: var(--white);
+    font-family: var(--font-primary);
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .booking-input:focus { border-color: rgba(255,255,255,0.3); }
+  .booking-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: var(--font-primary);
+  }
+  select.booking-input option {
+    background: #111;
+    color: var(--white);
+  }
+
+  .booking-submit {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    font-family: var(--font-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 13px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    align-self: flex-start;
+  }
+  .booking-submit:hover { opacity: 0.85; }
+  .booking-submit:disabled { opacity: 0.4; cursor: default; }
+
+  .booking-error {
+    font-family: var(--font-primary);
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 0.04em;
+    min-height: 16px;
+  }
+
+  /* Confirmation */
+  .booking-confirm {
+    padding: 16px 0;
+  }
+  .booking-confirm-title {
+    font-family: var(--font-secondary);
+    font-size: clamp(16px, 2.5vw, 24px);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .booking-confirm-body {
+    font-family: var(--font-primary);
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+
 </style>
 </head>
 <body>
+
+<!-- SITE SLIDER — horizontal slide container.
+     Sheet 1 (intro/gallery) is the normal body content.
+     Sheet 2 (booking) slides in from the right.
+     transform: translateX(-100vw) shows Sheet 2. -->
+<div id="site-slider">
+<div id="sheet-1">
 
 <!-- RED LINE -->
 <svg id="red-line" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -686,12 +1008,21 @@
      CSS transitions carry each word smoothly between positions. -->
 <nav id="nav-unified">
   <button id="nav-gallery"  class="nav-word" onclick="enterGallery('portraits')">Gallery</button>
-  <button id="nav-connect"  class="nav-word" onclick="goConnect()">Connect</button>
-  <button id="nav-back"     class="nav-word" onclick="exitGallery()">Back</button>
+  <button id="nav-connect"  class="nav-word" onclick="goBook()">Book</button>
+  <button id="nav-back"     class="nav-word" onclick="state==='booking'?exitBook():exitGallery()">Back</button>
 </nav>
 
 <!-- KEYBOARD HINT -->
 <div id="kbd-hint">&#8592; &nbsp; Arrow keys to navigate &nbsp; &#8594;</div>
+
+</div><!-- end sheet-1 -->
+
+<!-- BOOKING SCENE — Sheet 2, slides in from right -->
+<div id="booking-scene" style="display:none">
+  <button id="booking-back" onclick="exitBook()">← Back</button>
+</div>
+
+</div><!-- end site-slider -->
 
 <!-- CUSTOM CURSOR -->
 <div id="cursor-core"></div>
@@ -848,16 +1179,363 @@ fetchGallery();
 /* =====================================================
    STATE
    ===================================================== */
-let state = 'intro';   // 'intro' | 'gallery' | 'expanded'
+let state = 'intro';   // 'intro' | 'gallery' | 'expanded' | 'booking'
 let currentCollection = [];
 let currentIndex = 0;
 let isExpanded = false;
 
 /* =====================================================
-   CONNECT (placeholder)
+   BOOKING
    ===================================================== */
-function goConnect() {
-  alert('Connect — coming soon.');
+
+/* Booking data — loaded from Supabase */
+let bookingPockets     = [];   // availability_pockets rows
+let bookingConfig      = {};   // ticket_config row
+let selectedPocketDay  = null; // date string 'YYYY-MM-DD' of selected day card
+let currentBookingMonth = null; // 'YYYY-MM' of month currently in view
+
+async function fetchBookingData() {
+  try {
+    const [pockets, config] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&order=date.asc`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+        .then(r => r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/ticket_config?select=*`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
+        .then(r => r.json())
+    ]);
+    bookingPockets = pockets || [];
+    bookingConfig  = config?.[0] || { total: 3 };
+
+    // Fetch secured count (hold + confirmed inquiries)
+    const secured = await fetch(
+      `${SUPABASE_URL}/rest/v1/inquiries?select=id&status=in.(hold,confirmed)`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    ).then(r => r.json());
+    bookingConfig.secured = (secured || []).length;
+  } catch(err) {
+    console.warn('[jnb] Booking data fetch failed:', err.message);
+    bookingPockets = [];
+    bookingConfig  = { total: 3, secured: 0 };
+  }
+}
+
+async function goBook() {
+  if (state === 'booking') return;
+  if (state === 'gallery' || state === 'expanded') await exitGallery();
+  state = 'booking';
+
+  await fetchBookingData();
+
+  // Hide intro chrome
+  document.getElementById('visions-label').style.opacity   = '0';
+  document.getElementById('visions-label').style.left =
+    (parseFloat(document.getElementById('visions-label').style.left || '0') - 20) + 'px';
+  document.getElementById('logo').style.opacity = '0';
+  document.getElementById('unified-frame').style.opacity = '0';
+  document.getElementById('outline-rect').classList.remove('rect-visible');
+
+  // Slide scene right → left
+  const scene = document.getElementById('booking-scene');
+  scene.style.display = 'flex';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById('site-slider').style.transform = 'translateX(-100vw)';
+    });
+  });
+
+  // Render after slide begins
+  setTimeout(() => renderBookingView(), 400);
+
+  // Position logo in booking view
+  setTimeout(() => positionLogoBooking(), 450);
+}
+
+function exitBook() {
+  if (state !== 'booking') return;
+  state = 'intro';
+
+  // Slide back
+  document.getElementById('site-slider').style.transform = 'translateX(0)';
+
+  // Restore intro chrome
+  setTimeout(() => {
+    document.getElementById('unified-frame').style.opacity = '1';
+    positionIntroAll();
+    document.getElementById('visions-label').style.opacity = '1';
+  }, 400);
+
+  setTimeout(() => {
+    document.getElementById('booking-scene').style.display = 'none';
+    selectedPocketDay = null;
+  }, 800);
+}
+
+function positionLogoBooking() {
+  // Logo sits top-left of booking scene, matching gallery logo sizing
+  const logo = document.getElementById('logo');
+  const vw   = window.innerWidth;
+  const vh   = window.innerHeight;
+  const logoW = LOGO_SIZES.gallery;
+  logo.style.width     = logoW + 'px';
+  logo.style.left      = (vw + 24) + 'px'; // offset into booking scene
+  logo.style.top       = (vh * 0.08) + 'px';
+  logo.style.opacity   = '1';
+  logo.style.transform = 'none';
+}
+
+/* ── Booking view rendering ── */
+
+function getAvailableMonths() {
+  const months = new Set();
+  bookingPockets.forEach(p => {
+    months.add(p.date.slice(0, 7)); // 'YYYY-MM'
+  });
+  return Array.from(months).sort();
+}
+
+function renderBookingView() {
+  const scene    = document.getElementById('booking-scene');
+  const total    = bookingConfig.total   || 3;
+  const secured  = bookingConfig.secured || 0;
+  const available = total - secured;
+  const soldOut   = available <= 0;
+  const months    = getAvailableMonths();
+
+  if (!currentBookingMonth || !months.includes(currentBookingMonth)) {
+    currentBookingMonth = months[0] || null;
+  }
+
+  scene.innerHTML = `
+    <div id="booking-inner">
+      <div id="booking-header">
+        <div id="booking-ticket-status">
+          <div class="booking-ticket-label">Availability</div>
+          <div class="booking-ticket-count">
+            <span class="booking-secured">${secured}</span>
+            <span class="booking-ticket-sep">/</span>
+            <span class="booking-total">${total}</span>
+            <span class="booking-ticket-word">secured</span>
+          </div>
+        </div>
+      </div>
+
+      ${soldOut ? `
+        <div id="booking-soldout">
+          <div class="booking-soldout-msg">All sessions have been secured.</div>
+          <div class="booking-soldout-sub">Check back for future availability.</div>
+        </div>
+      ` : months.length === 0 ? `
+        <div id="booking-soldout">
+          <div class="booking-soldout-msg">No availability posted yet.</div>
+          <div class="booking-soldout-sub">Check back soon.</div>
+        </div>
+      ` : `
+        <div id="booking-month-nav">
+          <button class="booking-month-btn" id="booking-prev-month"
+                  onclick="shiftBookingMonth(-1)">←</button>
+          <span id="booking-month-label" class="booking-month-label">
+            ${formatMonth(currentBookingMonth)}
+          </span>
+          <button class="booking-month-btn" id="booking-next-month"
+                  onclick="shiftBookingMonth(1)">→</button>
+        </div>
+        <div id="booking-days"></div>
+        <div id="booking-inquiry-wrap" style="display:none"></div>
+      `}
+    </div>`;
+
+  if (!soldOut && months.length > 0) {
+    renderDayCards();
+    updateMonthNavButtons();
+  }
+}
+
+function formatMonth(ym) {
+  if (!ym) return '';
+  const [y, m] = ym.split('-');
+  return new Date(+y, +m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function formatDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US',
+    { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatTime(t) {
+  // t is "HH:MM:SS" from Postgres
+  const [h, min] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+  return `${h12}${min ? ':' + String(min).padStart(2,'0') : ''} ${ampm}`;
+}
+
+function shiftBookingMonth(dir) {
+  const months = getAvailableMonths();
+  const idx    = months.indexOf(currentBookingMonth);
+  const next   = idx + dir;
+  if (next < 0 || next >= months.length) return;
+  currentBookingMonth = months[next];
+  selectedPocketDay   = null;
+  renderDayCards();
+  updateMonthNavButtons();
+  document.getElementById('booking-month-label').textContent = formatMonth(currentBookingMonth);
+  document.getElementById('booking-inquiry-wrap').style.display = 'none';
+}
+
+function updateMonthNavButtons() {
+  const months  = getAvailableMonths();
+  const idx     = months.indexOf(currentBookingMonth);
+  const prevBtn = document.getElementById('booking-prev-month');
+  const nextBtn = document.getElementById('booking-next-month');
+  if (prevBtn) prevBtn.style.opacity = idx <= 0 ? '0.2' : '1';
+  if (nextBtn) nextBtn.style.opacity = idx >= months.length - 1 ? '0.2' : '1';
+}
+
+function renderDayCards() {
+  const dayContainer = document.getElementById('booking-days');
+  if (!dayContainer) return;
+
+  const monthPockets = bookingPockets.filter(p => p.date.startsWith(currentBookingMonth));
+
+  // Group by date
+  const byDate = {};
+  monthPockets.forEach(p => {
+    if (!byDate[p.date]) byDate[p.date] = [];
+    byDate[p.date].push(p);
+  });
+
+  const dates = Object.keys(byDate).sort();
+
+  dayContainer.innerHTML = dates.map(date => {
+    const pockets  = byDate[date];
+    const isSelected = selectedPocketDay === date;
+    const windows  = pockets.map(p =>
+      `<div class="booking-window">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</div>`
+    ).join('');
+
+    return `
+      <div class="booking-day-card ${isSelected ? 'selected' : ''}"
+           onclick="selectDay('${date}')">
+        <div class="booking-day-date">${formatDate(date)}</div>
+        <div class="booking-day-windows">${windows}</div>
+      </div>`;
+  }).join('');
+}
+
+function selectDay(date) {
+  if (selectedPocketDay === date) {
+    // Deselect
+    selectedPocketDay = null;
+    renderDayCards();
+    document.getElementById('booking-inquiry-wrap').style.display = 'none';
+    return;
+  }
+  selectedPocketDay = date;
+  renderDayCards();
+  showInquiryForm(date);
+}
+
+function showInquiryForm(date) {
+  const wrap    = document.getElementById('booking-inquiry-wrap');
+  const pockets = bookingPockets.filter(p => p.date === date);
+  const options = pockets.map(p =>
+    `<option value="${p.id}">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</option>`
+  ).join('');
+
+  wrap.style.display = 'block';
+  wrap.innerHTML = `
+    <div id="booking-inquiry-card">
+      <div class="booking-inquiry-title">${formatDate(date)}</div>
+
+      <div class="booking-field">
+        <label class="booking-label">Time window</label>
+        <select id="inq-pocket" class="booking-input">${options}</select>
+      </div>
+
+      <div class="booking-field-row">
+        <div class="booking-field">
+          <label class="booking-label">First name</label>
+          <input type="text" id="inq-first" class="booking-input" placeholder="First">
+        </div>
+        <div class="booking-field">
+          <label class="booking-label">Last name</label>
+          <input type="text" id="inq-last" class="booking-input" placeholder="Last">
+        </div>
+      </div>
+
+      <div class="booking-field">
+        <label class="booking-label">Email</label>
+        <input type="email" id="inq-email" class="booking-input" placeholder="your@email.com">
+      </div>
+
+      <div class="booking-field">
+        <label class="booking-label">Message</label>
+        <textarea id="inq-message" class="booking-input booking-textarea"
+                  placeholder="Tell jnb what you have in mind..."></textarea>
+      </div>
+
+      <button class="booking-submit" onclick="submitInquiry('${date}')">
+        Send Inquiry
+      </button>
+      <div id="inq-error" class="booking-error"></div>
+    </div>`;
+
+  // Scroll form into view smoothly
+  setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+async function submitInquiry(date) {
+  const btn     = document.querySelector('.booking-submit');
+  const errEl   = document.getElementById('inq-error');
+  const first   = document.getElementById('inq-first').value.trim();
+  const last    = document.getElementById('inq-last').value.trim();
+  const email   = document.getElementById('inq-email').value.trim();
+  const message = document.getElementById('inq-message').value.trim();
+  const pocketId = document.getElementById('inq-pocket').value;
+
+  errEl.textContent = '';
+
+  if (!first || !last) { errEl.textContent = 'Please enter your name.'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
+
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/inquiries`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        pocket_id:   pocketId,
+        first_name:  first,
+        last_name:   last,
+        email,
+        message,
+        status: 'new'
+      })
+    });
+    if (!res.ok) throw new Error('Submission failed');
+
+    // Show confirmation
+    document.getElementById('booking-inquiry-card').innerHTML = `
+      <div class="booking-confirm">
+        <div class="booking-confirm-title">Inquiry sent.</div>
+        <div class="booking-confirm-body">
+          Thank you, ${first}. jnb will be in touch at ${email}.
+        </div>
+      </div>`;
+  } catch(err) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    btn.textContent = 'Send Inquiry';
+    btn.disabled = false;
+  }
 }
 
 /* =====================================================

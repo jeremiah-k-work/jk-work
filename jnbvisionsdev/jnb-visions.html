@@ -1038,8 +1038,10 @@
 
 <!-- BOOKING SCENE — Sheet 2, slides in from right -->
 <div id="booking-scene" style="display:none">
-  <button id="booking-back" onclick="exitBook()">← Back</button>
 </div>
+
+<!-- BOOKING BACK — fixed, always in DOM, shown only in booking state -->
+<button id="booking-back" onclick="exitBook()">← Back</button>
 
 </div><!-- end site-slider -->
 
@@ -1266,14 +1268,14 @@ async function goBook() {
 
   // Show back button
   setTimeout(() => {
-    document.getElementById('booking-back').classList.add('visible');
+    document.getElementById('booking-back')?.classList.add('visible');
   }, 500);
 
   // Render after slide begins
   setTimeout(() => renderBookingView(), 400);
 
-  // Position logo in booking view
-  setTimeout(() => positionLogoBooking(), 450);
+  // Position logo in booking view (deferred internally until after slide)
+  positionLogoBooking();
 }
 
 function exitBook() {
@@ -1291,7 +1293,7 @@ function exitBook() {
     document.getElementById('visions-label').style.opacity = '1';
   }, 400);
 
-  document.getElementById('booking-back').classList.remove('visible');
+  document.getElementById('booking-back')?.classList.remove('visible');
 
   setTimeout(() => {
     document.getElementById('booking-scene').style.display = 'none';
@@ -1300,16 +1302,18 @@ function exitBook() {
 }
 
 function positionLogoBooking() {
-  // Logo sits top-left of booking scene, matching gallery logo sizing
-  const logo = document.getElementById('logo');
-  const vw   = window.innerWidth;
-  const vh   = window.innerHeight;
-  const logoW = LOGO_SIZES.gallery;
-  logo.style.width     = logoW + 'px';
-  logo.style.left      = (vw + 24) + 'px'; // offset into booking scene
-  logo.style.top       = (vh * 0.08) + 'px';
-  logo.style.opacity   = '1';
-  logo.style.transform = 'none';
+  // Logo sits at a stable fixed position in booking state.
+  // Deferred until after the slide transition completes (750ms)
+  // to avoid reading geometry mid-animation.
+  setTimeout(() => {
+    const logo  = document.getElementById('logo');
+    const logoW = LOGO_SIZES.gallery;
+    logo.style.width     = logoW + 'px';
+    logo.style.left      = '24px';
+    logo.style.top       = '24px';
+    logo.style.opacity   = '1';
+    logo.style.transform = 'none';
+  }, 780);
 }
 
 /* ── Booking view rendering ── */

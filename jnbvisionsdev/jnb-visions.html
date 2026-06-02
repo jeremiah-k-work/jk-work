@@ -1,313 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>jnb visions</title>
-<style>
-  @font-face {
-    font-family: 'Archivo';
-    src: url('fonts/Archivo-VariableFont_wdth,wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: 'Unbounded';
-    src: url('fonts/Unbounded-Variable.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
-    font-display: swap;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jnb visions</title>
+    <style>
+        @font-face {
+            font-family: 'Archivo';
+            src: url('fonts/Archivo-VariableFont_wdth,wght.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+        }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        @font-face {
+            font-family: 'Unbounded';
+            src: url('fonts/Unbounded-Variable.ttf') format('truetype');
+            font-weight: 100 900;
+            font-style: normal;
+            font-display: swap;
+        }
 
-  :root {
-    --red: #c8001e;
-    --black: #000;
-    --white: #fff;
-    --gray-outline: rgba(160,160,160,0.65);
-    --card-w: min(300px, 72vw);
-    --card-h: calc(var(--card-w) * 1.32);
-    /* Gallery width capped so outline never leaves the viewport.
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --red: #c8001e;
+            --black: #000;
+            --white: #fff;
+            --gray-outline: rgba(160, 160, 160, 0.65);
+            --card-w: min(300px, 72vw);
+            --card-h: calc(var(--card-w) * 1.32);
+            /* Gallery width capped so outline never leaves the viewport.
        90vw felt large; 82vw gives breathing room on all window sizes. */
-    --gallery-w: min(480px, 82vw);
-    --gallery-h: calc(var(--gallery-w) * 1.28);
-    /* Outline gap: 4vh per side (was 3.5vh offset + 7vh total).
+            --gallery-w: min(480px, 82vw);
+            --gallery-h: calc(var(--gallery-w) * 1.28);
+            /* Outline gap: 4vh per side (was 3.5vh offset + 7vh total).
        Stored as a single variable so frame, rect, and border-radius
        all stay in sync from one place. */
-    --outline-gap: 4vh;
-    --expanded-w: min(800px, 92vw);
-    --expanded-h: calc(var(--expanded-w) * 0.78);
-    --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-    --font-primary: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    --font-secondary: 'Unbounded', 'Helvetica Neue', Helvetica, sans-serif;
-    /* How far the GALLERY word rises toward the top in gallery state.
+            --outline-gap: 4vh;
+            --expanded-w: min(800px, 92vw);
+            --expanded-h: calc(var(--expanded-w) * 0.78);
+            --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --font-primary: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --font-secondary: 'Unbounded', 'Helvetica Neue', Helvetica, sans-serif;
+            /* How far the GALLERY word rises toward the top in gallery state.
        Negative = upward. Adjust this one value to reposition the word. */
-    --nav-gallery-rise: -88vh;
-    /* Gallery nav: how far from bottom the nav's bottom edge should sit.
+            --nav-gallery-rise: -88vh;
+            /* Gallery nav: how far from bottom the nav's bottom edge should sit.
        Increase to move the nav higher up the screen. */
-    --nav-gallery-bottom-margin: 8vh;
-  }
+            --nav-gallery-bottom-margin: 8vh;
+        }
 
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--black);
-    overflow: hidden;
-    font-family: var(--font-primary);
-    color: var(--white);
-    cursor: none;
-    user-select: none;
-  }
-  /* Propagate cursor:none everywhere so no system cursor leaks on buttons etc. */
-  * { cursor: none !important; }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--black);
+            overflow: hidden;
+            font-family: var(--font-primary);
+            color: var(--white);
+            cursor: none;
+            user-select: none;
+            /*border: 4px solid rgba(128, 0, 128, 0.49);*/
+        }
 
-  /* ===== CUSTOM CURSOR ===== */
-  /* Cursor core — snaps exactly to pointer */
-  #cursor-core {
-    position: fixed;
-    top: 0; left: 0;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #ffffff;
-    pointer-events: none;
-    z-index: 9999;
-    will-change: transform;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
+        /* Propagate cursor:none everywhere so no system cursor leaks on buttons etc. */
+        * {
+            cursor: none !important;
+        }
 
-  /* Positioner — carries the orbiter to the right place via translate.
+        /* ===== CUSTOM CURSOR ===== */
+        /* Cursor core — snaps exactly to pointer */
+        #cursor-core {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #ffffff;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        /* Positioner — carries the orbiter to the right place via translate.
      Zero size so it doesn't affect layout. */
-  #cursor-orbiter-pos {
-    position: fixed;
-    top: 0; left: 0;
-    width: 0; height: 0;
-    pointer-events: none;
-    z-index: 9999;
-    will-change: transform;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
+        #cursor-orbiter-pos {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
 
-  /* Orbiter — centred on the positioner point via negative margin.
+        /* Orbiter — centred on the positioner point via negative margin.
      Scale animates from its own centre, not the viewport origin. */
-  #cursor-orbiter {
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: transparent;
-    border: 1.5px solid rgba(255, 255, 255, 0.8);
-    /* Pull back by half own size so it centres on the positioner point */
-    top: -7px; left: -7px;
-    transform-origin: center center;
-    transition: width 0.15s ease, height 0.15s ease,
+        #cursor-orbiter {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.8);
+            /* Pull back by half own size so it centres on the positioner point */
+            top: -7px;
+            left: -7px;
+            transform-origin: center center;
+            transition: width 0.15s ease, height 0.15s ease,
                 top 0.15s ease, left 0.15s ease,
                 border-color 0.15s ease;
-  }
-  /* Left-click: orbiter shrinks and moves inward, springs back on release */
-  #cursor-orbiter.pressed-left {
-    width: 9px;
-    height: 9px;
-    top: -4.5px; left: -4.5px;
-    border-color: rgba(255, 255, 255, 0.4);
-  }
-  #cursor-orbiter.springing {
-    animation: orbiterSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
-  @keyframes orbiterSpring {
-    0%   { transform: scale(1); }
-    30%  { transform: scale(1.9); }
-    62%  { transform: scale(0.88); }
-    100% { transform: scale(1); }
-  }
+        }
 
-  /* Right-click: orbiter shrinks in place */
-  #cursor-orbiter.pressed-right {
-    width: 8px;
-    height: 8px;
-    top: -4px; left: -4px;
-    border-color: rgba(255, 255, 255, 0.6);
-  }
+        /* Left-click: orbiter shrinks and moves inward, springs back on release */
+        #cursor-orbiter.pressed-left {
+            width: 9px;
+            height: 9px;
+            top: -4.5px;
+            left: -4.5px;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
 
-  /* Inner fill circle — child of orbiter, grows to fill on right-click */
-  #cursor-orbiter-fill {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: #ffffff;
-    transform: scale(0);
-    transform-origin: center center;
-    transition: transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1);
-  }
-  #cursor-orbiter.pressed-right #cursor-orbiter-fill {
-    transform: scale(1);
-  }
+        #cursor-orbiter.springing {
+            animation: orbiterSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
 
-  /* ===== RED LINE SVG ===== */
-  #red-line {
-    position: fixed;
-    inset: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 1;
-    transition: opacity 0.5s ease;
-  }
-  #red-line.hidden { opacity: 0; }
+        @keyframes orbiterSpring {
+            0% {
+                transform: scale(1);
+            }
 
-  /* ===== INTRO SCENE ===== */
-  #intro-scene {
-    position: fixed; inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Gap compresses tightly on small windows */
-    gap: clamp(16px, 4vw, 60px);
-    /* Padding so nothing ever touches the edge */
-    padding: 0 clamp(12px, 3vw, 40px);
-    z-index: 1;
-    opacity: 1;
-    transition: opacity 0.5s ease;
-  }
-  #intro-scene.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+            30% {
+                transform: scale(1.9);
+            }
 
-  /* Left column: VISIONS label */
-  #visions-label {
-    position: fixed;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    font-family: var(--font-secondary);
-    font-size: clamp(8px, 1vw, 11px);
-    font-weight: 400;
-    letter-spacing: 0.35em;
-    text-transform: uppercase;
-    color: var(--red);
-    line-height: 1;
-    pointer-events: none;
-    z-index: 1;
-    /* left/top set by JS — transitions with opacity for smooth enter/exit */
-    transition: opacity 0.5s ease, left 0.75s var(--ease-expo);
-  }
-  @media (max-width: 480px) {
-    #visions-label { display: none; }
-  }
+            62% {
+                transform: scale(0.88);
+            }
 
-  /* Centre column: the card */
-  /* ===== UNIFIED FRAME =====
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Right-click: orbiter shrinks in place */
+        #cursor-orbiter.pressed-right {
+            width: 8px;
+            height: 8px;
+            top: -4px;
+            left: -4px;
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Inner fill circle — child of orbiter, grows to fill on right-click */
+        #cursor-orbiter-fill {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: #ffffff;
+            transform: scale(0);
+            transform-origin: center center;
+            transition: transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+
+        #cursor-orbiter.pressed-right #cursor-orbiter-fill {
+            transform: scale(1);
+        }
+
+        /* ===== RED LINE SVG ===== */
+        #red-line {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        #red-line.hidden {
+            opacity: 0;
+        }
+
+        /* ===== INTRO SCENE ===== */
+        #intro-scene {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Gap compresses tightly on small windows */
+            gap: clamp(16px, 4vw, 60px);
+            /* Padding so nothing ever touches the edge */
+            padding: 0 clamp(12px, 3vw, 40px);
+            z-index: 1;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        #intro-scene.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Left column: VISIONS label */
+        #visions-label {
+            position: fixed;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: var(--font-secondary);
+            font-size: clamp(8px, 1vw, 11px);
+            font-weight: 400;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--red);
+            line-height: 1;
+            pointer-events: none;
+            z-index: 1;
+            /* left/top set by JS — transitions with opacity for smooth enter/exit */
+            transition: opacity 0.5s ease, left 0.75s var(--ease-expo);
+        }
+
+        @media (max-width: 480px) {
+            #visions-label {
+                display: none;
+            }
+        }
+
+        /* Centre column: the card */
+        /* ===== UNIFIED FRAME =====
      Intro:   position:relative, flex child, card dimensions.
      Gallery: position:fixed, centred, gallery dimensions.
      CRITICAL: no z-index on any child — stacking is document order only.
      This keeps overflow:hidden clipping intact when position:fixed is applied,
      because no child is promoted to its own compositor layer.
   */
-  /* ===== INTRO SPACER =====
+        /* ===== INTRO SPACER =====
      Invisible placeholder in intro-scene that reserves the space
      the frame visually occupies, keeping label and nav correctly flanking it. */
-  #intro-spacer {
-    width: min(var(--card-w), 55vw);
-    height: calc(min(var(--card-w), 55vw) * 1.32);
-    flex-shrink: 1;
-    pointer-events: none;
-  }
+        #intro-spacer {
+            width: min(var(--card-w), 55vw);
+            height: calc(min(var(--card-w), 55vw) * 1.32);
+            flex-shrink: 1;
+            pointer-events: none;
+        }
 
-  /* unified-frame: handles size and position only.
+        /* unified-frame: handles size and position only.
      No overflow, no border-radius — those live on #frame-inner.
      z-index only applied when detached (gallery state) so gallery-tap
      sits above gallery chrome elements that would otherwise intercept clicks. */
-  #unified-frame {
-    /* Always fixed — body child, never inherits pointer-events from intro-scene.
+        #unified-frame {
+            /* Always fixed — body child, never inherits pointer-events from intro-scene.
        In intro: JS positions it over the spacer.
        In gallery (detached): JS centres it at 50%/50%. */
-    position: fixed;
-    z-index: 15;
-    transition:
-      width     0.75s var(--ease-expo),
-      height    0.75s var(--ease-expo),
-      top       0.75s var(--ease-expo),
-      left      0.75s var(--ease-expo),
-      transform 0.75s var(--ease-expo);
-  }
+            position: fixed;
+            z-index: 15;
+            transition:
+                width 0.75s var(--ease-expo),
+                height 0.75s var(--ease-expo),
+                top 0.75s var(--ease-expo),
+                left 0.75s var(--ease-expo),
+                transform 0.75s var(--ease-expo);
+        }
 
-  /* frame-inner: always position:relative, always the same positioning model.
+        /* frame-inner: always position:relative, always the same positioning model.
      Carries overflow:hidden and border-radius — these never break in Safari
      because this element is never promoted or repositioned. */
-  #frame-inner {
-    position: absolute;
-    inset: 0;
-    border-radius: 22px;
-    overflow: hidden;
-    transition: border-radius 0.75s var(--ease-expo);
-  }
-  /* Gallery border-radius applied when frame expands */
-  #unified-frame.detached #frame-inner {
-    border-radius: 12vh;
-  }
+        #frame-inner {
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            overflow: hidden;
+            transition: border-radius 0.75s var(--ease-expo);
+        }
 
-  /* Children — no z-index, no will-change. Document order = paint order. */
+        /* Gallery border-radius applied when frame expands */
+        #unified-frame.detached #frame-inner {
+            border-radius: 12vh;
+        }
 
-  #intro-photo {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    /* No opaque background — prevents WebKit compositing bug where a solid
+        /* Children — no z-index, no will-change. Document order = paint order. */
+
+        #intro-photo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            /* No opaque background — prevents WebKit compositing bug where a solid
        background on a child of overflow:hidden + border-radius bleeds outside
        the rounded clip. The red overlay covers any gap during loading. */
-  }
+        }
 
-  /* Dark plate — covers intro-photo during gallery session.
+        /* Dark plate — covers intro-photo during gallery session.
      Fades in on enter, fades out on exit.
      Also provides a clean dark base when gallery-photo fades between slides. */
-  #photo-plate {
-    position: absolute; inset: 0;
-    background: #000;
-    opacity: 0;
-    /* 1px border-radius forces WebKit to respect the overflow:hidden clip
+        #photo-plate {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            opacity: 0;
+            /* 1px border-radius forces WebKit to respect the overflow:hidden clip
        on the parent — same compositing quirk as intro-photo. */
-    border-radius: 1px;
-    transition: opacity 0.65s cubic-bezier(0.7, 0, 0.15, 1);
-  }
-  #photo-plate.visible { opacity: 1; }
+            border-radius: 1px;
+            transition: opacity 0.65s cubic-bezier(0.7, 0, 0.15, 1);
+        }
 
-  #gallery-photo {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    background: transparent;
-    opacity: 0;
-    image-rendering: pixelated;
-    transition: opacity 0.55s ease,
+        #photo-plate.visible {
+            opacity: 1;
+        }
+
+        #gallery-photo {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: transparent;
+            opacity: 0;
+            image-rendering: pixelated;
+            transition: opacity 0.55s ease,
                 object-position 0.75s var(--ease-expo);
-  }
-  #gallery-photo.loaded { opacity: 1; }
+        }
 
-  #intro-overlay {
-    position: absolute; inset: 0;
-    background: var(--red);
-    mix-blend-mode: difference;
-    /* Slow cinematic lift — ease-in so it lingers at full opacity
+        #gallery-photo.loaded {
+            opacity: 1;
+        }
+
+        #intro-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--red);
+            mix-blend-mode: difference;
+            /* Slow cinematic lift — ease-in so it lingers at full opacity
        before gradually fading, giving a sense of the curtain rising. */
-    transition: opacity 1.4s cubic-bezier(0.4, 0, 0.6, 1);
-    pointer-events: none;
-  }
-  #intro-overlay.lifted { opacity: 0; }
+            transition: opacity 1.4s cubic-bezier(0.4, 0, 0.6, 1);
+            pointer-events: none;
+        }
+
+        #intro-overlay.lifted {
+            opacity: 0;
+        }
 
 
 
-  #gallery-tap {
-    position: absolute; inset: 0;
-    display: none;
-  }
-  #gallery-tap.active { display: block; }
+        #gallery-tap {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
 
-  /* ===== UNIFIED NAV =====
+        #gallery-tap.active {
+            display: block;
+        }
+
+        /* ===== UNIFIED NAV =====
      Single fixed container, always in the DOM.
      Intro: JS positions left edge flush with frame right edge.
      Gallery: bottom-centre, width clamped to visible children only.
@@ -317,636 +381,838 @@
      contributing zero layout width via width:0 + overflow:visible.
      This keeps the container centring correct. */
 
-  #nav-unified {
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: clamp(10px, 2vh, 18px);
-    z-index: 20;
-    overflow: visible;
-    /* Transition left and transform only.
+        #nav-unified {
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: clamp(10px, 2vh, 18px);
+            z-index: 20;
+            overflow: visible;
+            /* border: 2px solid indigo; */
+            /* Transition left and transform only.
        top/bottom are NOT transitioned — they snap via JS inline styles
        to avoid the top↔bottom interpolation problem on return. */
-    transition:
-      left      0.75s var(--ease-expo),
-      transform 0.75s var(--ease-expo);
-  }
-  /* Suppress ALL transitions when snapping back to intro position */
-  #nav-unified.no-transition {
-    transition: none !important;
-  }
+            transition:
+                left 0.75s var(--ease-expo),
+                transform 0.75s var(--ease-expo);
+        }
 
-  /* Gallery state: horizontal centering only.
-     top/bottom are set by JS as inline styles so we can use bottom
-     directly (no height measurement needed) without CSS conflicts.
-     pointer-events:none on container prevents overflow:visible hit area
-     from intercepting clicks on the photo — buttons re-enable themselves. */
-  #nav-unified.gallery {
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    align-items: center;
-    pointer-events: none;
-  }
-  #nav-unified.gallery .nav-word {
-    pointer-events: all;
-  }
+        /* Suppress ALL transitions when snapping back to intro position */
+        #nav-unified.no-transition {
+            transition: none !important;
+        }
 
-  /* Base word */
-  .nav-word {
-    background: transparent;
-    border: none;
-    font-family: var(--font-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    line-height: 1;
-    white-space: nowrap;
-    position: relative;
-    padding: 0;
-    transition:
-      font-size      0.75s var(--ease-expo),
-      color          0.25s ease,
-      opacity        0.75s var(--ease-expo),
-      transform      0.75s var(--ease-expo),
-      letter-spacing 0.75s var(--ease-expo);
-  }
-  .nav-word::after {
-    content: '';
-    position: absolute;
-    bottom: -2px; left: 0;
-    width: 0; height: 1px;
-    background: currentColor;
-    transition: width 0.22s var(--ease-expo);
-  }
-  .nav-word:hover::after { width: 100%; }
+        /* Gallery state: horizontal centering at bottom */
+        #nav-unified.gallery {
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            align-items: center;
+            pointer-events: none;
+        }
 
-  /* ── GALLERY word ──
+        #nav-unified.gallery .nav-word {
+            pointer-events: all;
+        }
+
+        /* Booking state: left side, vertically centered */
+        #nav-unified.booking {
+            left: 32px !important;
+            right: auto !important;
+            top: 50% !important;
+            bottom: auto !important;
+            transform: translateY(-50%) !important;
+            align-items: flex-start;
+            pointer-events: none;
+        }
+
+        #nav-unified.booking .nav-word {
+            pointer-events: all;
+        }
+
+        /* Base word */
+        .nav-word {
+            background: transparent;
+            border: none;
+            font-family: var(--font-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            line-height: 1;
+            white-space: nowrap;
+            position: relative;
+            padding: 0;
+            transition:
+                font-size 0.75s var(--ease-expo),
+                color 0.25s ease,
+                opacity 0.75s var(--ease-expo),
+                transform 0.75s var(--ease-expo),
+                letter-spacing 0.75s var(--ease-expo);
+        }
+
+        .nav-word::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: currentColor;
+            transition: width 0.22s var(--ease-expo);
+        }
+
+        .nav-word:hover::after {
+            width: 100%;
+        }
+
+        /* ── GALLERY word ──
      Intro: normal size, in flow.
      Gallery: zero layout width so it cannot affect container centring.
      The word overflows visually. translateX(-50%) centres it on the
      container's centreline regardless of the word's own rendered width.
      translateY lifts it to the top of the screen. */
-  #nav-gallery {
-    font-size: clamp(10px, 1.4vw, 14px);
-    font-weight: 700;
-    color: var(--white);
-    opacity: 1;
-    width: auto;
-    transform: none;
-  }
-  #nav-unified.gallery #nav-gallery {
-    /* width:100% fills the viewport (fixed context), text-align:center
-       on the container centres the text within it. */
-    width: 100vw;
-    font-size: clamp(48px, 18vw, 120px);
-    letter-spacing: 0.05em;
-    color: var(--white);
-    opacity: 0.045;
-    pointer-events: none;
-    /* --nav-gallery-rise is defined in :root — change it there to reposition */
-    transform: translateY(var(--nav-gallery-rise));
-  }
-  /* Centre the overflowing Gallery word on the container centreline */
-  #nav-unified.gallery {
-    text-align: center;
-  }
+        #nav-gallery {
+            font-size: clamp(10px, 1.4vw, 14px);
+            font-weight: 700;
+            color: var(--white);
+            opacity: 1;
+            width: auto;
+            transform: none;
+        }
 
-  /* ── CONNECT word ── */
-  #nav-connect {
-    font-size: clamp(10px, 1.4vw, 14px);
-    font-weight: 400;
-    color: rgba(255,255,255,0.45);
-    opacity: 1;
-    transform: none;
-  }
-  #nav-unified.gallery #nav-connect {
-    font-size: clamp(9px, 1.1vw, 12px);
-    color: rgba(255,255,255,0.38);
-  }
-  #nav-connect:hover { color: rgba(255,255,255,0.85); }
+        #nav-unified.gallery #nav-gallery {
+            width: 100vw;
+            font-size: clamp(48px, 18vw, 120px);
+            letter-spacing: 0.05em;
+            color: var(--white);
+            opacity: 0.045;
+            pointer-events: none;
+            transform: translateY(var(--nav-gallery-rise));
+        }
 
-  /* ── BACK word ── */
-  #nav-back {
-    font-family: var(--font-primary);
-    font-size: clamp(10px, 1.4vw, 14px);
-    font-weight: 400;
-    color: rgba(255,255,255,0.38);
-    opacity: 0;
-    transform: translateY(8px);
-    pointer-events: none;
-  }
-  #nav-unified.gallery #nav-back {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: all;
-  }
-  #nav-back:hover { color: rgba(255,255,255,0.85); }
+        #nav-unified.booking #nav-gallery {
+            opacity: 0;
+            pointer-events: none;
+        }
 
-  /* ===== OUTLINE RECT =====
+        /* Centre the overflowing Gallery word on the container centreline */
+        #nav-unified.gallery {
+            text-align: center;
+        }
+
+        /* ── CONNECT word ── */
+        #nav-connect {
+            font-size: clamp(10px, 1.4vw, 14px);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.45);
+            opacity: 1;
+            transform: none;
+        }
+
+        #nav-unified.gallery #nav-connect {
+            font-size: clamp(9px, 1.1vw, 12px);
+            color: rgba(255, 255, 255, 0.38);
+        }
+
+        #nav-connect:hover {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* ── BACK word ── */
+        #nav-back {
+            font-family: var(--font-primary);
+            font-size: clamp(10px, 1.4vw, 14px);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.38);
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+        }
+
+        #nav-unified.gallery #nav-back,
+        #nav-unified.booking #nav-back {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        /* Hide Book button when already in booking view */
+        #nav-unified.booking #nav-connect {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #nav-back:hover {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* ===== OUTLINE RECT =====
      Fixed, positioned and sized by JS to wrap unified-frame.
      Hidden in intro, fades in during morph. */
-  #outline-rect {
-    position: fixed;
-    border: 2px solid var(--gray-outline);
-    border-radius: calc(12vh + var(--outline-gap));
-    pointer-events: none;
-    z-index: 2;
-    opacity: 0;
-    transition:
-      opacity       0.5s ease,
-      width         0.75s var(--ease-expo),
-      height        0.75s var(--ease-expo),
-      top           0.75s var(--ease-expo),
-      left          0.75s var(--ease-expo),
-      border-radius 0.75s var(--ease-expo);
-  }
-  #outline-rect.rect-visible { opacity: 1; }
+        #outline-rect {
+            position: fixed;
+            border: 2px solid var(--gray-outline);
+            border-radius: calc(12vh + var(--outline-gap));
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition:
+                opacity 0.5s ease,
+                width 0.75s var(--ease-expo),
+                height 0.75s var(--ease-expo),
+                top 0.75s var(--ease-expo),
+                left 0.75s var(--ease-expo),
+                border-radius 0.75s var(--ease-expo);
+        }
 
-  /* ===== UNIFIED LOGO =====
+        #outline-rect.rect-visible {
+            opacity: 1;
+        }
+
+        /* ===== UNIFIED LOGO =====
      Single fixed element. JS positions it in all states:
      intro: centred over the frame card
      gallery: offset to the left edge of the gallery photo
      expanded: centred below the photo
      Transitions continuously — no swap, no opacity toggle. */
-  #logo {
-    position: fixed;
-    pointer-events: none;
-    z-index: 17;
-    transition:
-      left   0.75s var(--ease-expo),
-      top    0.75s var(--ease-expo),
-      width  0.75s var(--ease-expo),
-      transform 0.75s var(--ease-expo),
-      opacity 0.5s ease;
-  }
-  #logo img { width: 100%; display: block; }
+        #logo {
+            position: fixed;
+            pointer-events: none;
+            z-index: 17;
+            transition:
+                left 0.75s var(--ease-expo),
+                top 0.75s var(--ease-expo),
+                width 0.75s var(--ease-expo),
+                transform 0.75s var(--ease-expo),
+                opacity 0.5s ease;
+        }
 
-  /* ===== INFO PANEL ===== */
-  #info-panel {
-    position: fixed;
-    right: -300px;
-    opacity: 0;
-    pointer-events: none;
-    transition: right 0.7s var(--ease-expo), opacity 0.4s ease,
+        #logo img {
+            width: 100%;
+            display: block;
+        }
+
+        /* ===== INFO PANEL ===== */
+        #info-panel {
+            position: fixed;
+            right: -300px;
+            opacity: 0;
+            pointer-events: none;
+            transition: right 0.7s var(--ease-expo), opacity 0.4s ease,
                 top 0.7s var(--ease-expo);
-    z-index: 16;
-    text-align: right;
-  }
-  #info-panel.visible { opacity: 1; }
+            z-index: 16;
+            text-align: right;
+        }
 
-  .info-name-first {
-    font-family: var(--font-secondary);
-    font-size: clamp(10px, 2.2vw, 34px);
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    line-height: 1;
-    color: var(--white);
-    margin: 0px 8px;
-  }
-  .info-name-last {
-    font-family: var(--font-secondary);
-    display: inline-block;
-    background: var(--white);
-    color: var(--black);
-    font-size: clamp(10px, 2.2vw, 34px);
-    font-weight: 300;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 0px 40px 0px 8px;
-    line-height: 1.4;
-    margin-top: 5px;
-  }
+        #info-panel.visible {
+            opacity: 1;
+        }
 
-  /* ===== WATERMARKS ===== */
-  #watermark-left, #watermark-right {
-    position: fixed;
-    top: 0; bottom: 0;
-    writing-mode: vertical-rl;
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(180,0,0,0.55);
-    font-weight: 600;
-    pointer-events: none;
-    display: flex; align-items: center;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: 1;
-  }
-  #watermark-left { left: 8px; }
-  #watermark-right { right: 8px; transform: rotate(180deg); }
-  #watermark-left.visible, #watermark-right.visible { opacity: 1; }
+        .info-name-first {
+            font-family: var(--font-secondary);
+            font-size: clamp(10px, 2.2vw, 34px);
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            line-height: 1;
+            color: var(--white);
+            margin: 0px 8px;
+        }
 
-  /* ===== NAV ===== */
-  #nav-prev, #nav-next {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.3);
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease, color 0.15s;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    z-index: 5;
-  }
-  #nav-prev { left: 24px; }
-  #nav-next { right: 24px; }
-  #nav-prev.visible, #nav-next.visible { opacity: 1; pointer-events: all; }
-  #nav-prev:hover, #nav-next:hover { color: rgba(255,255,255,0.8); }
-  .nav-line { width: 1px; height: 40px; background: currentColor; display: block; }
+        .info-name-last {
+            font-family: var(--font-secondary);
+            display: inline-block;
+            background: var(--white);
+            color: var(--black);
+            font-size: clamp(10px, 2.2vw, 34px);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0px 40px 0px 8px;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+
+        /* ===== WATERMARKS ===== */
+        #watermark-left,
+        #watermark-right {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            writing-mode: vertical-rl;
+            font-family: var(--font-secondary);
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(180, 0, 0, 0.55);
+            font-weight: 600;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1;
+        }
+
+        #watermark-left {
+            left: 8px;
+        }
+
+        #watermark-right {
+            right: 8px;
+            transform: rotate(180deg);
+        }
+
+        #watermark-left.visible,
+        #watermark-right.visible {
+            opacity: 1;
+        }
+
+        /* ===== NAV ===== */
+        #nav-prev,
+        #nav-next {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: var(--font-secondary);
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, color 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        #nav-prev {
+            left: 24px;
+        }
+
+        #nav-next {
+            right: 24px;
+        }
+
+        #nav-prev.visible,
+        #nav-next.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #nav-prev:hover,
+        #nav-next:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav-line {
+            width: 1px;
+            height: 40px;
+            background: currentColor;
+            display: block;
+        }
 
 
 
-  /* ===== KEYBOARD HINT ===== */
-  #kbd-hint {
-    position: fixed;
-    bottom: 10px; left: 50%; transform: translateX(-50%);
-    font-family: var(--font-secondary);
-    font-size: 7px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.12);
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.4s ease;
-    white-space: nowrap;
-  }
-  #kbd-hint.visible { opacity: 1; }
+        /* ===== KEYBOARD HINT ===== */
+        #kbd-hint {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-secondary);
+            font-size: 7px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.12);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            white-space: nowrap;
+        }
 
-  /* ===== FADE UTILITY ===== */
-  .fade-in { animation: fadeIn 0.45s ease both; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #kbd-hint.visible {
+            opacity: 1;
+        }
 
-  /* ===== RED LINE IDLE ANIMATION ===== */
-  #red-line-group {
-    animation: redLineIdle 8s ease-in-out infinite;
-    transform-origin: 500px 300px; /* SVG centre — same as the rotate pivot */
-    transform-box: fill-box;
-  }
-  @keyframes redLineIdle {
-    0%   { transform: rotate(-15deg) translate(0px,   0px); }
-    25%  { transform: rotate(-15deg) translate(6px,  -4px); }
-    50%  { transform: rotate(-15deg) translate(0px,  -8px); }
-    75%  { transform: rotate(-15deg) translate(-6px, -4px); }
-    100% { transform: rotate(-15deg) translate(0px,   0px); }
-  }
+        /* ===== FADE UTILITY ===== */
+        .fade-in {
+            animation: fadeIn 0.45s ease both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ===== RED LINE IDLE ANIMATION ===== */
+        #red-line-group {
+            animation: redLineIdle 8s ease-in-out infinite;
+            transform-origin: 500px 300px;
+            /* SVG centre — same as the rotate pivot */
+            transform-box: fill-box;
+        }
+
+        @keyframes redLineIdle {
+            0% {
+                transform: rotate(-15deg) translate(0px, 0px);
+            }
+
+            25% {
+                transform: rotate(-15deg) translate(6px, -4px);
+            }
+
+            50% {
+                transform: rotate(-15deg) translate(0px, -8px);
+            }
+
+            75% {
+                transform: rotate(-15deg) translate(-6px, -4px);
+            }
+
+            100% {
+                transform: rotate(-15deg) translate(0px, 0px);
+            }
+        }
 
 
-  /* =====================================================
+        /* =====================================================
      SITE SLIDER
      The slider is viewport-sized with overflow hidden.
      Sheet-1 and booking-scene sit side by side inside it
      via absolute positioning. The slider itself never
      overflows, so fixed-position children are unaffected.
      ===================================================== */
-  #site-slider {
-    position: relative;
-    width: 100vw;
-    min-height: 100vh;
-    overflow: hidden;
-  }
-  #sheet-1 {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100vw;
-    min-height: 100vh;
-    transition: transform 0.75s var(--ease-expo);
-    will-change: transform;
-  }
-  #sheet-1.slide-out {
-    transform: translateX(-100vw);
-  }
+        #site-slider {
+            position: relative;
+            width: 100vw;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-  /* =====================================================
+        #sheet-1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            transition: transform 0.75s var(--ease-expo);
+            will-change: transform;
+            
+            /* border: 2px solid yellow; */
+        }
+
+        #sheet-1.slide-out {
+            transform: translateX(-100vw);
+        }
+
+        /* =====================================================
      BOOKING SCENE
      ===================================================== */
-  #booking-scene {
-    position: absolute;
-    top: 0; left: 100vw;
-    width: 100vw;
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 80px 48px 80px;
-    overflow-y: auto;
-    transition: transform 0.75s var(--ease-expo);
-    will-change: transform;
-  }
-  #booking-scene.slide-in {
-    transform: translateX(-100vw);
-  }
+        #booking-scene {
+            position: absolute;
+            top: 0;
+            left: 100vw;
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 80px 48px 80px;
+            overflow-y: auto;
+            transition: transform 0.75s var(--ease-expo);
+            will-change: transform;
+            
+            /*border: 2px solid turquoise;*/
+        }
 
-  #booking-inner {
-    width: 100%;
-    max-width: 680px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
-  }
+        #booking-scene.slide-in {
+            transform: translateX(-100vw);
+        }
 
-  /* Back button — sticky inside booking-scene */
-  #booking-back {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    font-family: var(--font-secondary);
-    font-size: clamp(9px, 1vw, 11px);
-    font-weight: 400;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.4);
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 20;
-    transition: color 0.2s ease, opacity 0.3s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
-  #booking-back.visible {
-    opacity: 1;
-    pointer-events: all;
-  }
-  #booking-back:hover { color: rgba(255,255,255,0.85); }
+        #booking-inner {
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
 
-  /* Ticket status */
-  #booking-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding-top: 8px;
-  }
-  .booking-ticket-label {
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.35);
-    margin-bottom: 8px;
-  }
-  .booking-ticket-count {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .booking-secured {
-    font-family: var(--font-secondary);
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 900;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    line-height: 1;
-  }
-  .booking-ticket-sep {
-    font-family: var(--font-secondary);
-    font-size: clamp(20px, 3vw, 32px);
-    color: rgba(255,255,255,0.2);
-    line-height: 1;
-  }
-  .booking-total {
-    font-family: var(--font-secondary);
-    font-size: clamp(20px, 3vw, 32px);
-    font-weight: 400;
-    color: rgba(255,255,255,0.35);
-    line-height: 1;
-  }
-  .booking-ticket-word {
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    font-weight: 400;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.25);
-    align-self: flex-end;
-    margin-bottom: 6px;
-  }
+        #booking-calendar-row {
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
+        }
 
-  /* Sold out */
-  #booking-soldout {
-    text-align: center;
-    padding: 60px 0;
-  }
-  .booking-soldout-msg {
-    font-family: var(--font-secondary);
-    font-size: clamp(18px, 3vw, 28px);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--white);
-    margin-bottom: 12px;
-  }
-  .booking-soldout-sub {
-    font-family: var(--font-primary);
-    font-size: 13px;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 0.05em;
-  }
+        #booking-days-col {
+            flex: 1;
+            min-width: 0;
+            transition: opacity 0.3s ease;
+        }
 
-  /* Month navigation */
-  #booking-month-nav {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .booking-month-label {
-    font-family: var(--font-secondary);
-    font-size: clamp(11px, 1.6vw, 16px);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--white);
-  }
-  .booking-month-btn {
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-family: var(--font-primary);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px 8px;
-    transition: color 0.2s ease, opacity 0.2s ease;
-  }
-  .booking-month-btn:hover { color: var(--white); }
+        #booking-days-col.dimmed {
+            opacity: 0.35;
+        }
 
-  /* Day cards */
-  #booking-days {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .booking-day-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 18px 20px;
-    cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease;
-  }
-  .booking-day-card:hover {
-    border-color: rgba(255,255,255,0.18);
-    background: rgba(255,255,255,0.05);
-  }
-  .booking-day-card.selected {
-    border-color: var(--red);
-    background: rgba(200,0,30,0.05);
-  }
-  .booking-day-date {
-    font-family: var(--font-secondary);
-    font-size: clamp(11px, 1.4vw, 14px);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-  .booking-day-windows {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .booking-window {
-    font-family: var(--font-primary);
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 0.06em;
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-    padding: 3px 8px;
-  }
+        #booking-inquiry-col {
+            width: 340px;
+            flex-shrink: 0;
+            display: none;
+        }
 
-  /* Inquiry form */
-  #booking-inquiry-wrap {
-    animation: slideUp 0.35s var(--ease-expo);
-  }
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  #booking-inquiry-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .booking-inquiry-title {
-    font-family: var(--font-secondary);
-    font-size: clamp(11px, 1.4vw, 14px);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.5);
-  }
-  .booking-label {
-    display: block;
-    font-family: var(--font-secondary);
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.3);
-    margin-bottom: 6px;
-  }
-  .booking-field { display: flex; flex-direction: column; }
-  .booking-field-row { display: flex; gap: 12px; }
-  .booking-field-row .booking-field { flex: 1; }
+        #booking-inquiry-col.visible {
+            display: block;
+            animation: slideInRight 0.35s var(--ease-expo);
+        }
 
-  .booking-input {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-    color: var(--white);
-    font-family: var(--font-primary);
-    font-size: 13px;
-    padding: 10px 12px;
-    outline: none;
-    transition: border-color 0.2s ease;
-    width: 100%;
-    -webkit-appearance: none;
-  }
-  .booking-input:focus { border-color: rgba(255,255,255,0.3); }
-  .booking-textarea {
-    resize: vertical;
-    min-height: 80px;
-    font-family: var(--font-primary);
-  }
-  select.booking-input option {
-    background: #111;
-    color: var(--white);
-  }
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
 
-  .booking-submit {
-    background: var(--white);
-    color: var(--black);
-    border: none;
-    font-family: var(--font-secondary);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 13px 24px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-    align-self: flex-start;
-  }
-  .booking-submit:hover { opacity: 0.85; }
-  .booking-submit:disabled { opacity: 0.4; cursor: default; }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
-  .booking-error {
-    font-family: var(--font-primary);
-    font-size: 11px;
-    color: var(--red);
-    letter-spacing: 0.04em;
-    min-height: 16px;
-  }
 
-  /* Confirmation */
-  .booking-confirm {
-    padding: 16px 0;
-  }
-  .booking-confirm-title {
-    font-family: var(--font-secondary);
-    font-size: clamp(16px, 2.5vw, 24px);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--white);
-    margin-bottom: 10px;
-  }
-  .booking-confirm-body {
-    font-family: var(--font-primary);
-    font-size: 13px;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 0.04em;
-    line-height: 1.6;
-  }
 
-</style>
+        /* Ticket status */
+        #booking-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding-top: 8px;
+        }
+
+        .booking-ticket-label {
+            font-family: var(--font-secondary);
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 8px;
+        }
+
+        .booking-ticket-count {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .booking-secured {
+            font-family: var(--font-secondary);
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .booking-ticket-sep {
+            font-family: var(--font-secondary);
+            font-size: clamp(20px, 3vw, 32px);
+            color: rgba(255, 255, 255, 0.2);
+            line-height: 1;
+        }
+
+        .booking-total {
+            font-family: var(--font-secondary);
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1;
+        }
+
+        .booking-ticket-word {
+            font-family: var(--font-secondary);
+            font-size: 9px;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.25);
+            align-self: flex-end;
+            margin-bottom: 6px;
+        }
+
+        /* Sold out */
+        #booking-soldout {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .booking-soldout-msg {
+            font-family: var(--font-secondary);
+            font-size: clamp(18px, 3vw, 28px);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .booking-soldout-sub {
+            font-family: var(--font-primary);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.05em;
+        }
+
+        /* Month navigation */
+        #booking-month-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .booking-month-label {
+            font-family: var(--font-secondary);
+            font-size: clamp(11px, 1.6vw, 16px);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white);
+        }
+
+        .booking-month-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: var(--font-primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .booking-month-btn:hover {
+            color: var(--white);
+        }
+
+        /* Day cards */
+        #booking-days {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .booking-day-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .booking-day-card:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .booking-day-card.selected {
+            border-color: var(--red);
+            background: rgba(200, 0, 30, 0.05);
+        }
+
+        .booking-day-date {
+            font-family: var(--font-secondary);
+            font-size: clamp(11px, 1.4vw, 14px);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        .booking-day-windows {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .booking-window {
+            font-family: var(--font-primary);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: 0.06em;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            padding: 3px 8px;
+        }
+
+        /* Inquiry form */
+        #booking-inquiry-wrap {
+            animation: slideUp 0.35s var(--ease-expo);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #booking-inquiry-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .booking-inquiry-title {
+            font-family: var(--font-secondary);
+            font-size: clamp(11px, 1.4vw, 14px);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .booking-label {
+            display: block;
+            font-family: var(--font-secondary);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 6px;
+        }
+
+        .booking-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .booking-field-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .booking-field-row .booking-field {
+            flex: 1;
+        }
+
+        .booking-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--white);
+            font-family: var(--font-primary);
+            font-size: 13px;
+            padding: 10px 12px;
+            outline: none;
+            transition: border-color 0.2s ease;
+            width: 100%;
+            -webkit-appearance: none;
+        }
+
+        .booking-input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .booking-textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: var(--font-primary);
+        }
+
+        select.booking-input option {
+            background: #111;
+            color: var(--white);
+        }
+
+        .booking-submit {
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            font-family: var(--font-secondary);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 13px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+            align-self: flex-start;
+        }
+
+        .booking-submit:hover {
+            opacity: 0.85;
+        }
+
+        .booking-submit:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .booking-error {
+            font-family: var(--font-primary);
+            font-size: 11px;
+            color: var(--red);
+            letter-spacing: 0.04em;
+            min-height: 16px;
+        }
+
+        /* Confirmation */
+        .booking-confirm {
+            padding: 16px 0;
+        }
+
+        .booking-confirm-title {
+            font-family: var(--font-secondary);
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--white);
+            margin-bottom: 10px;
+        }
+
+        .booking-confirm-body {
+            font-family: var(--font-primary);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: 0.04em;
+            line-height: 1.6;
+        }
+    </style>
 </head>
+
 <body>
 
-<!-- SITE SLIDER — horizontal slide container.
+    <!-- SITE SLIDER — horizontal slide container.
      Sheet 1 (intro/gallery) is the normal body content.
      Sheet 2 (booking) slides in from the right.
      transform: translateX(-100vw) shows Sheet 2. -->
-<div id="site-slider">
-<div id="sheet-1">
+    <div id="site-slider">
+        <div id="sheet-1">
 
-<!-- RED LINE -->
-<svg id="red-line" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-  <!--
+            <!-- RED LINE -->
+            <svg id="red-line" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <!--
     Path extended well beyond the viewBox so ends are never visible
     at any window proportion. preserveAspectRatio="xMidYMid slice"
     ensures the SVG fills the viewport rather than letterboxing.
@@ -954,105 +1220,98 @@
     A slow CSS animation gently undulates the path via a secondary
     translate on the group, giving an idle breathing quality.
   -->
-  <g transform="rotate(-15, 500, 300)" id="red-line-group">
-    <path
-      id="red-line-path"
-      d="M -400,450 L 480,450 Q 740,450 740,190 L 740,-200"
-      fill="none"
-      stroke="#c8001e"
-      stroke-width="2"
-      stroke-linecap="round"
-    />
-  </g>
-</svg>
+                <g transform="rotate(-15, 504, 300)" id="red-line-group">
+                    <path id="red-line-path" d="M -400,450 L 480,450 Q 740,450 740,190 L 740,-200" fill="none" stroke="#c8001e" stroke-width="2" stroke-linecap="round" />
+                </g>
+            </svg>
 
-<!-- UNIFIED FRAME — direct child of body, never inside intro-scene.
+            <!-- UNIFIED FRAME — direct child of body, never inside intro-scene.
      Isolated from any pointer-events:none on parent elements.
      In intro: positioned by JS to overlap the spacer in intro-scene.
      In gallery: centred via translate(-50%,-50%). -->
-<div id="unified-frame">
-  <div id="frame-inner">
-    <img id="intro-photo" src="images/9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
-    <!-- Dark plate sits between intro-photo and gallery-photo.
+            <div id="unified-frame">
+                <div id="frame-inner">
+                    <img id="intro-photo" src="images/9N2A2754--e1-Vibrant.jpg" alt="Artist portrait">
+                    <!-- Dark plate sits between intro-photo and gallery-photo.
          Fades in when entering gallery (covers jnb),
          fades out when exiting (reveals jnb under overlay). -->
-    <div id="photo-plate"></div>
-    <img id="gallery-photo" alt="">
-    <div id="intro-overlay"></div>
-  </div>
-  <div id="gallery-tap" onclick="toggleExpanded()"></div>
-</div>
+                    <div id="photo-plate"></div>
+                    <img id="gallery-photo" alt="">
+                    <div id="intro-overlay"></div>
+                </div>
+                <div id="gallery-tap" onclick="toggleExpanded()"></div>
+            </div>
 
-<!-- INTRO SCENE — spacer only; label and nav are fixed elements -->
-<div id="intro-scene">
-  <!-- Spacer holds the space the frame visually occupies,
+            <!-- INTRO SCENE — spacer only; label and nav are fixed elements -->
+            <div id="intro-scene">
+                <!-- Spacer holds the space the frame visually occupies,
        keeping intro-scene the right width for JS measurements -->
-  <div id="intro-spacer"></div>
-</div>
+                <div id="intro-spacer"></div>
+            </div>
 
-<!-- VISIONS LABEL — fixed, positioned by JS left of the frame -->
-<div id="visions-label">Visions</div>
+            <!-- VISIONS LABEL — fixed, positioned by JS left of the frame -->
+            <div id="visions-label">Visions</div>
 
-<!-- OUTLINE RECT — fixed, positioned by JS to wrap unified-frame -->
-<div id="outline-rect"></div>
+            <!-- OUTLINE RECT — fixed, positioned by JS to wrap unified-frame -->
+            <div id="outline-rect"></div>
+            
+            <!-- INFO PANEL -->
+            <div id="info-panel">
+                <div class="info-name-first" id="info-first"></div>
+                <div class="info-name-last" id="info-last"></div>
+            </div>
 
-<!-- UNIFIED LOGO — single element, repositioned by JS in all states -->
-<div id="logo">
-  <img id="logo-img" alt="jnb visions">
-</div>
+            <!-- WATERMARKS -->
+            <div id="watermark-left">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
+            <div id="watermark-right">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
 
-<!-- INFO PANEL -->
-<div id="info-panel">
-  <div class="info-name-first" id="info-first"></div>
-  <div class="info-name-last" id="info-last"></div>
-</div>
+            <!-- NAV -->
+            <button id="nav-prev" onclick="navigate(-1)">
+                <span class="nav-line"></span>
+                <span>Prev</span>
+            </button>
+            <button id="nav-next" onclick="navigate(1)">
+                <span>Next</span>
+                <span class="nav-line"></span>
+            </button>
 
-<!-- WATERMARKS -->
-<div id="watermark-left">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
-<div id="watermark-right">Visions Visions Visions Visions Visions Visions Visions Visions Visions Visions</div>
 
-<!-- NAV -->
-<button id="nav-prev" onclick="navigate(-1)">
-  <span class="nav-line"></span>
-  <span>Prev</span>
-</button>
-<button id="nav-next" onclick="navigate(1)">
-  <span>Next</span>
-  <span class="nav-line"></span>
-</button>
 
-<!-- UNIFIED NAV
-     All navigation words live here always.
-     State is driven by #nav-unified.gallery class.
-     CSS transitions carry each word smoothly between positions. -->
-<nav id="nav-unified">
-  <button id="nav-gallery"  class="nav-word" onclick="enterGallery('portraits')">Gallery</button>
-  <button id="nav-connect"  class="nav-word" onclick="goBook()">Book</button>
-  <button id="nav-back"     class="nav-word" onclick="state==='booking'?exitBook():exitGallery()">Back</button>
-</nav>
+            <!-- KEYBOARD HINT -->
+            <div id="kbd-hint">&#8592; &nbsp; Arrow keys to navigate &nbsp; &#8594;</div>
 
-<!-- KEYBOARD HINT -->
-<div id="kbd-hint">&#8592; &nbsp; Arrow keys to navigate &nbsp; &#8594;</div>
+        </div><!-- end sheet-1 -->
 
-</div><!-- end sheet-1 -->
+        <!-- BOOKING SCENE — Sheet 2, slides in from right -->
+        <div id="booking-scene" style="display:none">
+        </div>
 
-<!-- BOOKING SCENE — Sheet 2, slides in from right -->
-<div id="booking-scene" style="display:none">
-</div>
 
-<!-- BOOKING BACK — fixed, always in DOM, shown only in booking state -->
-<button id="booking-back" onclick="exitBook()">← Back</button>
 
-</div><!-- end site-slider -->
+    </div><!-- end site-slider -->
 
-<!-- CUSTOM CURSOR -->
-<div id="cursor-core"></div>
-<div id="cursor-orbiter-pos">
-  <div id="cursor-orbiter"><div id="cursor-orbiter-fill"></div></div>
-</div>
+    <!-- UNIFIED NAV — direct body child, position:fixed, never inside
+     any transforming container so it's always viewport-anchored. -->
+    <nav id="nav-unified">
+        <button id="nav-gallery" class="nav-word" onclick="enterGallery('portraits')">Gallery</button>
+        <button id="nav-connect" class="nav-word" onclick="goBook()">Book</button>
+        <button id="nav-back" class="nav-word" onclick="goBackGeneric()">Back</button>
+    </nav>
+    
+    <div id="logo">
+        <img id="logo-img" alt="jnb visions">
+    </div>
 
-<script>
-/* =====================================================
+    <!-- CUSTOM CURSOR -->
+    <div id="cursor-core"></div>
+    <div id="cursor-orbiter-pos">
+        <div id="cursor-orbiter">
+            <div id="cursor-orbiter-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================
    CONFIGURATION
    =====================================================
 
@@ -1073,269 +1332,437 @@
                  Omit (or set to [50,50]) to zoom into the center.
 */
 
-/* =====================================================
-   PATHS — update here if folder structure changes
-   ===================================================== */
-const PATHS = {
-  images: 'images/',   // trailing slash required
-  logo:   'jnb-2026_sq.svg'
-};
+        /* =====================================================
+           PATHS — update here if folder structure changes
+           ===================================================== */
+        const PATHS = {
+            images: 'images/', // trailing slash required
+            logo: 'jnb-2026_sq.svg'
+        };
 
-const LOGO = PATHS.logo;
+        const LOGO = PATHS.logo;
 
-/* Logo width in each state (px).
-   Change these to resize the logo across all positions at once. */
-const LOGO_SIZES = {
-  intro:    120,   // centred over the intro card
-  gallery:  120,   // overlapping left edge of gallery photo
-  expanded: 160    // centred below the expanded photo
-};
+        /* Logo width in each state (px).
+           Change these to resize the logo across all positions at once. */
+        const LOGO_SIZES = {
+            intro: 120, // centred over the intro card
+            gallery: 120, // overlapping left edge of gallery photo
+            expanded: 160 // centred below the expanded photo
+        };
 
-/* =====================================================
-   SUPABASE CONFIG
-   ===================================================== */
-const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
+        /* =====================================================
+           SUPABASE CONFIG
+           ===================================================== */
+        const SUPABASE_URL = 'https://xzhiblzvgeqtlicbstzu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aGlibHp2Z2VxdGxpY2JzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDE2MjksImV4cCI6MjA5NTgxNzYyOX0.QZiINBDncHEKUUDTFG2H9RH1R_QSI9hH-B5vkFT5sBM';
 
 
-/* Fallback used if Supabase is unreachable */
-const GALLERY_FALLBACK = {
-  portraits: [
-    { src: 'images/CA5D6891_CA_L_no-logo.jpg', first: 'Freddie', last: 'Andrews',
-      logoY: 50, infoY: 70, zoomAnchor: [60, 14], zoomRatio: 0.65 },
-    { src: 'images/CA5D6948.jpg', first: 'Rebecca', last: 'Deboer',
-      logoY: 44, infoY: 68, zoomAnchor: [60, 30], zoomRatio: 0.65 },
-    { src: 'images/CA5D6942_S_CA_.jpg', first: 'Rebecca', last: 'Deboer',
-      logoY: 64, infoY: 44, zoomAnchor: [70, 78], zoomRatio: 0.65 }
-  ]
-};
+        /* Fallback used if Supabase is unreachable */
+        const GALLERY_FALLBACK = {
+            portraits: [{
+                    src: 'images/CA5D6891_CA_L_no-logo.jpg',
+                    first: 'Freddie',
+                    last: 'Andrews',
+                    logoY: 50,
+                    infoY: 70,
+                    zoomAnchor: [60, 14],
+                    zoomRatio: 0.65
+                },
+                {
+                    src: 'images/CA5D6948.jpg',
+                    first: 'Rebecca',
+                    last: 'Deboer',
+                    logoY: 44,
+                    infoY: 68,
+                    zoomAnchor: [60, 30],
+                    zoomRatio: 0.65
+                },
+                {
+                    src: 'images/CA5D6942_S_CA_.jpg',
+                    first: 'Rebecca',
+                    last: 'Deboer',
+                    logoY: 64,
+                    infoY: 44,
+                    zoomAnchor: [70, 78],
+                    zoomRatio: 0.65
+                }
+            ]
+        };
 
-/* GALLERY is populated by fetchGallery() on load */
-let GALLERY = GALLERY_FALLBACK;
+        /* GALLERY is populated by fetchGallery() on load */
+        let GALLERY = GALLERY_FALLBACK;
 
-async function fetchGallery() {
-  try {
-    // Query photo_collections joined to photos (published only) and
-    // their subject credits, ordered by display_order in the collection.
-    // Supabase nested select syntax pulls related rows in one request.
-    const params = new URLSearchParams({
-      select: [
-        'display_order',
-        'photos!inner(id,src,logo_y,info_y,zoom_anchor_x,zoom_anchor_y,zoom_ratio,published)',
-        'collections!inner(slug)'
-      ].join(','),
-      'collections.slug': 'eq.portraits',
-      'photos.published': 'eq.true',
-      order: 'display_order.asc'
-    });
+        async function fetchGallery() {
+            try {
+                // Query photo_collections joined to photos (published only) and
+                // their subject credits, ordered by display_order in the collection.
+                // Supabase nested select syntax pulls related rows in one request.
+                const params = new URLSearchParams({
+                    select: [
+                        'display_order',
+                        'photos!inner(id,src,logo_y,info_y,zoom_anchor_x,zoom_anchor_y,zoom_ratio,published)',
+                        'collections!inner(slug)'
+                    ].join(','),
+                    'collections.slug': 'eq.portraits',
+                    'photos.published': 'eq.true',
+                    order: 'display_order.asc'
+                });
 
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/photo_collections?${params}`,
-      { headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
-      }}
-    );
-    if (!res.ok) throw new Error('Supabase fetch failed');
-    const rows = await res.json();
+                const res = await fetch(
+                    `${SUPABASE_URL}/rest/v1/photo_collections?${params}`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    }
+                );
+                if (!res.ok) throw new Error('Supabase fetch failed');
+                const rows = await res.json();
 
-    // For each photo, fetch its subject credits separately
-    // (Supabase free tier doesn't support deep nested joins via REST easily)
-    const photoIds = rows.map(r => r.photos.id);
-    let credits = [];
-    if (photoIds.length) {
-      const credParams = new URLSearchParams({
-        select: 'photo_id,role,people(first_name,last_name)',
-        'photo_id': `in.(${photoIds.join(',')})`,
-        role: 'eq.subject'
-      });
-      const credRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/photo_credits?${credParams}`,
-        { headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-        }}
-      );
-      if (credRes.ok) credits = await credRes.json();
-    }
+                // For each photo, fetch its subject credits separately
+                // (Supabase free tier doesn't support deep nested joins via REST easily)
+                const photoIds = rows.map(r => r.photos.id);
+                let credits = [];
+                if (photoIds.length) {
+                    const credParams = new URLSearchParams({
+                        select: 'photo_id,role,people(first_name,last_name)',
+                        'photo_id': `in.(${photoIds.join(',')})`,
+                        role: 'eq.subject'
+                    });
+                    const credRes = await fetch(
+                        `${SUPABASE_URL}/rest/v1/photo_credits?${credParams}`, {
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`
+                            }
+                        }
+                    );
+                    if (credRes.ok) credits = await credRes.json();
+                }
 
-    // Build a map of photo_id -> first subject found
-    const subjectMap = {};
-    credits.forEach(c => {
-      if (!subjectMap[c.photo_id] && c.people) {
-        subjectMap[c.photo_id] = c.people;
-      }
-    });
+                // Build a map of photo_id -> first subject found
+                const subjectMap = {};
+                credits.forEach(c => {
+                    if (!subjectMap[c.photo_id] && c.people) {
+                        subjectMap[c.photo_id] = c.people;
+                    }
+                });
 
-    const portraits = rows.map(r => {
-      const p       = r.photos;
-      const subject = subjectMap[p.id] || {};
-      return {
-        src:        PATHS.images + p.src,
-        first:      subject.first_name || '',
-        last:       subject.last_name  || '',
-        logoY:      p.logo_y,
-        infoY:      p.info_y,
-        zoomAnchor: [p.zoom_anchor_x, p.zoom_anchor_y],
-        zoomRatio:  p.zoom_ratio
-      };
-    });
+                const portraits = rows.map(r => {
+                    const p = r.photos;
+                    const subject = subjectMap[p.id] || {};
+                    return {
+                        src: PATHS.images + p.src,
+                        first: subject.first_name || '',
+                        last: subject.last_name || '',
+                        logoY: p.logo_y,
+                        infoY: p.info_y,
+                        zoomAnchor: [p.zoom_anchor_x, p.zoom_anchor_y],
+                        zoomRatio: p.zoom_ratio
+                    };
+                });
 
-    GALLERY = { portraits };
-    console.log('[jnb] Gallery loaded from Supabase:', portraits.length, 'photos');
-  } catch (err) {
-    console.warn('[jnb] Supabase unavailable, using fallback gallery:', err.message);
-    GALLERY = GALLERY_FALLBACK;
-  }
-}
+                GALLERY = {
+                    portraits
+                };
+            } catch (err) {
+                console.warn('[jnb] Supabase unavailable, using fallback gallery:', err.message);
+                GALLERY = GALLERY_FALLBACK;
+            }
+        }
 
-/* =====================================================
-   BOOT
-   ===================================================== */
-document.getElementById('logo-img').src = LOGO;
+        /* =====================================================
+           BOOT
+           ===================================================== */
+        document.getElementById('logo-img').src = LOGO;
 
-// Fetch gallery data from Supabase on load
-fetchGallery();
+        // Fetch gallery data from Supabase on load
+        fetchGallery();
 
-/* =====================================================
-   STATE
-   ===================================================== */
-let state = 'intro';   // 'intro' | 'gallery' | 'expanded' | 'booking'
-let currentCollection = [];
-let currentIndex = 0;
-let isExpanded = false;
+        /* =====================================================
+           STATE
+           ===================================================== */
+        let state = 'intro'; // 'intro' | 'gallery' | 'expanded' | 'booking'
+        let bookingPrevState = 'intro'; // state before entering booking
+        let isExiting = false; // true while exitGallery transition is running
+        let currentCollection = [];
+        let currentIndex = 0;
+        let isExpanded = false;
 
-/* =====================================================
-   BOOKING
-   ===================================================== */
+        /* =====================================================
+           BOOKING
+           ===================================================== */
 
-/* Booking data — loaded from Supabase */
-let bookingPockets     = [];   // availability_pockets rows
-let bookingConfig      = {};   // ticket_config row
-let selectedPocketDay  = null; // date string 'YYYY-MM-DD' of selected day card
-let currentBookingMonth = null; // 'YYYY-MM' of month currently in view
+        /* Booking data — loaded from Supabase */
+        let bookingPockets = []; // availability_pockets rows
+        let bookingConfig = {}; // ticket_config row
+        let selectedPocketDay = null; // date string 'YYYY-MM-DD' of selected day card
+        let currentBookingMonth = null; // 'YYYY-MM' of month currently in view
+        
+        
+        function goBackGeneric() {
+            
+            // If the state is intro, there should not be a back button.
+            if (state == 'intro') {
+            }
+            
+            // If the state is gallery,
+            if (state == 'gallery') {
+                exitGallery();
+                
+            }
+            
+            // If the state is expanded (expanded gallery image),
+            if (state == 'expanded') {
+                exitGallery();
+                
+            }
+            
+            // If the state is booking,
+            if (state == 'booking') {
+                exitBook();
+                
+            }
+            
+        }
 
-async function fetchBookingData() {
-  try {
-    const [pockets, config] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&order=date.asc`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
-        .then(r => r.json()),
-      fetch(`${SUPABASE_URL}/rest/v1/ticket_config?select=*`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } })
-        .then(r => r.json())
-    ]);
-    bookingPockets = pockets || [];
-    bookingConfig  = config?.[0] || { total: 3 };
+        async function fetchBookingData() {
+            try {
+                const [pockets, config] = await Promise.all([
+                    fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&order=date.asc`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    })
+                    .then(r => r.json()),
+                    fetch(`${SUPABASE_URL}/rest/v1/ticket_config?select=*`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    })
+                    .then(r => r.json())
+                ]);
+                bookingPockets = pockets || [];
+                bookingConfig = config?. [0] || {
+                    total: 3
+                };
 
-    // Fetch secured count (hold + confirmed inquiries)
-    const secured = await fetch(
-      `${SUPABASE_URL}/rest/v1/inquiries?select=id&status=in.(hold,confirmed)`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-    ).then(r => r.json());
-    bookingConfig.secured = (secured || []).length;
-  } catch(err) {
-    console.warn('[jnb] Booking data fetch failed:', err.message);
-    bookingPockets = [];
-    bookingConfig  = { total: 3, secured: 0 };
-  }
-}
+                // Fetch secured count (hold + confirmed inquiries)
+                const secured = await fetch(
+                    `${SUPABASE_URL}/rest/v1/inquiries?select=id&status=in.(hold,confirmed)`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    }
+                ).then(r => r.json());
+                bookingConfig.secured = (secured || []).length;
+            } catch (err) {
+                console.warn('[jnb] Booking data fetch failed:', err.message);
+                bookingPockets = [];
+                bookingConfig = {
+                    total: 3,
+                    secured: 0
+                };
+            }
+        }
 
-async function goBook() {
-  if (state === 'booking') return;
-  if (state === 'gallery' || state === 'expanded') await exitGallery();
-  state = 'booking';
+        async function goBook() {
+            if (state === 'booking') return;
 
-  await fetchBookingData();
+            bookingPrevState = state; // remember where we came from
 
-  // Hide intro chrome
-  document.getElementById('visions-label').style.opacity   = '0';
-  document.getElementById('visions-label').style.left =
-    (parseFloat(document.getElementById('visions-label').style.left || '0') - 20) + 'px';
-  document.getElementById('logo').style.opacity = '0';
-  document.getElementById('unified-frame').style.opacity = '0';
-  document.getElementById('outline-rect').classList.remove('rect-visible');
+            await fetchBookingData();
 
-  // Slide booking scene in
-  const scene = document.getElementById('booking-scene');
-  scene.style.display = 'flex';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      document.getElementById('sheet-1').classList.add('slide-out');
-      scene.classList.add('slide-in');
-    });
-  });
+            if (state === 'gallery' || state === 'expanded') {
+                // Coming from gallery — fade chrome without going back to intro.
+                // The nav moves to left side.
+                hideGalleryChrome();
+                document.getElementById('gallery-tap').classList.remove('active');
+                document.getElementById('unified-frame').style.opacity = '0';
+                document.getElementById('outline-rect').classList.remove('rect-visible');
+                document.getElementById('photo-plate').classList.remove('visible');
+                // Move nav to booking position
+                setNavState('booking');
+            } else {
+                // Coming from intro — hide intro chrome, move nav left side.
+                document.getElementById('visions-label').style.opacity = '0';
+                document.getElementById('visions-label').style.left =
+                    (parseFloat(document.getElementById('visions-label').style.left || '0') - 20) + 'px';
+                document.getElementById('unified-frame').style.opacity = '0';
+                document.getElementById('outline-rect').classList.remove('rect-visible');
+                document.getElementById('logo').style.opacity = '0';
 
-  // Show back button
-  setTimeout(() => {
-    document.getElementById('booking-back')?.classList.add('visible');
-  }, 500);
+                setNavState('booking');
+            }
 
-  // Render after slide begins
-  setTimeout(() => renderBookingView(), 400);
+            state = 'booking';
 
-  // Logo moves immediately alongside the slide transition
-  positionLogoBooking();
-}
+            // Slide booking scene in
+            const scene = document.getElementById('booking-scene');
+            scene.style.display = 'flex';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    document.getElementById('sheet-1').classList.add('slide-out');
+                    scene.classList.add('slide-in');
+                });
+            });
 
-function exitBook() {
-  if (state !== 'booking') return;
-  state = 'intro';
+            // Render after slide begins
+            setTimeout(() => renderBookingView(), 400);
 
-  // Slide back
-  document.getElementById('sheet-1').classList.remove('slide-out');
-  document.getElementById('booking-scene').classList.remove('slide-in');
+            // Logo moves immediately alongside the slide transition
+            positionLogoBooking();
+        }
 
-  // Restore intro chrome
-  setTimeout(() => {
-    document.getElementById('unified-frame').style.opacity = '1';
-    positionIntroAll();
-    document.getElementById('visions-label').style.opacity = '1';
-  }, 400);
+        function exitBook() {
+            if (state !== 'booking') return;
+            /* Deselect the currently selected day, allowing the inquiry UI to close.
+            * In the future, I could retain the memory of a selected date to
+            * allow the UI to reopen the inquiry form when the booking is navigated
+            * back to.
+            */
+            selectDay(selectedPocketDay);
+            
+            
+            if (bookingPrevState === 'gallery' || bookingPrevState === 'expanded') {
+                // ── Returning to gallery ──
+                // Snap nav to gallery position immediately before slide begins
+                setNavState('gallery', true);
+                state = 'gallery';
 
-  document.getElementById('booking-back')?.classList.remove('visible');
+                // Start slide
+                document.getElementById('sheet-1').classList.remove('slide-out');
+                document.getElementById('booking-scene').classList.remove('slide-in');
 
-  setTimeout(() => {
-    document.getElementById('booking-scene').style.display = 'none';
-    selectedPocketDay = null;
-  }, 800);
-}
+                // Restore gallery chrome after slide settles
+                setTimeout(() => {
+                    document.getElementById('unified-frame').style.opacity = '1';
+                    document.getElementById('outline-rect').classList.add('rect-visible');
+                    showGalleryChrome();
+                    document.getElementById('gallery-tap').classList.add('active');
+                    positionLogoAndInfo(currentCollection[currentIndex], false);
+                }, 800);
 
-function positionLogoBooking() {
-  // Logo transitions to top-left immediately when booking opens,
-  // moving alongside the slide. Called directly — no defer.
-  const logo  = document.getElementById('logo');
-  const logoW = LOGO_SIZES.gallery;
-  logo.style.width     = logoW + 'px';
-  logo.style.left      = '24px';
-  logo.style.top       = '24px';
-  logo.style.opacity   = '1';
-  logo.style.transform = 'none';
-}
+            } else {
+                // ── Returning to intro ──
+                setNavState('intro');
+                state = 'intro';
 
-/* ── Booking view rendering ── */
+                document.getElementById('visions-label').style.opacity = '1';
+                document.getElementById('visions-label').style.left =
+                    (parseFloat(document.getElementById('visions-label').style.left || '0') + 20) + 'px';
+                document.getElementById('unified-frame').style.opacity = '1';
+                document.getElementById('outline-rect').classList.add('rect-visible');
+                document.getElementById('logo').style.opacity = '1';
+                //showGalleryChrome();
+                
 
-function getAvailableMonths() {
-  const months = new Set();
-  bookingPockets.forEach(p => {
-    months.add(p.date.slice(0, 7)); // 'YYYY-MM'
-  });
-  return Array.from(months).sort();
-}
+                // Nav and logo animate smoothly — same transition as going in
+                //setNavState('intro'); // no instant flag — let CSS transition run
+                positionLogoCenter();
+                positionVisionsLabelCenterPlusCard();
+                positionIntroNavCenterPlusCard();
 
-function renderBookingView() {
-  const scene    = document.getElementById('booking-scene');
-  const total    = bookingConfig.total   || 3;
-  const secured  = bookingConfig.secured || 0;
-  const available = total - secured;
-  const soldOut   = available <= 0;
-  const months    = getAvailableMonths();
+                // Start slide
+                document.getElementById('sheet-1').classList.remove('slide-out');
+                document.getElementById('booking-scene').classList.remove('slide-in');
+                
+                
+                
+                // After slide settles, snap frame back into position and restore chrome
+                setTimeout(() => {
+                    const frame = document.getElementById('unified-frame');
+                    document.getElementById('unified-frame').style.opacity = '1';
+                    document.getElementById('visions-label').style.opacity = '1';
+                }, 120);
+                
+                
+                setTimeout(() => {
+                    positionLogoIntro();
+                    positionVisionsLabel();
+                    positionIntroNav();
+                }, 800);
+                
+                /*
+                // Slide booking scene in
+                const scene = document.getElementById('sheet-1');
+                //scene.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        document.getElementById('booking-scene').classList.add('slide-out');
+                        scene.classList.add('slide-in');
+                    });
+                });
+                // Render after slide begins
+                setTimeout(() => renderBookingView(), 400);
+                
+                */
+                
+            }
+            
+            /*
+            setTimeout(() => {
+                document.getElementById('booking-scene').style.display = 'none';
+                selectedPocketDay = null;
+            }, 820);
+            */
+        }
+        
+        function positionLogoCenter() {
+            
+            // Logo transitions to center
+            
+            const logo = document.getElementById('logo');
+            const slider = document.getElementById('site-slider');
+            if (!logo || !slider) return;
+            const sr = slider.getBoundingClientRect();
+            const logoW = LOGO_SIZES.intro;
+            logo.style.width = logoW + 'px';
+            logo.style.left = (sr.left + sr.width / 2 - logoW / 2) + 'px';
+            logo.style.top = (sr.top + sr.height / 2 - logoW / 2) + 'px';
+            logo.style.transform = 'none';
+            logo.style.opacity = '1';
+            
+        }
 
-  if (!currentBookingMonth || !months.includes(currentBookingMonth)) {
-    currentBookingMonth = months[0] || null;
-  }
+        function positionLogoBooking() {
+            // Logo transitions to top-left immediately when booking opens,
+            // moving alongside the slide. Called directly — no defer.
+            const logo = document.getElementById('logo');
+            const logoW = LOGO_SIZES.gallery;
+            logo.style.width = logoW + 'px';
+            logo.style.left = '24px';
+            logo.style.top = '24px';
+            logo.style.opacity = '1';
+            logo.style.transform = 'none';
+        }
 
-  scene.innerHTML = `
+        /* ── Booking view rendering ── */
+
+        function getAvailableMonths() {
+            const months = new Set();
+            bookingPockets.forEach(p => {
+                months.add(p.date.slice(0, 7)); // 'YYYY-MM'
+            });
+            return Array.from(months).sort();
+        }
+
+        function renderBookingView() {
+            const scene = document.getElementById('booking-scene');
+            const total = bookingConfig.total || 3;
+            const secured = bookingConfig.secured || 0;
+            const available = total - secured;
+            const soldOut = available <= 0;
+            const months = getAvailableMonths();
+
+            if (!currentBookingMonth || !months.includes(currentBookingMonth)) {
+                currentBookingMonth = months[0] || null;
+            }
+
+            scene.innerHTML = `
     <div id="booking-inner">
       <div id="booking-header">
         <div id="booking-ticket-status">
@@ -1369,112 +1796,136 @@ function renderBookingView() {
           <button class="booking-month-btn" id="booking-next-month"
                   onclick="shiftBookingMonth(1)">→</button>
         </div>
-        <div id="booking-days"></div>
-        <div id="booking-inquiry-wrap" style="display:none"></div>
+        <div id="booking-calendar-row">
+          <div id="booking-days-col">
+            <div id="booking-days"></div>
+          </div>
+          <div id="booking-inquiry-col"></div>
+        </div>
       `}
     </div>`;
 
-  if (!soldOut && months.length > 0) {
-    renderDayCards();
-    updateMonthNavButtons();
-  }
-}
+            if (!soldOut && months.length > 0) {
+                renderDayCards();
+                updateMonthNavButtons();
+            }
+        }
 
-function formatMonth(ym) {
-  if (!ym) return '';
-  const [y, m] = ym.split('-');
-  return new Date(+y, +m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-}
+        function formatMonth(ym) {
+            if (!ym) return '';
+            const [y, m] = ym.split('-');
+            return new Date(+y, +m - 1, 1).toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
+        }
 
-function formatDate(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('en-US',
-    { weekday: 'short', month: 'short', day: 'numeric' });
-}
+        function formatDate(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
 
-function formatTime(t) {
-  // t is "HH:MM:SS" from Postgres
-  const [h, min] = t.split(':').map(Number);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  const h12  = h % 12 || 12;
-  return `${h12}${min ? ':' + String(min).padStart(2,'0') : ''} ${ampm}`;
-}
+        function formatTime(t) {
+            // t is "HH:MM:SS" from Postgres
+            const [h, min] = t.split(':').map(Number);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}${min ? ':' + String(min).padStart(2,'0') : ''} ${ampm}`;
+        }
 
-function shiftBookingMonth(dir) {
-  const months = getAvailableMonths();
-  const idx    = months.indexOf(currentBookingMonth);
-  const next   = idx + dir;
-  if (next < 0 || next >= months.length) return;
-  currentBookingMonth = months[next];
-  selectedPocketDay   = null;
-  renderDayCards();
-  updateMonthNavButtons();
-  document.getElementById('booking-month-label').textContent = formatMonth(currentBookingMonth);
-  document.getElementById('booking-inquiry-wrap').style.display = 'none';
-}
+        function shiftBookingMonth(dir) {
+            const months = getAvailableMonths();
+            const idx = months.indexOf(currentBookingMonth);
+            const next = idx + dir;
+            if (next < 0 || next >= months.length) return;
+            currentBookingMonth = months[next];
+            selectedPocketDay = null;
+            renderDayCards();
+            updateMonthNavButtons();
+            document.getElementById('booking-month-label').textContent = formatMonth(currentBookingMonth);
+            const ic = document.getElementById('booking-inquiry-col');
+            const dc = document.getElementById('booking-days-col');
+            if (ic) {
+                ic.classList.remove('visible');
+                ic.innerHTML = '';
+            }
+            if (dc) dc.classList.remove('dimmed');
+        }
 
-function updateMonthNavButtons() {
-  const months  = getAvailableMonths();
-  const idx     = months.indexOf(currentBookingMonth);
-  const prevBtn = document.getElementById('booking-prev-month');
-  const nextBtn = document.getElementById('booking-next-month');
-  if (prevBtn) prevBtn.style.opacity = idx <= 0 ? '0.2' : '1';
-  if (nextBtn) nextBtn.style.opacity = idx >= months.length - 1 ? '0.2' : '1';
-}
+        function updateMonthNavButtons() {
+            const months = getAvailableMonths();
+            const idx = months.indexOf(currentBookingMonth);
+            const prevBtn = document.getElementById('booking-prev-month');
+            const nextBtn = document.getElementById('booking-next-month');
+            if (prevBtn) prevBtn.style.opacity = idx <= 0 ? '0.2' : '1';
+            if (nextBtn) nextBtn.style.opacity = idx >= months.length - 1 ? '0.2' : '1';
+        }
 
-function renderDayCards() {
-  const dayContainer = document.getElementById('booking-days');
-  if (!dayContainer) return;
+        function renderDayCards() {
+            const dayContainer = document.getElementById('booking-days');
+            if (!dayContainer) return;
 
-  const monthPockets = bookingPockets.filter(p => p.date.startsWith(currentBookingMonth));
+            const monthPockets = bookingPockets.filter(p => p.date.startsWith(currentBookingMonth));
 
-  // Group by date
-  const byDate = {};
-  monthPockets.forEach(p => {
-    if (!byDate[p.date]) byDate[p.date] = [];
-    byDate[p.date].push(p);
-  });
+            // Group by date
+            const byDate = {};
+            monthPockets.forEach(p => {
+                if (!byDate[p.date]) byDate[p.date] = [];
+                byDate[p.date].push(p);
+            });
 
-  const dates = Object.keys(byDate).sort();
+            const dates = Object.keys(byDate).sort();
 
-  dayContainer.innerHTML = dates.map(date => {
-    const pockets  = byDate[date];
-    const isSelected = selectedPocketDay === date;
-    const windows  = pockets.map(p =>
-      `<div class="booking-window">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</div>`
-    ).join('');
+            dayContainer.innerHTML = dates.map(date => {
+                const pockets = byDate[date];
+                const isSelected = selectedPocketDay === date;
+                const windows = pockets.map(p =>
+                    `<div class="booking-window">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</div>`
+                ).join('');
 
-    return `
+                return `
       <div class="booking-day-card ${isSelected ? 'selected' : ''}"
            onclick="selectDay('${date}')">
         <div class="booking-day-date">${formatDate(date)}</div>
         <div class="booking-day-windows">${windows}</div>
       </div>`;
-  }).join('');
-}
+            }).join('');
+        }
 
-function selectDay(date) {
-  if (selectedPocketDay === date) {
-    // Deselect
-    selectedPocketDay = null;
-    renderDayCards();
-    document.getElementById('booking-inquiry-wrap').style.display = 'none';
-    return;
-  }
-  selectedPocketDay = date;
-  renderDayCards();
-  showInquiryForm(date);
-}
+        function selectDay(date) {
+            const daysCol = document.getElementById('booking-days-col');
+            const inquiryCol = document.getElementById('booking-inquiry-col');
 
-function showInquiryForm(date) {
-  const wrap    = document.getElementById('booking-inquiry-wrap');
-  const pockets = bookingPockets.filter(p => p.date === date);
-  const options = pockets.map(p =>
-    `<option value="${p.id}">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</option>`
-  ).join('');
+            if (selectedPocketDay === date) {
+                // Deselect
+                selectedPocketDay = null;
+                renderDayCards();
+                if (daysCol) daysCol.classList.remove('dimmed');
+                if (inquiryCol) {
+                    inquiryCol.classList.remove('visible');
+                    inquiryCol.innerHTML = '';
+                }
+                return;
+            }
+            selectedPocketDay = date;
+            renderDayCards();
+            if (daysCol) daysCol.classList.add('dimmed');
+            showInquiryForm(date);
+        }
 
-  wrap.style.display = 'block';
-  wrap.innerHTML = `
+        function showInquiryForm(date) {
+            const wrap = document.getElementById('booking-inquiry-col');
+            const pockets = bookingPockets.filter(p => p.date === date);
+            const options = pockets.map(p =>
+                `<option value="${p.id}">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</option>`
+            ).join('');
+
+            wrap.classList.add('visible');
+            wrap.innerHTML = `
     <div id="booking-inquiry-card">
       <div class="booking-inquiry-title">${formatDate(date)}</div>
 
@@ -1511,808 +1962,967 @@ function showInquiryForm(date) {
       <div id="inq-error" class="booking-error"></div>
     </div>`;
 
-  // Scroll form into view smoothly
-  setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-}
 
-async function submitInquiry(date) {
-  const btn     = document.querySelector('.booking-submit');
-  const errEl   = document.getElementById('inq-error');
-  const first   = document.getElementById('inq-first').value.trim();
-  const last    = document.getElementById('inq-last').value.trim();
-  const email   = document.getElementById('inq-email').value.trim();
-  const message = document.getElementById('inq-message').value.trim();
-  const pocketId = document.getElementById('inq-pocket').value;
+        }
 
-  errEl.textContent = '';
+        async function submitInquiry(date) {
+            const btn = document.querySelector('.booking-submit');
+            const errEl = document.getElementById('inq-error');
+            const first = document.getElementById('inq-first').value.trim();
+            const last = document.getElementById('inq-last').value.trim();
+            const email = document.getElementById('inq-email').value.trim();
+            const message = document.getElementById('inq-message').value.trim();
+            const pocketId = document.getElementById('inq-pocket').value;
 
-  if (!first || !last) { errEl.textContent = 'Please enter your name.'; return; }
-  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
+            errEl.textContent = '';
 
-  btn.textContent = 'Sending...';
-  btn.disabled = true;
+            if (!first || !last) {
+                errEl.textContent = 'Please enter your name.';
+                return;
+            }
+            if (!email || !email.includes('@')) {
+                errEl.textContent = 'Please enter a valid email.';
+                return;
+            }
 
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/inquiries`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        pocket_id:   pocketId,
-        first_name:  first,
-        last_name:   last,
-        email,
-        message,
-        status: 'new'
-      })
-    });
-    if (!res.ok) throw new Error('Submission failed');
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
 
-    // Show confirmation
-    document.getElementById('booking-inquiry-card').innerHTML = `
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/inquiries`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        pocket_id: pocketId,
+                        first_name: first,
+                        last_name: last,
+                        email,
+                        message,
+                        status: 'new'
+                    })
+                });
+                if (!res.ok) throw new Error('Submission failed');
+
+                // Show confirmation
+                document.getElementById('booking-inquiry-card').innerHTML = `
       <div class="booking-confirm">
         <div class="booking-confirm-title">Inquiry sent.</div>
         <div class="booking-confirm-body">
           Thank you, ${first}. jnb will be in touch at ${email}.
         </div>
       </div>`;
-  } catch(err) {
-    errEl.textContent = 'Something went wrong. Please try again.';
-    btn.textContent = 'Send Inquiry';
-    btn.disabled = false;
-  }
-}
-
-/* =====================================================
-   INTRO → GALLERY
-   ===================================================== */
-/* =====================================================
-   ENTER GALLERY — the morph sequence
-   =====================================================
-   Phase 1 (0ms):    Lock frame position, detach to fixed,
-                     expand to gallery size. Outline rect fades in.
-                     Intro chrome fades out.
-   Phase 2 (150ms):  Load gallery image silently under overlay.
-   Phase 3 (800ms):  Overlay lifts. Gallery chrome slides in.
-   Phase 4 (1450ms): Tap-to-zoom enabled.
-   ===================================================== */
-function enterGallery(collectionKey) {
-  currentCollection = GALLERY[collectionKey] || [];
-  currentIndex = 0;
-  if (!currentCollection.length) return;
-  state = 'morphing';
-
-  const frame   = document.getElementById('unified-frame');
-  const overlay = document.getElementById('intro-overlay');
-  const logoEl  = document.getElementById('logo');
-  const rect    = document.getElementById('outline-rect');
-
-  // ── Phase 1: frame is already fixed — just prepare for animation ──
-  // Disable transition briefly so the starting position doesn't animate
-  frame.style.transition = 'none';
-  // positionFrame() already set top/left to match spacer — force a reflow
-  void frame.offsetHeight;
-  // Re-enable transition for the expansion animation
-  frame.style.transition = '';
-  frame.classList.add('detached'); // triggers frame-inner border-radius via CSS
-
-  // Clear inline positional styles, add gallery class, then set bottom inline.
-  // Using bottom means we never need to know the nav's height.
-  const navEl = document.getElementById('nav-unified');
-  navEl.style.left      = '';
-  navEl.style.right     = '';
-  navEl.style.top       = 'auto';
-  navEl.style.transform = '';
-  navEl.classList.remove('no-transition');
-  navEl.classList.add('gallery');
-  // bottom: 8vh keeps the nav's bottom edge 8vh from the viewport bottom
-  navEl.style.bottom = 'clamp(24px, 8vh, 60px)';
-
-  // Fade plate in — covers intro portrait as frame expands
-  document.getElementById('photo-plate').classList.add('visible');
-
-  // Hide other intro chrome
-  const labelEl = document.getElementById('visions-label');
-  labelEl.style.opacity = '0';
-  labelEl.style.left = (parseFloat(labelEl.style.left || '0') - 20) + 'px';
-  document.getElementById('intro-scene').style.pointerEvents = 'none';
-  document.getElementById('red-line').classList.add('hidden');
-
-  // Two rAFs to ensure the fixed position is painted before we start moving
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const { w: gw, h: gh } = galleryFrameSize();
-    const gap = vh * 0.04;
-
-    // Animate to centred gallery size
-    frame.style.top    = '50%';
-    frame.style.left   = '50%';
-    // Logo and info move simultaneously with the frame
-    positionLogoAndInfo(currentCollection[0], false);
-    frame.style.transform = 'translate(-50%, -50%)';
-    frame.style.width  = gw + 'px';
-    frame.style.height = gh + 'px';
-    // border-radius is handled by CSS:
-    // #unified-frame.detached #frame-inner { border-radius: 12vh }
-
-    // Outline rect tracks the frame
-    rect.style.width        = (gw + gap * 2) + 'px';
-    rect.style.height       = (gh + gap * 2) + 'px';
-    rect.style.top          = ((vh - gh) / 2 - gap) + 'px';
-    rect.style.left         = ((vw - gw) / 2 - gap) + 'px';
-    rect.style.borderRadius = 'calc(12vh + 4vh)';
-    rect.classList.add('rect-visible');
-  }));
-
-  // ── Phase 2: load image under overlay ──
-  setTimeout(() => {
-    preloadNeighbours(0);
-    loadSlideUnder(0);
-  }, 150);
-
-  // ── Phase 3: lift overlay, show chrome ──
-  setTimeout(() => {
-    overlay.classList.add('lifted');
-    showGalleryChrome();
-    loadSlide(0, false);
-  }, 800);
-
-  // ── Phase 4: enable zoom ──
-  setTimeout(() => {
-    const tap = document.getElementById('gallery-tap');
-    tap.classList.add('active');
-state = 'gallery';
-  }, 1450);
-}
-
-function showGalleryChrome() {
-  document.getElementById('watermark-left').classList.add('visible');
-  document.getElementById('watermark-right').classList.add('visible');
-  document.getElementById('nav-prev').classList.add('visible');
-  document.getElementById('nav-next').classList.add('visible');
-  document.getElementById('kbd-hint').classList.add('visible');
-  document.getElementById('info-panel').style.pointerEvents = 'none';
-}
-
-function hideGalleryChrome() {
-  document.getElementById('watermark-left').classList.remove('visible');
-  document.getElementById('watermark-right').classList.remove('visible');
-  document.getElementById('nav-prev').classList.remove('visible');
-  document.getElementById('nav-next').classList.remove('visible');
-  document.getElementById('kbd-hint').classList.remove('visible');
-  document.getElementById('info-panel').style.opacity = '0';
-  document.getElementById('info-panel').style.right = '-300px';
-  document.getElementById('info-panel').classList.remove('visible');
-}
-
-/* =====================================================
-   GALLERY → INTRO
-   ===================================================== */
-/* =====================================================
-   EXIT GALLERY — reverse morph back to intro card
-   ===================================================== */
-function exitGallery() {
-  if (state === 'morphing') return;
-  if (isExpanded) { isExpanded = false; }
-  state = 'morphing';
-
-  const frame   = document.getElementById('unified-frame');
-  const overlay = document.getElementById('intro-overlay');
-  const logoEl  = document.getElementById('logo');
-  const rect    = document.getElementById('outline-rect');
-  const photo   = document.getElementById('gallery-photo');
-
-  // ── Phase 1: shutter closes — all moving parts start simultaneously ──
-  hideGalleryChrome();
-  document.getElementById('gallery-tap').classList.remove('active');
-
-  // Gallery photo fades out immediately — dissolves into the plate
-  // which is also fading out, creating a layered dissolve back to jnb
-  photo.classList.remove('loaded');
-
-  overlay.classList.remove('lifted');
-
-  // Plate fades out — reveals intro portrait under the closing overlay
-  document.getElementById('photo-plate').classList.remove('visible');
-
-  // Logo moves to intro position immediately
-  positionLogoIntro();
-
-  // Nav snaps back instantly (no transition), then re-enables
-  const navElExit = document.getElementById('nav-unified');
-  navElExit.classList.add('no-transition');
-  navElExit.classList.remove('gallery');
-  navElExit.style.bottom = 'auto';
-  positionIntroNav();
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      navElExit.classList.remove('no-transition');
-    });
-  });
-
-  // ── Phase 2: contract frame, revert border-radius simultaneously ──
-  setTimeout(() => {
-    const vw = window.innerWidth;
-    const cardW = Math.min(Math.min(300, vw * 0.72), vw * 0.55);
-    const cardH = cardW * 1.32;
-    frame.style.width  = cardW + 'px';
-    frame.style.height = cardH + 'px';
-    // Remove .detached now so border-radius transitions back to 22px
-    // at the same time as the frame contracts — not delayed to Phase 3
-    frame.classList.remove('detached');
-    rect.classList.remove('rect-visible');
-    document.getElementById('red-line').classList.remove('hidden');
-  }, 300);
-
-  // ── Phase 3: reattach to flex layout ──
-  setTimeout(() => {
-    // Remove all inline positioning before reattaching
-    // Snap frame back to spacer position (no transition)
-    // .detached already removed in Phase 2; just snap position
-    frame.style.transition = 'none';
-    positionFrame();
-    void frame.offsetHeight;
-    frame.style.transition = '';
-    rect.style.cssText = '';
-
-    photo.style.objectPosition = '50% 50%';
-    photo.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-
-    positionVisionsLabel(); // slides label back and restores opacity
-    document.getElementById('intro-scene').style.pointerEvents = 'all';
-
-    // Re-anchor frame position after snap
-    positionFrame();
-
-    state = 'intro';
-  }, 1100);
-}
-
-/* =====================================================
-   LOAD SLIDE UNDER OVERLAY
-   Silently sets the gallery-photo src so it's ready
-   before the overlay lifts. Does not trigger opacity.
-   ===================================================== */
-function loadSlideUnder(index) {
-  const slide = currentCollection[index];
-  if (!slide) return;
-  const photo = document.getElementById('gallery-photo');
-  photo.style.objectPosition = '50% 50%';
-
-  const apply = () => { photo.src = slide.src; };
-
-  if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
-    apply();
-  } else {
-    const img = new Image();
-    img.onload  = () => { imageCache.set(slide.src, img); apply(); };
-    img.onerror = () => { imageCache.set(slide.src, null); };
-    img.src = slide.src;
-  }
-}
-
-/* =====================================================
-   IMAGE CACHE
-   Each src is fetched at most once per session. After the
-   first fetch the browser's memory cache serves it instantly,
-   but we also keep our own Map so we can check synchronously
-   whether an image is already ready before showing it.
-   ===================================================== */
-const imageCache = new Map(); // src → HTMLImageElement (decoded)
-
-function preloadImage(src) {
-  if (!src || imageCache.has(src)) return;
-  const img = new Image();
-  img.onload  = () => imageCache.set(src, img);
-  img.onerror = () => imageCache.set(src, null); // null = failed, don't retry
-  img.src = src;
-}
-
-function preloadNeighbours(index) {
-  const len = currentCollection.length;
-  // Preload next and previous, wrapping around
-  preloadImage(currentCollection[(index + 1) % len]?.src);
-  preloadImage(currentCollection[(index - 1 + len) % len]?.src);
-}
-
-/* =====================================================
-   LOAD A SLIDE
-   ===================================================== */
-function loadSlide(index, animate) {
-  const slide = currentCollection[index];
-  if (!slide) return;
-
-  const photo = document.getElementById('gallery-photo');
-  const infoFirst = document.getElementById('info-first');
-  const infoLast  = document.getElementById('info-last');
-
-  if (animate) photo.classList.remove('loaded');
-
-  // Always reset to centre when switching slides
-  photo.style.objectPosition = '50% 50%';
-
-  // Kick off neighbour preloads immediately (no-ops if already cached)
-  preloadNeighbours(index);
-
-  const delay = animate ? 220 : 0;
-
-  setTimeout(() => {
-    infoFirst.textContent = slide.first;
-    infoLast.textContent  = slide.last;
-
-    const apply = () => {
-      photo.src = slide.src;
-      setTimeout(() => photo.classList.add('loaded'), 30);
-    };
-
-    if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
-      // Already in cache — show instantly
-      apply();
-    } else {
-      // Not yet cached — fetch, cache, then show
-      const img = new Image();
-      img.onload = () => {
-        imageCache.set(slide.src, img);
-        apply();
-      };
-      img.onerror = () => {
-        imageCache.set(slide.src, null);
-        photo.style.background = 'linear-gradient(135deg, #1a0000 0%, #3d0010 50%, #0a0000 100%)';
-        photo.classList.add('loaded');
-      };
-      img.src = slide.src;
-    }
-
-    positionLogoAndInfo(slide, false);
-  }, delay);
-}
-
-/* =====================================================
-   LOGO + INFO POSITIONING
-   ===================================================== */
-function positionLogoAndInfo(slide, expanded) {
-  const logoEl  = document.getElementById('logo');
-  const infoEl  = document.getElementById('info-panel');
-  const wrapRect = document.getElementById('unified-frame').getBoundingClientRect();
-
-  const logoW = expanded ? LOGO_SIZES.expanded : LOGO_SIZES.gallery;
-  const logoY_pct = (slide.logoY ?? 80) / 100;
-
-  if (!expanded) {
-    const logoLeft = wrapRect.left - logoW * 0.38;
-    const logoTop  = wrapRect.top + wrapRect.height * logoY_pct - 30;
-    logoEl.style.width     = logoW + 'px';
-    logoEl.style.left      = logoLeft + 'px';
-    logoEl.style.top       = logoTop + 'px';
-    logoEl.style.transform = 'none';
-    logoEl.style.opacity   = '1';
-
-    const infoRight = window.innerWidth - (wrapRect.right + 20);
-    const infoTop   = window.innerHeight * ((slide.infoY ?? 55) / 100);
-    infoEl.style.top    = infoTop + 'px';
-    infoEl.style.right  = Math.max(infoRight, 16) + 'px';
-    infoEl.style.opacity = '1';
-    infoEl.classList.add('visible');
-  } else {
-    logoEl.style.width     = (logoW * 1.35) + 'px';
-    logoEl.style.left      = (window.innerWidth / 2 - (logoW * 1.35) / 2) + 'px';
-    logoEl.style.top       = (wrapRect.bottom - 30) + 'px';
-    logoEl.style.transform = 'none';
-
-    infoEl.style.top    = (wrapRect.bottom - 90) + 'px';
-    infoEl.style.right  = (window.innerWidth - wrapRect.left - wrapRect.width * 0.42) + 'px';
-    infoEl.style.opacity = '1';
-  }
-}
-
-/* =====================================================
-   TOGGLE EXPANDED
-   ===================================================== */
-/* =====================================================
-   FRAME SIZE HELPERS
-   ===================================================== */
-
-// Gallery (normal) frame dimensions
-function galleryFrameSize() {
-  const vw = window.innerWidth;
-  const w = Math.min(480, vw * 0.82);
-  return { w, h: w * 1.28 };
-}
-
-// Expanded frame dimensions — viewport-responsive
-// Landscape viewport: aspect ratio flip using slide.zoomRatio
-// Portrait viewport:  slight grow, portrait ratio preserved
-function expandedFrameSize(slide) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const isLandscape = vw > vh;
-
-  if (isLandscape) {
-    // Aspect ratio flip — width-dominant, ratio from config
-    const ratio = slide.zoomRatio ?? 0.65;
-    const w = Math.min(800, vw * 0.88);
-    return { w, h: w * ratio };
-  } else {
-    // Focal crop — slight grow, keep portrait ratio
-    const w = Math.min(540, vw * 0.88);
-    return { w, h: w * 1.28 };
-  }
-}
-
-/* =====================================================
-   TOGGLE EXPANDED
-   ===================================================== */
-function toggleExpanded() {
-  if (state === 'morphing') return;
-  const frame = document.getElementById('unified-frame');
-  const photo = document.getElementById('gallery-photo');
-  const rect  = document.getElementById('outline-rect');
-  const slide = currentCollection[currentIndex];
-  isExpanded  = !isExpanded;
-
-  const vw  = window.innerWidth;
-  const vh  = window.innerHeight;
-  const gap = vh * 0.04;
-
-  if (isExpanded) {
-    state = 'expanded';
-    const { w: ew, h: eh } = expandedFrameSize(slide);
-    frame.style.width  = ew + 'px';
-    frame.style.height = eh + 'px';
-    rect.style.left    = ((vw - ew) / 2 - gap) + 'px';
-    rect.style.top     = ((vh - eh) / 2 - gap) + 'px';
-    rect.style.width   = (ew + gap * 2) + 'px';
-    rect.style.height  = (eh + gap * 2) + 'px';
-    const [ax, ay] = slide.zoomAnchor ?? [50, 50];
-    photo.style.objectPosition = `${ax}% ${ay}%`;
-    setTimeout(() => positionLogoAndInfo(slide, true), 780);
-  } else {
-    state = 'gallery';
-    const { w: gw, h: gh } = galleryFrameSize();
-    frame.style.width  = gw + 'px';
-    frame.style.height = gh + 'px';
-    rect.style.left    = ((vw - gw) / 2 - gap) + 'px';
-    rect.style.top     = ((vh - gh) / 2 - gap) + 'px';
-    rect.style.width   = (gw + gap * 2) + 'px';
-    rect.style.height  = (gh + gap * 2) + 'px';
-    photo.style.objectPosition = '50% 50%';
-    setTimeout(() => positionLogoAndInfo(slide, false), 780);
-  }
-}
-
-/* =====================================================
-   NAVIGATION
-   ===================================================== */
-function navigate(dir) {
-  if (state === 'morphing') return;
-  const len = currentCollection.length;
-  currentIndex = (currentIndex + dir + len) % len;
-  if (isExpanded) {
-    isExpanded = false;
-    const frame = document.getElementById('unified-frame');
-    const rect  = document.getElementById('outline-rect');
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const { w: gw, h: gh } = galleryFrameSize();
-    const gap = vh * 0.04;
-    frame.style.width  = gw + 'px';
-    frame.style.height = gh + 'px';
-    rect.style.left    = ((vw - gw) / 2 - gap) + 'px';
-    rect.style.top     = ((vh - gh) / 2 - gap) + 'px';
-    rect.style.width  = (gw + gap * 2) + 'px';
-    rect.style.height = (gh + gap * 2) + 'px';
-    document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
-    state = 'gallery';
-  }
-  loadSlide(currentIndex, true);
-}
-
-/* =====================================================
-   KEYBOARD
-   ===================================================== */
-
-
-/* =====================================================
-   NAV POSITIONING
-   Reads the frame's actual right edge so the nav column
-   sits flush with it, and computes the Gallery rise transform.
-   Called on load and on resize.
-   ===================================================== */
-function positionFrame() {
-  const frame  = document.getElementById('unified-frame');
-  const spacer = document.getElementById('intro-spacer');
-  if (!frame || !spacer) return;
-  const sr = spacer.getBoundingClientRect();
-  frame.style.top       = sr.top  + 'px';
-  frame.style.left      = sr.left + 'px';
-  frame.style.width     = sr.width  + 'px';
-  frame.style.height    = sr.height + 'px';
-  frame.style.transform = 'none';
-}
-
-function positionIntroNav() {
-  const nav    = document.getElementById('nav-unified');
-  const spacer = document.getElementById('intro-spacer');
-  if (!nav || !spacer) return;
-  const sr  = spacer.getBoundingClientRect();
-  const gap = 28;
-  nav.style.left      = (sr.right + gap) + 'px';
-  nav.style.top       = '50%';
-  nav.style.right     = 'auto';
-  nav.style.bottom    = 'auto';
-  nav.style.transform = 'translateY(-50%)';
-}
-
-function positionLogoIntro() {
-  // Position logo centred over the intro card.
-  // Reads the spacer (document flow, always at final position) rather than
-  // the frame (position:fixed, may be mid-transition when this is called).
-  const logo   = document.getElementById('logo');
-  const spacer = document.getElementById('intro-spacer');
-  if (!logo || !spacer) return;
-  const sr    = spacer.getBoundingClientRect();
-  const logoW = LOGO_SIZES.intro;
-  logo.style.width     = logoW + 'px';
-  logo.style.left      = (sr.left + sr.width  / 2 - logoW / 2) + 'px';
-  logo.style.top       = (sr.top  + sr.height / 2 - logoW / 2) + 'px';
-  logo.style.transform = 'none';
-  logo.style.opacity   = '1';
-}
-
-function positionVisionsLabel() {
-  const label  = document.getElementById('visions-label');
-  const spacer = document.getElementById('intro-spacer');
-  if (!label || !spacer) return;
-  const sr  = spacer.getBoundingClientRect();
-  const vh  = window.innerHeight;
-  const gap = 20; // px gap between label right edge and spacer left edge
-  // Label is vertical text — its rendered width is its font size, height is its content
-  const lw = label.offsetWidth;
-  label.style.left = (sr.left - gap - lw) + 'px';
-  label.style.top  = (vh / 2 - label.offsetHeight / 2) + 'px';
-  label.style.opacity = '1';
-}
-
-function positionIntroAll() {
-  positionFrame();
-  positionIntroNav();
-  positionVisionsLabel();
-  positionLogoIntro();
-}
-
-// Run after fonts are loaded for accurate height measurement,
-// then again immediately as a rough first pass
-positionIntroAll();
-document.fonts.ready.then(() => {
-  positionIntroAll();
-});
-
-/* =====================================================
-   WINDOW RESIZE
-   ===================================================== */
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    if (state === 'intro') positionIntroAll();
-    if (state === 'booking') positionLogoBooking();
-    if (state === 'gallery' || state === 'expanded') {
-      const vw = window.innerWidth, vh = window.innerHeight;
-      const gap = vh * 0.04;
-      const frame = document.getElementById('unified-frame');
-      let fw, fh;
-      if (isExpanded) {
-        const es = expandedFrameSize(currentCollection[currentIndex]);
-        fw = es.w; fh = es.h;
-      } else {
-        const gs = galleryFrameSize();
-        fw = gs.w; fh = gs.h;
-      }
-      frame.style.width  = fw + 'px';
-      frame.style.height = fh + 'px';
-      const rect = document.getElementById('outline-rect');
-      rect.style.left   = ((vw - fw) / 2 - gap) + 'px';
-      rect.style.top    = ((vh - fh) / 2 - gap) + 'px';
-      rect.style.width  = (fw + gap * 2) + 'px';
-      rect.style.height = (fh + gap * 2) + 'px';
-      positionLogoAndInfo(currentCollection[currentIndex], isExpanded);
-    }
-  }, 120);
-});
-
-/* =====================================================
-   CONTEXT MENU
-   Suppressed by default. Cmd+K (Mac) / Ctrl+K toggles it
-   back on for development, then off again.
-   ===================================================== */
-let contextMenuEnabled = false;
-document.addEventListener('contextmenu', e => {
-  if (!contextMenuEnabled) e.preventDefault();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-    e.preventDefault();
-    contextMenuEnabled = !contextMenuEnabled;
-    const msg = document.createElement('div');
-    msg.textContent = contextMenuEnabled ? 'Context menu ON' : 'Context menu OFF';
-    Object.assign(msg.style, {
-      position: 'fixed', bottom: '48px', left: '50%',
-      transform: 'translateX(-50%)',
-      background: 'rgba(255,255,255,0.08)',
-      color: 'rgba(255,255,255,0.55)',
-      fontFamily: 'var(--font-secondary)',
-      fontSize: '9px', letterSpacing: '0.22em',
-      textTransform: 'uppercase',
-      padding: '7px 16px', borderRadius: '2px',
-      pointerEvents: 'none', zIndex: '99999',
-      transition: 'opacity 0.3s ease', opacity: '1'
-    });
-    document.body.appendChild(msg);
-    setTimeout(() => { msg.style.opacity = '0'; }, 1200);
-    setTimeout(() => { msg.remove(); }, 1600);
-  }
-  if (e.key === 'ArrowRight' && (state === 'gallery' || state === 'expanded')) navigate(1);
-  if (e.key === 'ArrowLeft'  && (state === 'gallery' || state === 'expanded')) navigate(-1);
-  if (e.key === 'Escape') {
-    if (state === 'expanded') {
-      toggleExpanded();
-    } else if (state === 'gallery') {
-      exitGallery();
-    }
-  }
-});
-
-/* =====================================================
-   CUSTOM CURSOR
-   ORBIT_DISTANCE  px from core centre to orbiter at rest
-   ORBIT_LAG       angle smoothing (0 = instant, higher = more drag)
-   PRESS_DISTANCE  compressed distance while held down
-*/
-const ORBIT_DISTANCE = 22;
-const ORBIT_LAG      = 0.12;
-const PRESS_DISTANCE = 8;
-
-const cursorCore       = document.getElementById('cursor-core');
-const cursorOrbiterPos = document.getElementById('cursor-orbiter-pos');
-const cursorOrbiter    = document.getElementById('cursor-orbiter');
-
-let mouseX     = -999;
-let mouseY     = -999;
-let orbitAngle = 0;
-let targetAngle= 0;
-let orbitDist  = ORBIT_DISTANCE;
-let cursorDown = false;
-let cursorRaf  = null;
-let cursorVisible = false;
-
-function showCursor() {
-  if (cursorVisible) return;
-  cursorVisible = true;
-  cursorCore.style.opacity       = '1';
-  cursorOrbiterPos.style.opacity = '1';
-}
-function hideCursor() {
-  cursorVisible = false;
-  cursorCore.style.opacity       = '0';
-  cursorOrbiterPos.style.opacity = '0';
-}
-
-function lerpAngle(a, b, t) {
-  let d = b - a;
-  while (d >  Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return a + d * t;
-}
-
-function runCursorLoop() {
-  const halfCore = 2.5;
-  cursorCore.style.transform = `translate(${mouseX - halfCore}px, ${mouseY - halfCore}px)`;
-
-  const cx = window.innerWidth  / 2;
-  const cy = window.innerHeight / 2;
-  targetAngle = Math.atan2(mouseY - cy, mouseX - cx);
-  orbitAngle  = lerpAngle(orbitAngle, targetAngle, 1 - ORBIT_LAG);
-
-  const ox = mouseX + Math.cos(orbitAngle) * orbitDist;
-  const oy = mouseY + Math.sin(orbitAngle) * orbitDist;
-  cursorOrbiterPos.style.transform = `translate(${ox}px, ${oy}px)`;
-
-  cursorRaf = requestAnimationFrame(runCursorLoop);
-}
-
-cursorRaf = requestAnimationFrame(runCursorLoop);
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  showCursor();
-});
-document.addEventListener('mouseleave', hideCursor);
-document.addEventListener('mouseenter', showCursor);
-
-function cursorPressDown(e) {
-  cursorDown = true;
-  cursorOrbiter.classList.remove('springing', 'pressed-left', 'pressed-right');
-  if (e && e.button === 2) {
-    cursorOrbiter.classList.add('pressed-right');
-  } else {
-    orbitDist = PRESS_DISTANCE;
-    cursorOrbiter.classList.add('pressed-left');
-  }
-}
-function cursorPressUp(e) {
-  if (!cursorDown) return;
-  cursorDown = false;
-  if (e && e.button === 2) {
-    cursorOrbiter.classList.remove('pressed-right');
-  } else {
-    orbitDist = ORBIT_DISTANCE;
-    cursorOrbiter.classList.remove('pressed-left');
-    void cursorOrbiter.offsetWidth;
-    cursorOrbiter.classList.add('springing');
-    cursorOrbiter.addEventListener('animationend',
-      () => cursorOrbiter.classList.remove('springing'), { once: true });
-  }
-}
-
-document.addEventListener('mousedown', cursorPressDown);
-document.addEventListener('mouseup',   cursorPressUp);
-
-/* Touch support — cursor tracking + swipe navigation + long-press hook */
-const SWIPE_THRESHOLD  = 48;
-const SWIPE_MAX_VERT   = 80;
-let touchStartX    = 0;
-let touchStartY    = 0;
-let touchDeltaX    = 0;
-let touchMoved     = false;
-let longPressTimer = null;
-
-document.addEventListener('touchstart', e => {
-  const t = e.touches[0];
-  mouseX = t.clientX;
-  mouseY = t.clientY;
-  touchStartX = t.clientX;
-  touchStartY = t.clientY;
-  touchDeltaX = 0;
-  touchMoved  = false;
-  showCursor();
-  cursorPressDown(e);
-  longPressTimer = setTimeout(() => {
-    longPressTimer = null;
-  }, 500);
-}, { passive: true });
-
-document.addEventListener('touchmove', e => {
-  const t = e.touches[0];
-  mouseX = t.clientX;
-  mouseY = t.clientY;
-  touchDeltaX = t.clientX - touchStartX;
-  touchMoved  = true;
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  cursorPressUp(e);
-  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-  if (touchMoved && (state === 'gallery' || state === 'expanded')) {
-    const vertDelta = Math.abs(e.changedTouches[0].clientY - touchStartY);
-    if (Math.abs(touchDeltaX) >= SWIPE_THRESHOLD && vertDelta <= SWIPE_MAX_VERT) {
-      navigate(touchDeltaX < 0 ? 1 : -1);
-    }
-  }
-  touchMoved = false;
-});
-</script>
-
-<!-- CUSTOM CURSOR -->
-<div id="cursor-core"></div>
-<div id="cursor-orbiter-pos">
-  <div id="cursor-orbiter"><div id="cursor-orbiter-fill"></div></div>
-</div>
+            } catch (err) {
+                errEl.textContent = 'Something went wrong. Please try again.';
+                btn.textContent = 'Send Inquiry';
+                btn.disabled = false;
+            }
+        }
+
+        /* =====================================================
+           INTRO → GALLERY
+           ===================================================== */
+        /* =====================================================
+           ENTER GALLERY — the morph sequence
+           =====================================================
+           Phase 1 (0ms):    Lock frame position, detach to fixed,
+                             expand to gallery size. Outline rect fades in.
+                             Intro chrome fades out.
+           Phase 2 (150ms):  Load gallery image silently under overlay.
+           Phase 3 (800ms):  Overlay lifts. Gallery chrome slides in.
+           Phase 4 (1450ms): Tap-to-zoom enabled.
+           ===================================================== */
+        function enterGallery(collectionKey) {
+            if (isExiting) return; // block entry while exitGallery transition is running
+            currentCollection = GALLERY[collectionKey] || [];
+            currentIndex = 0;
+            if (!currentCollection.length) return;
+            state = 'morphing';
+
+            const frame = document.getElementById('unified-frame');
+            const overlay = document.getElementById('intro-overlay');
+            const logoEl = document.getElementById('logo');
+            const rect = document.getElementById('outline-rect');
+
+            // ── Phase 1: frame is already fixed — just prepare for animation ──
+            // Disable transition briefly so the starting position doesn't animate
+            frame.style.transition = 'none';
+            // positionFrame() already set top/left to match spacer — force a reflow
+            void frame.offsetHeight;
+            // Re-enable transition for the expansion animation
+            frame.style.transition = '';
+            frame.classList.add('detached'); // triggers frame-inner border-radius via CSS
+
+            // Clear inline positional styles, add gallery class, then set bottom inline.
+            // Using bottom means we never need to know the nav's height.
+            setNavState('gallery');
+
+            // Fade plate in — covers intro portrait as frame expands
+            document.getElementById('photo-plate').classList.add('visible');
+
+            // Hide other intro chrome
+            const labelEl = document.getElementById('visions-label');
+            labelEl.style.opacity = '0';
+            labelEl.style.left = (parseFloat(labelEl.style.left || '0') - 20) + 'px';
+            document.getElementById('intro-scene').style.pointerEvents = 'none';
+            document.getElementById('red-line').classList.add('hidden');
+
+            // Two rAFs to ensure the fixed position is painted before we start moving
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const {
+                    w: gw,
+                    h: gh
+                } = galleryFrameSize();
+                const gap = vh * 0.04;
+
+                // Animate to centred gallery size
+                frame.style.top = '50%';
+                frame.style.left = '50%';
+                // Logo and info move simultaneously with the frame
+                positionLogoAndInfo(currentCollection[0], false);
+                frame.style.transform = 'translate(-50%, -50%)';
+                frame.style.width = gw + 'px';
+                frame.style.height = gh + 'px';
+                // border-radius is handled by CSS:
+                // #unified-frame.detached #frame-inner { border-radius: 12vh }
+
+                // Outline rect tracks the frame
+                rect.style.width = (gw + gap * 2) + 'px';
+                rect.style.height = (gh + gap * 2) + 'px';
+                rect.style.top = ((vh - gh) / 2 - gap) + 'px';
+                rect.style.left = ((vw - gw) / 2 - gap) + 'px';
+                rect.style.borderRadius = 'calc(12vh + 4vh)';
+                rect.classList.add('rect-visible');
+            }));
+
+            // ── Phase 2: load image under overlay ──
+            setTimeout(() => {
+                preloadNeighbours(0);
+                loadSlideUnder(0);
+            }, 150);
+
+            // ── Phase 3: lift overlay, show chrome ──
+            setTimeout(() => {
+                overlay.classList.add('lifted');
+                showGalleryChrome();
+                loadSlide(0, false);
+            }, 800);
+
+            // ── Phase 4: enable zoom ──
+            setTimeout(() => {
+                const tap = document.getElementById('gallery-tap');
+                tap.classList.add('active');
+                state = 'gallery';
+            }, 1450);
+        }
+
+        function showGalleryChrome() {
+            document.getElementById('watermark-left').classList.add('visible');
+            document.getElementById('watermark-right').classList.add('visible');
+            document.getElementById('nav-prev').classList.add('visible');
+            document.getElementById('nav-next').classList.add('visible');
+            document.getElementById('kbd-hint').classList.add('visible');
+            document.getElementById('info-panel').style.pointerEvents = 'none';
+        }
+
+        function hideGalleryChrome() {
+            document.getElementById('watermark-left').classList.remove('visible');
+            document.getElementById('watermark-right').classList.remove('visible');
+            document.getElementById('nav-prev').classList.remove('visible');
+            document.getElementById('nav-next').classList.remove('visible');
+            document.getElementById('kbd-hint').classList.remove('visible');
+            document.getElementById('info-panel').style.opacity = '0';
+            document.getElementById('info-panel').style.right = '-300px';
+            document.getElementById('info-panel').classList.remove('visible');
+        }
+
+        /* =====================================================
+           GALLERY → INTRO
+           ===================================================== */
+        /* =====================================================
+           EXIT GALLERY — reverse morph back to intro card
+           ===================================================== */
+        function exitGallery() {
+            if (state === 'morphing') return;
+
+            if (isExiting) return; // block re-entry while transition is running
+            if (isExpanded) {
+                isExpanded = false;
+            }
+            isExiting = true;
+            state = 'morphing';
+
+            const frame = document.getElementById('unified-frame');
+            const overlay = document.getElementById('intro-overlay');
+            const logoEl = document.getElementById('logo');
+            const rect = document.getElementById('outline-rect');
+            const photo = document.getElementById('gallery-photo');
+
+            // ── Phase 1: shutter closes — all moving parts start simultaneously ──
+            hideGalleryChrome();
+            document.getElementById('gallery-tap').classList.remove('active');
+
+            // Gallery photo fades out immediately — dissolves into the plate
+            // which is also fading out, creating a layered dissolve back to jnb
+            photo.classList.remove('loaded');
+
+            overlay.classList.remove('lifted');
+
+            // Plate fades out — reveals intro portrait under the closing overlay
+            document.getElementById('photo-plate').classList.remove('visible');
+
+            // Logo moves to intro position immediately
+            positionLogoIntro();
+
+            // Nav snaps back instantly (no transition), then re-enables
+            // setNavState('intro', true); // instant — no transition on the way back
+            
+            setNavState('intro');
+
+            // ── Phase 2: contract frame, revert border-radius simultaneously ──
+            
+            setTimeout(() => {
+                const vw = window.innerWidth;
+                const cardW = Math.min(Math.min(300, vw * 0.72), vw * 0.55);
+                const cardH = cardW * 1.32;
+                frame.style.width = cardW + 'px';
+                frame.style.height = cardH + 'px';
+                // Remove .detached now so border-radius transitions back to 22px
+                // at the same time as the frame contracts — not delayed to Phase 3
+                frame.classList.remove('detached');
+                rect.classList.remove('rect-visible');
+                document.getElementById('red-line').classList.remove('hidden');
+            }, 300);
+            
+            // ── Phase 3: reattach to flex layout ──
+            setTimeout(() => {
+                // Remove all inline positioning before reattaching
+                // Snap frame back to spacer position (no transition)
+                // .detached already removed in Phase 2; just snap position
+                frame.style.transition = 'none';
+                positionFrame();
+                void frame.offsetHeight;
+                frame.style.transition = '';
+                rect.style.cssText = '';
+
+                photo.style.objectPosition = '50% 50%';
+                
+                photo.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+                
+                positionVisionsLabel(); // slides label back and restores opacity
+                
+                document.getElementById('intro-scene').style.pointerEvents = 'all';
+                
+                /*
+                // Re-anchor frame position after snap
+                positionFrame();
+                */
+                state = 'intro';
+                isExiting = false; // transition complete — allow gallery re-entry
+            }, 1100);
+        }
+
+        /* =====================================================
+           LOAD SLIDE UNDER OVERLAY
+           Silently sets the gallery-photo src so it's ready
+           before the overlay lifts. Does not trigger opacity.
+           ===================================================== */
+        function loadSlideUnder(index) {
+            const slide = currentCollection[index];
+            if (!slide) return;
+            const photo = document.getElementById('gallery-photo');
+            photo.style.objectPosition = '50% 50%';
+
+            const apply = () => {
+                photo.src = slide.src;
+            };
+
+            if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
+                apply();
+            } else {
+                const img = new Image();
+                img.onload = () => {
+                    imageCache.set(slide.src, img);
+                    apply();
+                };
+                img.onerror = () => {
+                    imageCache.set(slide.src, null);
+                };
+                img.src = slide.src;
+            }
+        }
+
+        /* =====================================================
+           IMAGE CACHE
+           Each src is fetched at most once per session. After the
+           first fetch the browser's memory cache serves it instantly,
+           but we also keep our own Map so we can check synchronously
+           whether an image is already ready before showing it.
+           ===================================================== */
+        const imageCache = new Map(); // src → HTMLImageElement (decoded)
+
+        function preloadImage(src) {
+            if (!src || imageCache.has(src)) return;
+            const img = new Image();
+            img.onload = () => imageCache.set(src, img);
+            img.onerror = () => imageCache.set(src, null); // null = failed, don't retry
+            img.src = src;
+        }
+
+        function preloadNeighbours(index) {
+            const len = currentCollection.length;
+            // Preload next and previous, wrapping around
+            preloadImage(currentCollection[(index + 1) % len]?.src);
+            preloadImage(currentCollection[(index - 1 + len) % len]?.src);
+        }
+
+        /* =====================================================
+           LOAD A SLIDE
+           ===================================================== */
+        function loadSlide(index, animate) {
+            const slide = currentCollection[index];
+            if (!slide) return;
+
+            const photo = document.getElementById('gallery-photo');
+            const infoFirst = document.getElementById('info-first');
+            const infoLast = document.getElementById('info-last');
+
+            if (animate) photo.classList.remove('loaded');
+
+            // Always reset to centre when switching slides
+            photo.style.objectPosition = '50% 50%';
+
+            // Kick off neighbour preloads immediately (no-ops if already cached)
+            preloadNeighbours(index);
+
+            const delay = animate ? 220 : 0;
+
+            setTimeout(() => {
+                infoFirst.textContent = slide.first;
+                infoLast.textContent = slide.last;
+
+                const apply = () => {
+                    photo.src = slide.src;
+                    setTimeout(() => photo.classList.add('loaded'), 30);
+                };
+
+                if (imageCache.has(slide.src) && imageCache.get(slide.src) !== null) {
+                    // Already in cache — show instantly
+                    apply();
+                } else {
+                    // Not yet cached — fetch, cache, then show
+                    const img = new Image();
+                    img.onload = () => {
+                        imageCache.set(slide.src, img);
+                        apply();
+                    };
+                    img.onerror = () => {
+                        imageCache.set(slide.src, null);
+                        photo.style.background = 'linear-gradient(135deg, #1a0000 0%, #3d0010 50%, #0a0000 100%)';
+                        photo.classList.add('loaded');
+                    };
+                    img.src = slide.src;
+                }
+
+                positionLogoAndInfo(slide, false);
+            }, delay);
+        }
+
+        /* =====================================================
+           LOGO + INFO POSITIONING
+           ===================================================== */
+        function positionLogoAndInfo(slide, expanded) {
+            const logoEl = document.getElementById('logo');
+            const infoEl = document.getElementById('info-panel');
+            const wrapRect = document.getElementById('unified-frame').getBoundingClientRect();
+
+            const logoW = expanded ? LOGO_SIZES.expanded : LOGO_SIZES.gallery;
+            const logoY_pct = (slide.logoY ?? 80) / 100;
+
+            if (!expanded) {
+                const logoLeft = wrapRect.left - logoW * 0.38;
+                const logoTop = wrapRect.top + wrapRect.height * logoY_pct - 30;
+                logoEl.style.width = logoW + 'px';
+                logoEl.style.left = logoLeft + 'px';
+                logoEl.style.top = logoTop + 'px';
+                logoEl.style.transform = 'none';
+                logoEl.style.opacity = '1';
+
+                const infoRight = window.innerWidth - (wrapRect.right + 20);
+                const infoTop = window.innerHeight * ((slide.infoY ?? 55) / 100);
+                infoEl.style.top = infoTop + 'px';
+                infoEl.style.right = Math.max(infoRight, 16) + 'px';
+                infoEl.style.opacity = '1';
+                infoEl.classList.add('visible');
+            } else {
+                logoEl.style.width = (logoW * 1.35) + 'px';
+                logoEl.style.left = (window.innerWidth / 2 - (logoW * 1.35) / 2) + 'px';
+                logoEl.style.top = (wrapRect.bottom - 30) + 'px';
+                logoEl.style.transform = 'none';
+
+                infoEl.style.top = (wrapRect.bottom - 90) + 'px';
+                infoEl.style.right = (window.innerWidth - wrapRect.left - wrapRect.width * 0.42) + 'px';
+                infoEl.style.opacity = '1';
+            }
+        }
+
+        /* =====================================================
+           TOGGLE EXPANDED
+           ===================================================== */
+        /* =====================================================
+           FRAME SIZE HELPERS
+           ===================================================== */
+
+        // Gallery (normal) frame dimensions
+        function galleryFrameSize() {
+            const vw = window.innerWidth;
+            const w = Math.min(480, vw * 0.82);
+            return {
+                w,
+                h: w * 1.28
+            };
+        }
+
+        // Expanded frame dimensions — viewport-responsive
+        // Landscape viewport: aspect ratio flip using slide.zoomRatio
+        // Portrait viewport:  slight grow, portrait ratio preserved
+        function expandedFrameSize(slide) {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const isLandscape = vw > vh;
+
+            if (isLandscape) {
+                // Aspect ratio flip — width-dominant, ratio from config
+                const ratio = slide.zoomRatio ?? 0.65;
+                const w = Math.min(800, vw * 0.88);
+                return {
+                    w,
+                    h: w * ratio
+                };
+            } else {
+                // Focal crop — slight grow, keep portrait ratio
+                const w = Math.min(540, vw * 0.88);
+                return {
+                    w,
+                    h: w * 1.28
+                };
+            }
+        }
+
+        /* =====================================================
+           TOGGLE EXPANDED
+           ===================================================== */
+        function toggleExpanded() {
+            if (state === 'morphing') return;
+            const frame = document.getElementById('unified-frame');
+            const photo = document.getElementById('gallery-photo');
+            const rect = document.getElementById('outline-rect');
+            const slide = currentCollection[currentIndex];
+            isExpanded = !isExpanded;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const gap = vh * 0.04;
+
+            if (isExpanded) {
+                state = 'expanded';
+                const {
+                    w: ew,
+                    h: eh
+                } = expandedFrameSize(slide);
+                frame.style.width = ew + 'px';
+                frame.style.height = eh + 'px';
+                rect.style.left = ((vw - ew) / 2 - gap) + 'px';
+                rect.style.top = ((vh - eh) / 2 - gap) + 'px';
+                rect.style.width = (ew + gap * 2) + 'px';
+                rect.style.height = (eh + gap * 2) + 'px';
+                const [ax, ay] = slide.zoomAnchor ?? [50, 50];
+                photo.style.objectPosition = `${ax}% ${ay}%`;
+                setTimeout(() => positionLogoAndInfo(slide, true), 780);
+            } else {
+                state = 'gallery';
+                const {
+                    w: gw,
+                    h: gh
+                } = galleryFrameSize();
+                frame.style.width = gw + 'px';
+                frame.style.height = gh + 'px';
+                rect.style.left = ((vw - gw) / 2 - gap) + 'px';
+                rect.style.top = ((vh - gh) / 2 - gap) + 'px';
+                rect.style.width = (gw + gap * 2) + 'px';
+                rect.style.height = (gh + gap * 2) + 'px';
+                photo.style.objectPosition = '50% 50%';
+                setTimeout(() => positionLogoAndInfo(slide, false), 780);
+            }
+        }
+
+        /* =====================================================
+           NAVIGATION
+           ===================================================== */
+        function navigate(dir) {
+            if (state === 'morphing') return;
+            const len = currentCollection.length;
+            currentIndex = (currentIndex + dir + len) % len;
+            if (isExpanded) {
+                isExpanded = false;
+                const frame = document.getElementById('unified-frame');
+                const rect = document.getElementById('outline-rect');
+                const vw = window.innerWidth,
+                    vh = window.innerHeight;
+                const {
+                    w: gw,
+                    h: gh
+                } = galleryFrameSize();
+                const gap = vh * 0.04;
+                frame.style.width = gw + 'px';
+                frame.style.height = gh + 'px';
+                rect.style.left = ((vw - gw) / 2 - gap) + 'px';
+                rect.style.top = ((vh - gh) / 2 - gap) + 'px';
+                rect.style.width = (gw + gap * 2) + 'px';
+                rect.style.height = (gh + gap * 2) + 'px';
+                document.getElementById('gallery-photo').style.objectPosition = '50% 50%';
+                state = 'gallery';
+            }
+            loadSlide(currentIndex, true);
+        }
+
+        /* =====================================================
+           KEYBOARD
+           ===================================================== */
+
+
+        /* =====================================================
+           NAV POSITIONING
+           Reads the frame's actual right edge so the nav column
+           sits flush with it, and computes the Gallery rise transform.
+           Called on load and on resize.
+           ===================================================== */
+        /* =====================================================
+           NAV STATE MANAGER
+           Single function that owns all nav positioning.
+           Call this instead of manually touching nav classList
+           or inline styles anywhere in the codebase.
+
+           States:
+             'intro'   — positioned by JS adjacent to the frame
+             'gallery' — bottom-centre, Back visible
+             'booking' — left-centre, Back visible, Book hidden
+             'hidden'  — for future use
+           ===================================================== */
+        function setNavState(newState, instant = false) {
+            const nav = document.getElementById('nav-unified');
+            if (!nav) return;
+
+            // Suppress transitions for instant snaps
+            if (instant) nav.classList.add('no-transition');
+
+            // Clear all state classes and inline positional styles
+            nav.classList.remove('gallery', 'booking', 'no-transition-temp');
+            nav.style.left = '';
+            nav.style.right = '';
+            nav.style.top = '';
+            nav.style.bottom = '';
+            nav.style.transform = '';
+
+            if (newState === 'intro') {
+                // Snap to intro position — JS measures spacer
+                positionIntroNav();
+            } else if (newState === 'gallery') {
+                // CSS .gallery handles left/transform; bottom set inline
+                nav.classList.add('gallery');
+                nav.style.bottom = 'clamp(24px, 8vh, 60px)';
+            } else if (newState === 'booking') {
+                // CSS .booking handles left/top/transform
+                nav.classList.add('booking');
+            }
+
+            // Re-enable transitions after one frame if we suppressed them
+            if (instant) {
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    nav.classList.remove('no-transition');
+                }));
+            }
+        }
+
+        function positionFrame() {
+            const frame = document.getElementById('unified-frame');
+            const spacer = document.getElementById('intro-spacer');
+            if (!frame || !spacer) return;
+            const sr = spacer.getBoundingClientRect();
+            frame.style.top = sr.top + 'px';
+            frame.style.left = sr.left + 'px';
+            frame.style.width = sr.width + 'px';
+            frame.style.height = sr.height + 'px';
+            frame.style.transform = 'none';
+        }
+
+        function positionIntroNav() {
+            const nav = document.getElementById('nav-unified');
+            const spacer = document.getElementById('intro-spacer');
+            if (!nav || !spacer) return;
+            
+            const sr = spacer.getBoundingClientRect();
+            const gap = 28; // px gap between nav left edge and spacer right edge
+            
+            nav.style.left = (sr.right + gap) + 'px';
+            nav.style.top = '50%';
+            nav.style.right = 'auto';
+            nav.style.bottom = 'auto';
+            nav.style.transform = 'translateY(-50%)';
+        }
+
+        function positionIntroNavCenterPlusCard() {
+            const nav = document.getElementById('nav-unified');
+            const spacer = document.getElementById('intro-spacer');
+            if (!nav || !spacer) return;
+            
+            const sr = spacer.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const gap = 28; // px gap between nav left edge and spacer right edge
+            
+            const nw = nav.offsetWidth;
+            
+            // half viewport width - half space width + gap
+            nav.style.left = ((vw / 2) + (sr.width / 2) + gap) + 'px';
+            nav.style.top = '50%';
+            /* Because we use nav.style.transform = "translateY(-50%)",
+             * we don't have to compensate for the height with math like below.
+             * The result is not the same anyway using the math below,
+             * so my math may be wrong. The above works.
+            */
+            //nav.style.top = ((vh / 2) - (nav.offsetHeight / 2)) + 'px';
+            nav.style.opacity = '1';
+        }
+
+        function positionLogoIntro() {
+            // Position logo centred over the intro card.
+            // Reads the spacer (document flow, always at final position) rather than
+            // the frame (position:fixed, may be mid-transition when this is called).
+            const logo = document.getElementById('logo');
+            const spacer = document.getElementById('intro-spacer');
+            if (!logo || !spacer) return;
+            const sr = spacer.getBoundingClientRect();
+            const logoW = LOGO_SIZES.intro;
+            logo.style.width = logoW + 'px';
+            logo.style.left = (sr.left + sr.width / 2 - logoW / 2) + 'px';
+            logo.style.top = (sr.top + sr.height / 2 - logoW / 2) + 'px';
+            logo.style.transform = 'none';
+            logo.style.opacity = '1';
+        }
+
+        function positionVisionsLabel() {
+            const label = document.getElementById('visions-label');
+            const spacer = document.getElementById('intro-spacer');
+            if (!label || !spacer) return;
+            const sr = spacer.getBoundingClientRect();
+            const vh = window.innerHeight;
+            const gap = 20; // px gap between label right edge and spacer left edge
+            // Label is vertical text — its rendered width is its font size, height is its content
+            const lw = label.offsetWidth;
+            label.style.left = (sr.left - gap - lw) + 'px';
+            label.style.top = (vh / 2 - label.offsetHeight / 2) + 'px';
+            label.style.opacity = '1';
+        }
+        
+        function positionVisionsLabelCenter() {
+            const label = document.getElementById('visions-label');
+            const slider = document.getElementById('site-slider');
+            if (!label || !slider) return;
+            const sr = slider.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const gap = 20; // px gap between label right edge and spacer left edge
+            // Label is vertical text — its rendered width is its font size, height is its content
+            const lw = label.offsetWidth;
+            const lh = label.offsetHeight;
+            label.style.left = ((vw / 2) - (lw / 2)) + 'px';
+            label.style.top = ((vh / 2) - (lh / 2)) + 'px';
+            label.style.opacity = '1';
+        }
+        
+        function positionVisionsLabelCenterPlusCard() {
+            const label = document.getElementById('visions-label');
+            const spacer = document.getElementById('intro-spacer');
+            if (!label || !spacer) return;
+            const sr = spacer.getBoundingClientRect();
+            const lr = label.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const gap = 20; // px gap between label right edge and spacer left edge
+            // Label is vertical text — its rendered width is its font size, height is its content
+            const lw = label.offsetWidth;
+            const lh = label.offsetHeight;
+            // half of viewport width - have of spacer width - label width - gap
+            label.style.left = ((vw / 2) - (sr.width / 2) - gap - lw) + 'px';
+            label.style.top = ((vh / 2) - (lr.height / 2)) + 'px';
+            label.style.opacity = '1';
+        }
+        
+        function positionIntroAll() {
+            positionFrame();
+            positionIntroNav();
+            positionVisionsLabel();
+            positionLogoIntro();
+        }
+        
+        // Run after fonts are loaded for accurate height measurement,
+        // then again immediately as a rough first pass
+        positionIntroAll();
+        document.fonts.ready.then(() => {
+            positionIntroAll();
+        });
+        
+        /* =====================================================
+           WINDOW RESIZE
+           ===================================================== */
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (state === 'intro') positionIntroAll();
+                if (state === 'booking') positionLogoBooking();
+                if (state === 'gallery' || state === 'expanded') {
+                    const vw = window.innerWidth,
+                        vh = window.innerHeight;
+                    const gap = vh * 0.04;
+                    const frame = document.getElementById('unified-frame');
+                    let fw, fh;
+                    if (isExpanded) {
+                        const es = expandedFrameSize(currentCollection[currentIndex]);
+                        fw = es.w;
+                        fh = es.h;
+                    } else {
+                        const gs = galleryFrameSize();
+                        fw = gs.w;
+                        fh = gs.h;
+                    }
+                    frame.style.width = fw + 'px';
+                    frame.style.height = fh + 'px';
+                    const rect = document.getElementById('outline-rect');
+                    rect.style.left = ((vw - fw) / 2 - gap) + 'px';
+                    rect.style.top = ((vh - fh) / 2 - gap) + 'px';
+                    rect.style.width = (fw + gap * 2) + 'px';
+                    rect.style.height = (fh + gap * 2) + 'px';
+                    positionLogoAndInfo(currentCollection[currentIndex], isExpanded);
+                }
+            }, 120);
+        });
+        
+        /* =====================================================
+           CONTEXT MENU
+           Suppressed by default. Cmd+K (Mac) / Ctrl+K toggles it
+           back on for development, then off again.
+           ===================================================== */
+        let contextMenuEnabled = false;
+        document.addEventListener('contextmenu', e => {
+            if (!contextMenuEnabled) e.preventDefault();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                contextMenuEnabled = !contextMenuEnabled;
+                const msg = document.createElement('div');
+                msg.textContent = contextMenuEnabled ? 'Context menu ON' : 'Context menu OFF';
+                Object.assign(msg.style, {
+                    position: 'fixed',
+                    bottom: '48px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(255,255,255,0.08)',
+                    color: 'rgba(255,255,255,0.55)',
+                    fontFamily: 'var(--font-secondary)',
+                    fontSize: '9px',
+                    letterSpacing: '0.22em',
+                    textTransform: 'uppercase',
+                    padding: '7px 16px',
+                    borderRadius: '2px',
+                    pointerEvents: 'none',
+                    zIndex: '99999',
+                    transition: 'opacity 0.3s ease',
+                    opacity: '1'
+                });
+                document.body.appendChild(msg);
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                }, 1200);
+                setTimeout(() => {
+                    msg.remove();
+                }, 1600);
+            }
+            if (e.key === 'ArrowRight' && (state === 'gallery' || state === 'expanded')) navigate(1);
+            if (e.key === 'ArrowLeft' && (state === 'gallery' || state === 'expanded')) navigate(-1);
+            if (e.key === 'Escape') {
+                if (state === 'expanded') {
+                    toggleExpanded();
+                } else if (state === 'gallery') {
+                    exitGallery();
+                }
+            }
+        });
+        
+        /* =====================================================
+           CUSTOM CURSOR
+           ORBIT_DISTANCE  px from core centre to orbiter at rest
+           ORBIT_LAG       angle smoothing (0 = instant, higher = more drag)
+           PRESS_DISTANCE  compressed distance while held down
+        */
+        const ORBIT_DISTANCE = 22;
+        const ORBIT_LAG = 0.12;
+        const PRESS_DISTANCE = 8;
+        
+        const cursorCore = document.getElementById('cursor-core');
+        const cursorOrbiterPos = document.getElementById('cursor-orbiter-pos');
+        const cursorOrbiter = document.getElementById('cursor-orbiter');
+        
+        let mouseX = -999;
+        let mouseY = -999;
+        let orbitAngle = 0;
+        let targetAngle = 0;
+        let orbitDist = ORBIT_DISTANCE;
+        let cursorDown = false;
+        let cursorRaf = null;
+        let cursorVisible = false;
+        
+        function showCursor() {
+            if (cursorVisible) return;
+            cursorVisible = true;
+            cursorCore.style.opacity = '1';
+            cursorOrbiterPos.style.opacity = '1';
+        }
+        
+        function hideCursor() {
+            cursorVisible = false;
+            cursorCore.style.opacity = '0';
+            cursorOrbiterPos.style.opacity = '0';
+        }
+        
+        function lerpAngle(a, b, t) {
+            let d = b - a;
+            while (d > Math.PI) d -= Math.PI * 2;
+            while (d < -Math.PI) d += Math.PI * 2;
+            return a + d * t;
+        }
+        
+        function runCursorLoop() {
+            const halfCore = 2.5;
+            cursorCore.style.transform = `translate(${mouseX - halfCore}px, ${mouseY - halfCore}px)`;
+            
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            targetAngle = Math.atan2(mouseY - cy, mouseX - cx);
+            orbitAngle = lerpAngle(orbitAngle, targetAngle, 1 - ORBIT_LAG);
+            
+            const ox = mouseX + Math.cos(orbitAngle) * orbitDist;
+            const oy = mouseY + Math.sin(orbitAngle) * orbitDist;
+            cursorOrbiterPos.style.transform = `translate(${ox}px, ${oy}px)`;
+            
+            cursorRaf = requestAnimationFrame(runCursorLoop);
+        }
+        
+        cursorRaf = requestAnimationFrame(runCursorLoop);
+        
+        document.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            showCursor();
+        });
+        document.addEventListener('mouseleave', hideCursor);
+        document.addEventListener('mouseenter', showCursor);
+        
+        function cursorPressDown(e) {
+            cursorDown = true;
+            cursorOrbiter.classList.remove('springing', 'pressed-left', 'pressed-right');
+            if (e && e.button === 2) {
+                cursorOrbiter.classList.add('pressed-right');
+            } else {
+                orbitDist = PRESS_DISTANCE;
+                cursorOrbiter.classList.add('pressed-left');
+            }
+        }
+        
+        function cursorPressUp(e) {
+            if (!cursorDown) return;
+            cursorDown = false;
+            if (e && e.button === 2) {
+                cursorOrbiter.classList.remove('pressed-right');
+            } else {
+                orbitDist = ORBIT_DISTANCE;
+                cursorOrbiter.classList.remove('pressed-left');
+                void cursorOrbiter.offsetWidth;
+                cursorOrbiter.classList.add('springing');
+                cursorOrbiter.addEventListener('animationend',
+                    () => cursorOrbiter.classList.remove('springing'), {
+                        once: true
+                    });
+            }
+        }
+        
+        document.addEventListener('mousedown', cursorPressDown);
+        document.addEventListener('mouseup', cursorPressUp);
+        
+        /* Touch support — cursor tracking + swipe navigation + long-press hook */
+        const SWIPE_THRESHOLD = 48;
+        const SWIPE_MAX_VERT = 80;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchDeltaX = 0;
+        let touchMoved = false;
+        let longPressTimer = null;
+        
+        document.addEventListener('touchstart', e => {
+            const t = e.touches[0];
+            mouseX = t.clientX;
+            mouseY = t.clientY;
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+            touchDeltaX = 0;
+            touchMoved = false;
+            showCursor();
+            cursorPressDown(e);
+            longPressTimer = setTimeout(() => {
+                longPressTimer = null;
+            }, 500);
+        }, {
+            passive: true
+        });
+
+        document.addEventListener('touchmove', e => {
+            const t = e.touches[0];
+            mouseX = t.clientX;
+            mouseY = t.clientY;
+            touchDeltaX = t.clientX - touchStartX;
+            touchMoved = true;
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }, {
+            passive: true
+        });
+
+        document.addEventListener('touchend', e => {
+            cursorPressUp(e);
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+            if (touchMoved && (state === 'gallery' || state === 'expanded')) {
+                const vertDelta = Math.abs(e.changedTouches[0].clientY - touchStartY);
+                if (Math.abs(touchDeltaX) >= SWIPE_THRESHOLD && vertDelta <= SWIPE_MAX_VERT) {
+                    navigate(touchDeltaX < 0 ? 1 : -1);
+                }
+            }
+            touchMoved = false;
+        });
+    </script>
 
 </body>
+
 </html>

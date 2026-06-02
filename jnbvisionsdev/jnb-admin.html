@@ -587,6 +587,70 @@
     border-radius: var(--radius); padding: 28px; width: 440px; max-width: 90vw;
   }
 
+  /* ── BOOKING ADMIN INPUTS ── */
+  .booking-admin-input {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 12px; padding: 9px 12px; border-radius: 6px;
+    outline: none; transition: border-color 0.15s; width: 100%;
+    color-scheme: dark;
+  }
+  .booking-admin-input:focus { border-color: var(--border-hi); }
+
+  /* Pocket card */
+  .pocket-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 2px; transition: border-color 0.15s;
+  }
+  .pocket-card:hover { border-color: var(--border-hi); }
+  .pocket-card.inactive { opacity: 0.45; }
+  .pocket-date-label {
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.05em; color: var(--white); flex: 1;
+  }
+  .pocket-time-label {
+    font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.04em;
+  }
+
+  /* Inquiry card */
+  .inquiry-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin-bottom: 2px;
+    transition: border-color 0.15s;
+  }
+  .inquiry-card:hover { border-color: var(--border-hi); }
+  .inquiry-card-header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 18px; cursor: pointer; user-select: none;
+  }
+  .inquiry-status-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .inquiry-status-dot.new       { background: var(--cyan); }
+  .inquiry-status-dot.hold      { background: var(--yellow); }
+  .inquiry-status-dot.confirmed { background: #00c84a; }
+  .inquiry-status-dot.declined  { background: var(--red); }
+  .inquiry-name {
+    font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.05em; color: var(--white); flex: 1;
+  }
+  .inquiry-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .inquiry-editor {
+    display: none; padding: 0 18px 18px; border-top: 1px solid var(--border);
+  }
+  .inquiry-card.open .inquiry-editor { display: block; }
+  .inquiry-card.open .expand-arrow { transform: rotate(180deg); }
+
+  /* Status select */
+  .status-select {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--white); font-family: var(--font-mono); font-size: 12px;
+    padding: 8px 12px; border-radius: 6px; outline: none; cursor: pointer;
+    color-scheme: dark; width: 100%;
+  }
+
   /* ── LOADING ── */
   .loading-row {
     padding: 40px; text-align: center; color: var(--muted);
@@ -636,6 +700,7 @@
     <button class="tab-btn active" onclick="switchTab('photos')">Photos</button>
     <button class="tab-btn" onclick="switchTab('people')">People</button>
     <button class="tab-btn" onclick="switchTab('collections')">Collections</button>
+    <button class="tab-btn" onclick="switchTab('bookings')">Bookings</button>
   </nav>
 
   <!-- PHOTOS TAB -->
@@ -825,6 +890,74 @@
     </div>
   </div>
 
+<!-- BOOKINGS TAB -->
+  <div id="tab-bookings" class="tab-panel">
+    <div class="admin-main">
+
+      <!-- TICKET CONFIG -->
+      <div class="section-header" style="margin-bottom:12px">
+        <span class="section-title">Tickets</span>
+      </div>
+      <div id="ticket-config-card" class="photo-card" style="margin-bottom:32px;padding:18px">
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+          <div class="field" style="flex:0 0 auto">
+            <label>Total Tickets Available</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+              <input type="number" id="ticket-total" min="1" max="99"
+                     style="width:80px;background:var(--bg);border:1px solid var(--border);
+                            color:var(--white);font-family:var(--font-mono);font-size:16px;
+                            padding:8px 12px;border-radius:6px;outline:none;text-align:center">
+              <button class="btn-save" style="margin-top:0" onclick="saveTicketConfig()">Save</button>
+            </div>
+          </div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);
+                      letter-spacing:0.05em;line-height:1.6">
+            <div id="ticket-secured-display"></div>
+            <div id="ticket-available-display"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AVAILABILITY POCKETS -->
+      <div class="section-header">
+        <span class="section-title">Availability</span>
+        <button class="btn-add" onclick="openNewPocketPanel()">+ Add Pocket</button>
+      </div>
+
+      <div id="new-pocket-panel" class="new-panel">
+        <div class="new-panel-title">Add Availability Pocket</div>
+        <div class="editor-grid">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="pocket-date" class="booking-admin-input">
+          </div>
+          <div class="field" style="opacity:0"></div>
+          <div class="field">
+            <label>Start Time</label>
+            <input type="time" id="pocket-start" class="booking-admin-input">
+          </div>
+          <div class="field">
+            <label>End Time</label>
+            <input type="time" id="pocket-end" class="booking-admin-input">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn-save" onclick="createPocket()">Save Pocket</button>
+          <button class="btn-icon" onclick="closeNewPocketPanel()">Cancel</button>
+        </div>
+      </div>
+
+      <div id="pockets-list"><div class="loading-row">Loading...</div></div>
+
+      <!-- INQUIRIES -->
+      <div class="section-header" style="margin-top:48px">
+        <span class="section-title">Inquiries</span>
+      </div>
+      <div id="inquiries-list"><div class="loading-row">Loading...</div></div>
+
+    </div>
+  </div>
+
 </div>
 
 <div id="toast"></div>
@@ -873,14 +1006,12 @@ if (sessionStorage.getItem('jnb_admin') === '1') {
    ===================================================== */
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['photos','people','collections'][i] === name);
+    b.classList.toggle('active', ['photos','people','collections','bookings'][i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'collections') {
-    // Re-render with latest data each time the tab is opened
-    renderCollectionsList();
-  }
+  if (name === 'collections') renderCollectionsList();
+  if (name === 'bookings')    loadBookingsTab();
 }
 
 /* =====================================================
@@ -2217,6 +2348,311 @@ document.addEventListener('keydown', e => {
     deselectPhoto();
   }
 });
+
+/* =====================================================
+   BOOKINGS TAB
+   ===================================================== */
+
+let pockets   = [];
+let inquiries = [];
+let ticketConfig = { id: 1, total: 3 };
+
+async function loadBookingsTab() {
+  await Promise.all([ loadPockets(), loadInquiries(), loadTicketConfig() ]);
+}
+
+/* ── Ticket config ── */
+
+async function loadTicketConfig() {
+  try {
+    const rows = await sbFetch('/rest/v1/ticket_config?select=*');
+    if (rows?.length) ticketConfig = rows[0];
+    renderTicketConfig();
+  } catch (err) { console.warn('ticket_config load failed:', err.message); }
+}
+
+function renderTicketConfig() {
+  document.getElementById('ticket-total').value = ticketConfig.total;
+
+  // Count secured (hold + confirmed) from loaded inquiries
+  const secured = inquiries.filter(i => i.status === 'hold' || i.status === 'confirmed').length;
+  const available = ticketConfig.total - secured;
+
+  document.getElementById('ticket-secured-display').textContent =
+    `${secured} ticket${secured !== 1 ? 's' : ''} secured`;
+  document.getElementById('ticket-available-display').textContent =
+    `${available} ticket${available !== 1 ? 's' : ''} available`;
+}
+
+async function saveTicketConfig() {
+  const total = parseInt(document.getElementById('ticket-total').value);
+  if (!total || total < 1) { showToast('Enter a valid number', 'error'); return; }
+  try {
+    await sbFetch('/rest/v1/ticket_config?id=eq.1', {
+      method: 'PATCH',
+      body: JSON.stringify({ total })
+    });
+    ticketConfig.total = total;
+    renderTicketConfig();
+    showToast('Ticket count saved', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* ── Pockets ── */
+
+async function loadPockets(attempt = 1) {
+  const list = document.getElementById('pockets-list');
+  if (!list) return;
+  list.innerHTML = attempt === 1
+    ? '<div class="loading-row">Loading...</div>'
+    : `<div class="loading-row">Connecting... (attempt ${attempt} of 3)</div>`;
+  try {
+    pockets = await sbFetch('/rest/v1/availability_pockets?select=*&order=date.asc,start_time.asc');
+    renderPockets();
+  } catch (err) {
+    if (attempt < 3) { setTimeout(() => loadPockets(attempt + 1), 2000); return; }
+    list.innerHTML = `<div class="loading-row" style="color:var(--red)">
+      Failed to load. <button class="btn-add" onclick="loadPockets()">Retry</button></div>`;
+  }
+}
+
+function formatPocketDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US',
+    { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatPocketTime(t) {
+  const [h, min] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+  return `${h12}${min ? ':' + String(min).padStart(2,'0') : ''} ${ampm}`;
+}
+
+function renderPockets() {
+  const list = document.getElementById('pockets-list');
+  if (!pockets.length) {
+    list.innerHTML = '<div class="loading-row">No availability pockets yet.</div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  pockets.forEach(p => {
+    if (!byDate[p.date]) byDate[p.date] = [];
+    byDate[p.date].push(p);
+  });
+
+  list.innerHTML = Object.entries(byDate).map(([date, dayPockets]) => `
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--font-ui);font-size:9px;font-weight:700;
+                  letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
+                  margin-bottom:6px;padding-left:2px">${formatPocketDate(date)}</div>
+      ${dayPockets.map(p => `
+        <div class="pocket-card ${p.active ? '' : 'inactive'}">
+          <div style="flex:1">
+            <div class="pocket-date-label">
+              ${formatPocketTime(p.start_time)} – ${formatPocketTime(p.end_time)}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:9px;font-family:var(--font-ui);font-weight:700;
+                         letter-spacing:0.1em;color:${p.active ? 'var(--cyan)' : 'var(--muted)'};
+                         text-transform:uppercase">${p.active ? 'Active' : 'Hidden'}</span>
+            <button class="btn-icon" onclick="togglePocketActive('${p.id}',${p.active})">
+              ${p.active ? 'Hide' : 'Show'}
+            </button>
+            <button class="btn-icon danger" onclick="deletePocket('${p.id}')">Delete</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+async function createPocket() {
+  const date  = document.getElementById('pocket-date').value;
+  const start = document.getElementById('pocket-start').value;
+  const end   = document.getElementById('pocket-end').value;
+  if (!date || !start || !end) { showToast('Date and times are required', 'error'); return; }
+  if (start >= end) { showToast('End time must be after start time', 'error'); return; }
+  try {
+    await sbFetch('/rest/v1/availability_pockets', {
+      method: 'POST',
+      body: JSON.stringify({ date, start_time: start, end_time: end, active: true })
+    });
+    showToast('Pocket added', 'success');
+    closeNewPocketPanel();
+    await loadPockets();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function togglePocketActive(id, currentActive) {
+  try {
+    await sbFetch(`/rest/v1/availability_pockets?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ active: !currentActive })
+    });
+    await loadPockets();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function deletePocket(id) {
+  if (!confirm('Delete this availability pocket?')) return;
+  try {
+    await sbFetch(`/rest/v1/availability_pockets?id=eq.${id}`, { method: 'DELETE' });
+    showToast('Deleted', 'success');
+    await loadPockets();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+function openNewPocketPanel() {
+  document.getElementById('new-pocket-panel').classList.add('visible');
+  document.getElementById('pocket-date').focus();
+}
+function closeNewPocketPanel() {
+  document.getElementById('new-pocket-panel').classList.remove('visible');
+  ['pocket-date','pocket-start','pocket-end'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+/* ── Inquiries ── */
+
+async function loadInquiries(attempt = 1) {
+  const list = document.getElementById('inquiries-list');
+  if (!list) return;
+  try {
+    // Join with availability_pockets to show date/time context
+    inquiries = await sbFetch(
+      '/rest/v1/inquiries?select=*,availability_pockets(date,start_time,end_time)&order=created_at.desc'
+    );
+    renderInquiries();
+    // Update ticket display with real secured count
+    if (document.getElementById('ticket-secured-display')) renderTicketConfig();
+  } catch (err) {
+    if (attempt < 3) { setTimeout(() => loadInquiries(attempt + 1), 2000); return; }
+    list.innerHTML = `<div class="loading-row" style="color:var(--red)">
+      Failed to load inquiries. <button class="btn-add" onclick="loadInquiries()">Retry</button></div>`;
+  }
+}
+
+function renderInquiries() {
+  const list = document.getElementById('inquiries-list');
+  if (!inquiries.length) {
+    list.innerHTML = '<div class="loading-row">No inquiries yet.</div>';
+    return;
+  }
+
+  list.innerHTML = inquiries.map(inq => {
+    const pocket = inq.availability_pockets;
+    const pocketStr = pocket
+      ? `${formatPocketDate(pocket.date)}, ${formatPocketTime(pocket.start_time)}–${formatPocketTime(pocket.end_time)}`
+      : 'Unknown pocket';
+    const created = new Date(inq.created_at).toLocaleDateString('en-US',
+      { month: 'short', day: 'numeric', year: 'numeric' });
+
+    return `
+    <div class="inquiry-card" id="inq-${inq.id}">
+      <div class="inquiry-card-header" onclick="toggleInquiry('${inq.id}')">
+        <div class="inquiry-status-dot ${inq.status}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="inquiry-name">${inq.first_name} ${inq.last_name}</div>
+          <div class="inquiry-meta">${pocketStr} · ${created}</div>
+        </div>
+        <span style="font-family:var(--font-ui);font-size:8px;font-weight:700;
+                     letter-spacing:0.15em;text-transform:uppercase;
+                     color:var(--muted);flex-shrink:0;margin-right:8px">${inq.status}</span>
+        <span class="expand-arrow">▼</span>
+      </div>
+      <div class="inquiry-editor">
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:24px;font-size:11px;color:var(--muted);line-height:1.8">
+            <div>
+              <div style="font-family:var(--font-ui);font-size:8px;font-weight:700;
+                           letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px">Email</div>
+              <a href="mailto:${inq.email}" style="color:var(--cyan);text-decoration:none">${inq.email}</a>
+            </div>
+            <div>
+              <div style="font-family:var(--font-ui);font-size:8px;font-weight:700;
+                           letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px">Requested</div>
+              ${inq.requested_start ? formatPocketTime(inq.requested_start) + '–' + formatPocketTime(inq.requested_end) : pocketStr}
+            </div>
+          </div>
+          ${inq.message ? `
+          <div>
+            <div style="font-family:var(--font-ui);font-size:8px;font-weight:700;
+                         letter-spacing:0.2em;text-transform:uppercase;
+                         color:var(--muted);margin-bottom:6px">Message</div>
+            <div style="font-size:12px;line-height:1.6;color:rgba(255,255,255,0.7)">${inq.message}</div>
+          </div>` : ''}
+          <div class="editor-grid">
+            <div class="field">
+              <label>Status</label>
+              <select class="status-select" id="status-${inq.id}"
+                      onchange="updateInquiryStatus('${inq.id}', this.value)">
+                <option value="new"       ${inq.status==='new'       ?'selected':''}>New</option>
+                <option value="hold"      ${inq.status==='hold'      ?'selected':''}>Hold</option>
+                <option value="confirmed" ${inq.status==='confirmed' ?'selected':''}>Confirmed</option>
+                <option value="declined"  ${inq.status==='declined'  ?'selected':''}>Declined</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Admin Note</label>
+              <input type="text" id="note-${inq.id}" value="${inq.admin_note}"
+                     placeholder="Internal note..."
+                     style="background:var(--bg);border:1px solid var(--border);
+                            color:var(--white);font-family:var(--font-mono);
+                            font-size:12px;padding:9px 12px;border-radius:6px;
+                            outline:none;width:100%">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-save" style="margin-top:0" onclick="saveInquiry('${inq.id}')">
+              Save
+            </button>
+            <a href="mailto:${inq.email}?subject=Your jnb visions inquiry"
+               class="btn-icon" style="text-decoration:none;display:flex;align-items:center">
+              Reply by email
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleInquiry(id) {
+  document.getElementById(`inq-${id}`)?.classList.toggle('open');
+}
+
+async function updateInquiryStatus(id, status) {
+  try {
+    await sbFetch(`/rest/v1/inquiries?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ status })
+    });
+    // Update local state and re-render dot
+    const inq = inquiries.find(i => i.id === id);
+    if (inq) {
+      inq.status = status;
+      const dot = document.querySelector(`#inq-${id} .inquiry-status-dot`);
+      if (dot) dot.className = `inquiry-status-dot ${status}`;
+      const badge = document.querySelector(`#inq-${id} .inquiry-card-header span[style*="color:var(--muted)"]`);
+      if (badge) badge.textContent = status;
+    }
+    renderTicketConfig(); // update secured count
+    showToast('Status updated', 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+async function saveInquiry(id) {
+  const note = document.getElementById(`note-${id}`)?.value.trim() || '';
+  const status = document.getElementById(`status-${id}`)?.value;
+  try {
+    await sbFetch(`/rest/v1/inquiries?id=eq.${id}`, {
+      method: 'PATCH', body: JSON.stringify({ admin_note: note, status })
+    });
+    showToast('Saved', 'success');
+    await loadInquiries();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
 
 /* =====================================================
    FILMSTRIP SCROLL — wheel intercept + click-to-drag

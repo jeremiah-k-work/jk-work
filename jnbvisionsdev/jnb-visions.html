@@ -1044,14 +1044,29 @@
             gap: 6px;
         }
 
-        .booking-window {
+        .booking-window,
+        .inq-pocket-pill {
             font-family: var(--font-primary);
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.45);
+            color: rgba(255,255,255,0.45);
             letter-spacing: 0.06em;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.06);
             border-radius: 4px;
             padding: 3px 8px;
+            border: 1px solid transparent;
+        }
+        .inq-pocket-pill {
+            cursor: pointer;
+            transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .inq-pocket-pill:hover {
+            color: rgba(255,255,255,0.75);
+            background: rgba(255,255,255,0.1);
+        }
+        .inq-pocket-pill.active {
+            color: var(--white);
+            border-color: rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.1);
         }
 
         /* Inquiry form */
@@ -1917,21 +1932,51 @@
             showInquiryForm(date);
         }
 
+        function fillInquiryTimes(start, end) {
+            document.getElementById('inq-start').value = start;
+            document.getElementById('inq-end').value   = end;
+            // Highlight the active pill
+            document.querySelectorAll('.inq-pocket-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.start === start && p.dataset.end === end);
+            });
+        }
+
         function showInquiryForm(date) {
-            const wrap = document.getElementById('booking-inquiry-col');
+            const wrap    = document.getElementById('booking-inquiry-col');
             const pockets = bookingPockets.filter(p => p.date === date);
-            const options = pockets.map(p =>
-                `<option value="${p.id}">${formatTime(p.start_time)} – ${formatTime(p.end_time)}</option>`
-            ).join('');
+
+            // Pre-fill with the first pocket's range
+            const firstStart = pockets[0].start_time.slice(0,5);
+            const firstEnd   = pockets[0].end_time.slice(0,5);
+
+            // Build pocket pills
+            const pillsHtml = pockets.map((p, i) => {
+                const s = p.start_time.slice(0,5);
+                const e = p.end_time.slice(0,5);
+                return `<button type="button"
+                    class="inq-pocket-pill${i === 0 ? ' active' : ''}"
+                    data-start="${s}" data-end="${e}"
+                    onclick="fillInquiryTimes('${s}','${e}')">
+                  ${formatTime(p.start_time)}&nbsp;–&nbsp;${formatTime(p.end_time)}
+                </button>`;
+            }).join('');
 
             wrap.classList.add('visible');
             wrap.innerHTML = `
     <div id="booking-inquiry-card">
       <div class="booking-inquiry-title">${formatDate(date)}</div>
 
-      <div class="booking-field">
-        <label class="booking-label">Time window</label>
-        <select id="inq-pocket" class="booking-input">${options}</select>
+      <div class="booking-day-windows" style="margin-bottom:16px">${pillsHtml}</div>
+
+      <div class="booking-field-row">
+        <div class="booking-field">
+          <label class="booking-label">From</label>
+          <input type="time" id="inq-start" class="booking-input" value="${firstStart}">
+        </div>
+        <div class="booking-field">
+          <label class="booking-label">To</label>
+          <input type="time" id="inq-end" class="booking-input" value="${firstEnd}">
+        </div>
       </div>
 
       <div class="booking-field-row">
@@ -1961,27 +2006,32 @@
       </button>
       <div id="inq-error" class="booking-error"></div>
     </div>`;
-
-
         }
 
         async function submitInquiry(date) {
-            const btn = document.querySelector('.booking-submit');
-            const errEl = document.getElementById('inq-error');
-            const first = document.getElementById('inq-first').value.trim();
-            const last = document.getElementById('inq-last').value.trim();
-            const email = document.getElementById('inq-email').value.trim();
+            const btn    = document.querySelector('.booking-submit');
+            const errEl  = document.getElementById('inq-error');
+            const first   = document.getElementById('inq-first').value.trim();
+            const last    = document.getElementById('inq-last').value.trim();
+            const email   = document.getElementById('inq-email').value.trim();
             const message = document.getElementById('inq-message').value.trim();
-            const pocketId = document.getElementById('inq-pocket').value;
+            const reqStart = document.getElementById('inq-start').value; // "HH:MM"
+            const reqEnd   = document.getElementById('inq-end').value;
 
             errEl.textContent = '';
 
-            if (!first || !last) {
-                errEl.textContent = 'Please enter your name.';
-                return;
-            }
-            if (!email || !email.includes('@')) {
-                errEl.textContent = 'Please enter a valid email.';
+            if (!first || !last) { errEl.textContent = 'Please enter your name.'; return; }
+            if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid email.'; return; }
+            if (!reqStart || !reqEnd) { errEl.textContent = 'Please select a time range.'; return; }
+            if (reqStart >= reqEnd) { errEl.textContent = 'End time must be after start time.'; return; }
+
+            // Validate that the requested range falls within at least one pocket
+            const pockets = bookingPockets.filter(p => p.date === date);
+            const coveringPocket = pockets.find(p =>
+                p.start_time.slice(0,5) <= reqStart && p.end_time.slice(0,5) >= reqEnd
+            );
+            if (!coveringPocket) {
+                errEl.textContent = 'Your requested time falls outside the available window.';
                 return;
             }
 
@@ -1998,17 +2048,18 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        pocket_id: pocketId,
-                        first_name: first,
-                        last_name: last,
+                        pocket_id:       coveringPocket.id,
+                        first_name:      first,
+                        last_name:       last,
                         email,
                         message,
+                        requested_start: reqStart,
+                        requested_end:   reqEnd,
                         status: 'new'
                     })
                 });
                 if (!res.ok) throw new Error('Submission failed');
 
-                // Show confirmation
                 document.getElementById('booking-inquiry-card').innerHTML = `
       <div class="booking-confirm">
         <div class="booking-confirm-title">Inquiry sent.</div>

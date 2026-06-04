@@ -143,6 +143,10 @@
     display: flex; gap: 0;
     border-bottom: 1px solid var(--border);
     padding: 0 32px;
+    position: sticky;
+    top: 56px; /* height of admin-header */
+    background: var(--bg);
+    z-index: 40;
   }
   .tab-btn {
     background: transparent; border: none; border-bottom: 2px solid transparent;
@@ -155,8 +159,15 @@
   .tab-btn:hover { color: var(--white); }
   .tab-btn.active { color: var(--white); border-bottom-color: var(--white); }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .tab-panel {
+    display: none;
+    position: relative;
+    isolation: isolate; /* each panel is its own stacking context */
+  }
+  .tab-panel.active {
+    display: block;
+    z-index: 1; /* active panel always above siblings */
+  }
 
   /* ── MAIN CONTENT ── */
   .admin-main { max-width: 960px; margin: 0 auto; padding: 40px 32px 80px; }
@@ -669,6 +680,26 @@
   .booking-subpanel { display: none; }
   .booking-subpanel.active { display: block; }
 
+  /* ── NOTIFICATION BADGES ── */
+  .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red);
+    color: var(--white);
+    font-family: var(--font-ui);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+    line-height: 1;
+  }
+
   /* ── LOADING ── */
   .loading-row {
     padding: 40px; text-align: center; color: var(--muted);
@@ -718,7 +749,7 @@
     <button class="tab-btn active" onclick="switchTab('photos')">Photos</button>
     <button class="tab-btn" onclick="switchTab('people')">People</button>
     <button class="tab-btn" onclick="switchTab('collections')">Collections</button>
-    <button class="tab-btn" onclick="switchTab('bookings')">Bookings</button>
+    <button class="tab-btn" onclick="switchTab('bookings')">Bookings<span id="badge-bookings" class="tab-badge" style="display:none"></span></button>
     <button class="tab-btn" onclick="switchTab('site')">Site</button>
   </nav>
 
@@ -915,7 +946,7 @@
     <!-- Bookings sub-tabs -->
     <div class="booking-subtabs">
       <button class="booking-subtab active" onclick="switchBookingSubtab('availability')">Availability</button>
-      <button class="booking-subtab" onclick="switchBookingSubtab('inquiries')">Inquiries</button>
+      <button class="booking-subtab" onclick="switchBookingSubtab('inquiries')">Inquiries<span id="badge-inquiries" class="tab-badge" style="display:none"></span></button>
     </div>
 
     <!-- AVAILABILITY SUB-TAB -->
@@ -1015,9 +1046,9 @@
 
   </div>
 
-</div>
-
 <div id="toast"></div>
+
+</div><!-- end admin-shell -->
 
 <script>
 /* =====================================================
@@ -1067,6 +1098,8 @@ function switchTab(name) {
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
+  // Scroll to top of page so the new tab content is immediately visible
+  window.scrollTo({ top: 0, behavior: 'instant' });
   if (name === 'collections') renderCollectionsList();
   if (name === 'bookings')    loadBookingsTab();
   if (name === 'site')        loadSiteTab();

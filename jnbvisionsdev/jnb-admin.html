@@ -1209,7 +1209,10 @@ function startRealtimeInquiries() {
       let msg;
       try { msg = JSON.parse(evt.data); } catch { return; }
 
-      // phx_reply confirms the join — log for diagnostics
+      // Log every message so we can see the exact shape of incoming events
+      console.log('[realtime] msg:', msg.event, JSON.stringify(msg).slice(0, 300));
+
+      // phx_reply confirms the join
       if (msg.event === 'phx_reply') {
         if (msg.payload?.status === 'ok') {
           console.log('[realtime] subscribed to inquiries');
@@ -1219,7 +1222,7 @@ function startRealtimeInquiries() {
         return;
       }
 
-      // Postgres INSERT event
+      // Postgres INSERT — try every known payload shape
       if (msg.event === 'postgres_changes') {
         const data = msg.payload?.data;
         if (data?.type === 'INSERT' && data?.table === 'inquiries') {
@@ -1228,7 +1231,11 @@ function startRealtimeInquiries() {
         return;
       }
 
-      // System messages (keepalive etc) — ignore silently
+      // Supabase sometimes wraps it differently
+      if (msg.payload?.type === 'INSERT' && msg.payload?.table === 'inquiries') {
+        onNewInquiry(msg.payload.record || msg.payload.new);
+        return;
+      }
     };
 
     realtimeSocket.onclose = (evt) => {

@@ -1103,6 +1103,12 @@ function switchTab(name) {
   if (name === 'collections') renderCollectionsList();
   if (name === 'bookings')    loadBookingsTab();
   if (name === 'site')        loadSiteTab();
+  // If opening Bookings and Inquiries sub-tab is already active, clear badge
+  if (name === 'bookings') {
+    const inquiriesActive = document.getElementById('booking-sub-inquiries')
+      ?.classList.contains('active');
+    if (inquiriesActive) clearInquiryBadge();
+  }
 }
 
 function switchSiteSubtab(name) {
@@ -1147,8 +1153,129 @@ let photoCreditsMap = {};
 async function init() {
   await Promise.all([ loadCollections(), loadPeople() ]);
   await loadPhotos();
-  // Now all data is ready — render collections list if that tab is active
   renderCollectionsList();
+  // Start listening for new inquiries in real time
+  startRealtimeInquiries();
+}
+
+/* =====================================================
+   REALTIME — new inquiry notifications
+   Uses Supabase Realtime WebSocket to push new inquiry
+   counts to jnb without requiring a page refresh.
+   ===================================================== */
+
+let realtimeSocket     = null;
+let newInquiryCount    = 0; // unseen new inquiries since last viewing Inquiries tab
+let realtimeHeartbeat  = null;
+
+function startRealtimeInquiries() {
+  // Extract project ref from SUPABASE_URL
+  const ref = SUPABASE_URL.replace('https://', '').split('.')[0];
+  const wsUrl = `wss://${ref}.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+
+  function connect() {
+    realtimeSocket = new WebSocket(wsUrl);
+
+    realtimeSocket.onopen = () => {
+      // Join the inquiries table broadcast channel
+      realtimeSocket.send(JSON.stringify({
+        topic:   'realtime:public:inquiries',
+        event:   'phx_join',
+        payload: {
+          config: {
+            broadcast:  { self: false },
+            presence:   { key: '' },
+            postgres_changes: [{
+              event:  'INSERT',
+              schema: 'public',
+              table:  'inquiries'
+            }]
+          }
+        },
+        ref: '1'
+      }));
+
+      // Heartbeat every 25s to keep connection alive
+      realtimeHeartbeat = setInterval(() => {
+        if (realtimeSocket?.readyState === WebSocket.OPEN) {
+          realtimeSocket.send(JSON.stringify({
+            topic: 'phoenix', event: 'heartbeat', payload: {}, ref: '0'
+          }));
+        }
+      }, 25000);
+    };
+
+    realtimeSocket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        // Postgres INSERT event arrives as postgres_changes payload
+        if (
+          msg.event === 'postgres_changes' &&
+          msg.payload?.data?.type === 'INSERT'
+        ) {
+          onNewInquiry(msg.payload.data.record);
+        }
+      } catch(e) { /* ignore parse errors */ }
+    };
+
+    realtimeSocket.onclose = () => {
+      clearInterval(realtimeHeartbeat);
+      // Reconnect after 5s if closed unexpectedly
+      setTimeout(connect, 5000);
+    };
+
+    realtimeSocket.onerror = () => {
+      realtimeSocket?.close();
+    };
+  }
+
+  connect();
+}
+
+function onNewInquiry(record) {
+  newInquiryCount++;
+  updateInquiryBadges();
+
+  // Show toast with the submitter's name
+  const name = [record?.first_name, record?.last_name].filter(Boolean).join(' ') || 'Someone';
+  showToast(`New inquiry from ${name}`, 'success');
+
+  // If jnb is currently viewing the Inquiries sub-tab, refresh it live
+  const inquiriesSubActive = document.getElementById('booking-sub-inquiries')
+    ?.classList.contains('active');
+  const bookingsTabActive = document.getElementById('tab-bookings')
+    ?.classList.contains('active');
+
+  if (bookingsTabActive && inquiriesSubActive) {
+    loadInquiries();
+    // They're looking at it — clear the badge immediately
+    clearInquiryBadge();
+  }
+}
+
+function updateInquiryBadges() {
+  if (newInquiryCount <= 0) return;
+  const label = newInquiryCount > 9 ? '9+' : String(newInquiryCount);
+
+  const bookingsBadge  = document.getElementById('badge-bookings');
+  const inquiriesBadge = document.getElementById('badge-inquiries');
+
+  if (bookingsBadge) {
+    bookingsBadge.textContent     = label;
+    bookingsBadge.style.display   = 'inline-flex';
+  }
+  if (inquiriesBadge) {
+    inquiriesBadge.textContent    = label;
+    inquiriesBadge.style.display  = 'inline-flex';
+  }
+}
+
+function clearInquiryBadge() {
+  newInquiryCount = 0;
+  const bookingsBadge  = document.getElementById('badge-bookings');
+  const inquiriesBadge = document.getElementById('badge-inquiries');
+  if (bookingsBadge)  { bookingsBadge.style.display  = 'none'; bookingsBadge.textContent  = ''; }
+  if (inquiriesBadge) { inquiriesBadge.style.display = 'none'; inquiriesBadge.textContent = ''; }
 }
 
 /* =====================================================
@@ -2483,6 +2610,8 @@ function switchBookingSubtab(name) {
   });
   document.querySelectorAll('.booking-subpanel').forEach(p => p.classList.remove('active'));
   document.getElementById(`booking-sub-${name}`).classList.add('active');
+  // Opening Inquiries clears the new-inquiry badge
+  if (name === 'inquiries') clearInquiryBadge();
 }
 
 let pockets   = [];

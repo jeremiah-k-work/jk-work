@@ -425,6 +425,8 @@
             transform: translateY(-50%) !important;
             align-items: flex-start;
             pointer-events: none;
+            text-align: center;
+            overflow: visible;
         }
 
         #nav-unified.booking .nav-word {
@@ -537,9 +539,18 @@
         }
 
         /* Hide Book button when already in booking view */
+        /* BOOK word becomes the ambient heading in booking state —
+           mirrors exactly how GALLERY behaves in gallery state */
         #nav-unified.booking #nav-connect {
-            opacity: 0;
+            width: 100vw;
+            font-size: clamp(48px, 18vw, 120px);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--white);
+            opacity: 0.045;
             pointer-events: none;
+            transform: translateY(var(--nav-gallery-rise));
+            overflow: visible;
         }
 
         #nav-back:hover {
@@ -827,7 +838,7 @@
             width: 100vw;
             min-height: 100vh;
             display: flex;
-            align-items: flex-start;
+            align-items: stretch;
             justify-content: center;
             padding: 80px 48px 80px;
             overflow-y: auto;
@@ -847,6 +858,7 @@
             display: flex;
             flex-direction: column;
             gap: 40px;
+            justify-content: center;
         }
 
         #booking-calendar-row {
@@ -950,6 +962,194 @@
         }
 
         /* Sold out */
+        /* ── Offer cards ── */
+        #booking-offers {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        .booking-offer-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.25s ease;
+            min-height: 480px;
+            position: relative;
+        }
+        /* Photo background — set via inline style:
+           background-image: url('images/your-photo.jpg') on the card element.
+           Falls back to solid color if no image is set. */
+        .booking-offer-card {
+            background-size: cover;
+            background-position: center;
+        }
+        .booking-offer-card--sessions-bg {
+            background-image: var(--sessions-bg-image, none);
+        }
+        .booking-offer-card--projects-bg {
+            background-image: var(--projects-bg-image, none);
+        }
+        /* Gradient overlay sits between photo and content */
+        .booking-offer-card .offer-gradient {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .offer-gradient--sessions {
+            background: linear-gradient(
+                to bottom,
+                rgba(34, 2, 42, 1) 0%,
+                rgba(34, 2, 42, 0.5) 100%
+            );
+        }
+        .offer-gradient--projects {
+            background: linear-gradient(
+                to bottom,
+                rgba(42, 2, 11, 1) 0%,
+                rgba(42, 2, 11, 0.5) 100%
+            );
+        }
+        /* All card content sits above the gradient */
+        .booking-offer-card .booking-offer-header,
+        .booking-offer-card .booking-offer-body,
+        .booking-offer-card .booking-offer-footer {
+            position: relative;
+            z-index: 2;
+        }
+        .booking-offer-card:hover {
+            border-color: rgba(255,255,255,0.18);
+        }
+        .booking-offer-card--projects {
+            cursor: default;
+        }
+
+        .booking-offer-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            padding: 28px 28px 0;
+        }
+        .booking-offer-title {
+            font-family: var(--font-secondary);
+            font-size: clamp(22px, 3.5vw, 36px);
+            font-weight: 900;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+        .booking-offer-title--projects {
+            color: rgba(255,255,255,0.7);
+        }
+        .booking-offer-avail {
+            font-family: var(--font-secondary);
+            font-size: clamp(10px, 1.2vw, 13px);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .booking-offer-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 24px 28px;
+        }
+        .booking-offer-lead {
+            font-family: var(--font-secondary);
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.45;
+            letter-spacing: 0.01em;
+        }
+        .booking-offer-detail {
+            font-family: var(--font-primary);
+            font-size: clamp(11px, 1.1vw, 13px);
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
+            letter-spacing: 0.03em;
+        }
+        .booking-offer-inquire {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.6);
+            font-family: var(--font-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            align-self: flex-start;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .booking-offer-inquire:hover {
+            color: var(--white);
+            border-color: rgba(255,255,255,0.35);
+        }
+
+        .booking-offer-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px 28px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .booking-offer-price {
+            font-family: var(--font-secondary);
+            font-size: clamp(13px, 1.6vw, 18px);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.5);
+        }
+        .booking-offer-price--projects {
+            color: rgba(255,255,255,0.3);
+        }
+        .booking-offer-cta {
+            font-family: var(--font-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Sessions view back link */
+        .booking-back-link {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.35);
+            font-family: var(--font-secondary);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 24px;
+            display: inline-block;
+            transition: color 0.15s;
+        }
+        .booking-back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* Project inquiry form inside card */
+        .booking-project-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
         #booking-soldout {
             text-align: center;
             padding: 60px 0;
@@ -1491,8 +1691,9 @@
            ===================================================== */
         document.getElementById('logo-img').src = LOGO;
 
-        // Fetch gallery data from Supabase on load
+        // Fetch gallery and mount data at load
         fetchGallery();
+        fetchMounts().then(applyMounts);
 
         /* =====================================================
            STATE
@@ -1500,6 +1701,16 @@
         let state = 'intro'; // 'intro' | 'gallery' | 'expanded' | 'booking'
         let bookingPrevState = 'intro'; // state before entering booking
         let isExiting = false; // true while exitGallery transition is running
+
+        function applyMounts() {
+            // Apply intro portrait mount if a collection is assigned
+            const introSrc = getMountPhoto('intro-portrait');
+            if (introSrc) {
+                const introPhoto = document.getElementById('intro-photo');
+                if (introPhoto) introPhoto.src = introSrc;
+            }
+            // Booking card backgrounds applied when renderBookingView runs
+        }
         let currentCollection = [];
         let currentIndex = 0;
         let isExpanded = false;
@@ -1513,6 +1724,7 @@
         let bookingConfig = {}; // ticket_config row
         let selectedPocketDay = null; // date string 'YYYY-MM-DD' of selected day card
         let currentBookingMonth = null; // 'YYYY-MM' of month currently in view
+        let siteMount = {}; // slug → first photo src for each mount
         
         
         function goBackGeneric() {
@@ -1541,7 +1753,107 @@
             
         }
 
-        async function fetchBookingData() {
+        /* =====================================================
+   MOUNT FETCHING
+   Fetches all mounts and their effective collection photos.
+   Checks mount_schedules for active overrides including
+   recurring schedules before falling back to default collection.
+   ===================================================== */
+async function fetchMounts() {
+    try {
+        const now = new Date();
+
+        // Fetch mounts and their schedules in parallel
+        const [mounts, schedules] = await Promise.all([
+            fetch(`${SUPABASE_URL}/rest/v1/mounts?select=slug,collection_id,collections(id,photos:photo_collections(display_order,photos(src)))&order=display_order.asc`, {
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+            }).then(r => r.json()),
+            fetch(`${SUPABASE_URL}/rest/v1/mount_schedules?select=*&order=scheduled_at.desc`, {
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+            }).then(r => r.json())
+        ]);
+
+        // For each mount, find the effective collection_id considering schedules
+        const effectiveCollIds = {};
+        for (const mount of (mounts || [])) {
+            const mountSchedules = (schedules || []).filter(s => s.mount_id === mount.id || true);
+            // Re-fetch with mount id — for now use default
+            effectiveCollIds[mount.slug] = mount.collection_id;
+        }
+
+        // Fetch photos for each unique collection_id
+        const collIds = [...new Set(Object.values(effectiveCollIds).filter(Boolean))];
+        const photoMap = {};
+        if (collIds.length) {
+            const rows = await fetch(
+                `${SUPABASE_URL}/rest/v1/photo_collections?select=collection_id,display_order,photos(src,published)&collection_id=in.(${collIds.join(',')})&photos.published=eq.true&order=display_order.asc`,
+                { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+            ).then(r => r.json());
+            for (const row of (rows || [])) {
+                if (!photoMap[row.collection_id]) photoMap[row.collection_id] = [];
+                if (row.photos?.src) photoMap[row.collection_id].push(row.photos.src);
+            }
+        }
+
+        // Build siteMount: slug → array of photo srcs (first = default display)
+        siteMount = {};
+        for (const mount of (mounts || [])) {
+            const collId = effectiveCollIds[mount.slug];
+            siteMount[mount.slug] = collId ? (photoMap[collId] || []) : [];
+        }
+    } catch(err) {
+        console.warn('[jnb] Mount fetch failed:', err.message);
+        siteMount = {};
+    }
+}
+
+function getMountPhoto(slug) {
+    // Returns the first photo src for a mount, or null if none assigned
+    const photos = siteMount[slug] || [];
+    return photos.length ? PATHS.images + photos[0] : null;
+}
+
+/* Mount schedule active check — handles none/yearly/monthly recurrence */
+function isMountScheduleActive(schedule) {
+    const now  = new Date();
+    const start = new Date(schedule.scheduled_at);
+    const end   = schedule.ends_at ? new Date(schedule.ends_at) : null;
+
+    if (schedule.recurrence === 'none') {
+        return start <= now && (!end || end > now);
+    }
+
+    if (schedule.recurrence === 'yearly') {
+        // Adjust start/end to current year
+        const thisYear = now.getFullYear();
+        const s = new Date(start); s.setFullYear(thisYear);
+        const e = end ? new Date(end) : null;
+        if (e) {
+            // Handle year-boundary: if end month < start month, end is next year
+            if (e.getMonth() < s.getMonth() ||
+               (e.getMonth() === s.getMonth() && e.getDate() < s.getDate())) {
+                e.setFullYear(thisYear + 1);
+            } else {
+                e.setFullYear(thisYear);
+            }
+        }
+        return s <= now && (!e || e > now);
+    }
+
+    if (schedule.recurrence === 'monthly') {
+        const sDay = start.getDate();
+        const eDay = end ? end.getDate() : null;
+        const today = now.getDate();
+        if (eDay === null) return today >= sDay;
+        if (eDay >= sDay) return today >= sDay && today < eDay;
+        // Wraps month boundary
+        return today >= sDay || today < eDay;
+    }
+
+    return false;
+}
+
+async function fetchBookingData() {
             try {
                 const [pockets, config] = await Promise.all([
                     fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&order=date.asc`, {
@@ -1766,63 +2078,175 @@
         }
 
         function renderBookingView() {
-            const scene = document.getElementById('booking-scene');
-            const total = bookingConfig.total || 3;
-            const secured = bookingConfig.secured || 0;
+            const scene   = document.getElementById('booking-scene');
+            const total   = bookingConfig.total   || 3;
+            const secured = bookingConfig.secured  || 0;
             const available = total - secured;
-            const soldOut = available <= 0;
-            const months = getAvailableMonths();
+
+            // Landing: two offer cards
+            scene.innerHTML = `
+    <div id="booking-inner">
+      <div id="booking-offers">
+
+        <!-- SESSIONS CARD -->
+        <div class="booking-offer-card" id="offer-sessions" onclick="openSessionsView()"
+             style="${getMountPhoto('sessions-card') ? 'background-image:url(' + getMountPhoto('sessions-card') + ')' : ''}">
+          <div class="offer-gradient offer-gradient--sessions"></div>
+          <div class="booking-offer-header">
+            <span class="booking-offer-title">Sessions</span>
+            <span class="booking-offer-avail">${secured} of ${total} Claimed</span>
+          </div>
+          <div class="booking-offer-body">
+            <p class="booking-offer-lead">A Session is suitable for photography that takes place within a day.</p>
+            <p class="booking-offer-detail">A session includes polished photos displayed and downloadable in a professional and private online gallery.</p>
+            <p class="booking-offer-detail">If premium locations or deliverables are desired, an estimate will be provided that reflects the desired options.</p>
+          </div>
+          <div class="booking-offer-footer">
+            <span class="booking-offer-price">Starting at $500</span>
+            <span class="booking-offer-cta">${available > 0 ? 'View Dates →' : ''}</span>
+          </div>
+        </div>
+
+        <!-- PROJECTS CARD -->
+        <div class="booking-offer-card booking-offer-card--projects" id="offer-projects"
+             style="${getMountPhoto('projects-card') ? 'background-image:url(' + getMountPhoto('projects-card') + ')' : ''}">
+          <div class="offer-gradient offer-gradient--projects"></div>
+          <div class="booking-offer-header">
+            <span class="booking-offer-title booking-offer-title--projects">Projects</span>
+          </div>
+          <div class="booking-offer-body" id="projects-body">
+            <p class="booking-offer-lead">A Project is suitable for photography requiring specialized deliverables that may span multiple sessions.</p>
+            <p class="booking-offer-detail">A Project's goals will determine its deliverables. These goals will be discussed before a Project is accepted.</p>
+            <p class="booking-offer-detail">Execution often requires communication, collaboration, and careful planning.</p>
+            <button class="booking-offer-inquire" onclick="event.stopPropagation();openProjectInquiry()">Inquire →</button>
+          </div>
+          <div class="booking-offer-footer">
+            <span class="booking-offer-price booking-offer-price--projects">Starting at $1K</span>
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+        }
+
+        /* ── Sessions view ── */
+        function openSessionsView() {
+            const months  = getAvailableMonths();
+            const total   = bookingConfig.total   || 3;
+            const secured = bookingConfig.secured  || 0;
+            const available = total - secured;
+
+            if (available <= 0) return; // fully claimed — card is non-interactive
 
             if (!currentBookingMonth || !months.includes(currentBookingMonth)) {
                 currentBookingMonth = months[0] || null;
             }
 
-            scene.innerHTML = `
-    <div id="booking-inner">
-      <div id="booking-header">
-        <div id="booking-ticket-status">
-          <div class="booking-ticket-label">Availability</div>
-          <div class="booking-ticket-count">
-            <span class="booking-secured">${secured}</span>
-            <span class="booking-ticket-sep">/</span>
-            <span class="booking-total">${total}</span>
-            <span class="booking-ticket-word">secured</span>
-          </div>
-        </div>
-      </div>
+            const inner = document.getElementById('booking-inner');
+            inner.innerHTML = `
+      <div id="booking-sessions-view">
+        <button class="booking-back-link" onclick="renderBookingView()">← Sessions</button>
 
-      ${soldOut ? `
-        <div id="booking-soldout">
-          <div class="booking-soldout-msg">All sessions have been secured.</div>
-          <div class="booking-soldout-sub">Check back for future availability.</div>
-        </div>
-      ` : months.length === 0 ? `
-        <div id="booking-soldout">
-          <div class="booking-soldout-msg">No availability posted yet.</div>
-          <div class="booking-soldout-sub">Check back soon.</div>
-        </div>
-      ` : `
-        <div id="booking-month-nav">
-          <button class="booking-month-btn" id="booking-prev-month"
-                  onclick="shiftBookingMonth(-1)">←</button>
-          <span id="booking-month-label" class="booking-month-label">
-            ${formatMonth(currentBookingMonth)}
-          </span>
-          <button class="booking-month-btn" id="booking-next-month"
-                  onclick="shiftBookingMonth(1)">→</button>
-        </div>
-        <div id="booking-calendar-row">
-          <div id="booking-days-col">
-            <div id="booking-days"></div>
+        ${months.length === 0 ? `
+          <div id="booking-soldout">
+            <div class="booking-soldout-msg">No availability posted yet.</div>
+            <div class="booking-soldout-sub">Check back soon.</div>
           </div>
-          <div id="booking-inquiry-col"></div>
-        </div>
-      `}
-    </div>`;
+        ` : `
+          <div id="booking-month-nav">
+            <button class="booking-month-btn" id="booking-prev-month"
+                    onclick="shiftBookingMonth(-1)">←</button>
+            <span id="booking-month-label" class="booking-month-label">
+              ${formatMonth(currentBookingMonth)}
+            </span>
+            <button class="booking-month-btn" id="booking-next-month"
+                    onclick="shiftBookingMonth(1)">→</button>
+          </div>
+          <div id="booking-calendar-row">
+            <div id="booking-days-col">
+              <div id="booking-days"></div>
+            </div>
+            <div id="booking-inquiry-col"></div>
+          </div>
+        `}
+      </div>`;
 
-            if (!soldOut && months.length > 0) {
+            if (months.length > 0) {
                 renderDayCards();
                 updateMonthNavButtons();
+            }
+        }
+
+        /* ── Projects inquiry ── */
+        function openProjectInquiry() {
+            const body = document.getElementById('projects-body');
+            if (!body) return;
+            body.innerHTML = `
+      <div class="booking-project-form">
+        <div class="booking-field-row">
+          <div class="booking-field">
+            <label class="booking-label">First name</label>
+            <input type="text" id="proj-first" class="booking-input" placeholder="First">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Last name</label>
+            <input type="text" id="proj-last" class="booking-input" placeholder="Last">
+          </div>
+        </div>
+        <div class="booking-field">
+          <label class="booking-label">Email</label>
+          <input type="email" id="proj-email" class="booking-input" placeholder="your@email.com">
+        </div>
+        <div class="booking-field">
+          <label class="booking-label">Describe your project</label>
+          <textarea id="proj-message" class="booking-input booking-textarea"
+                    placeholder="Tell jnb what you have in mind..."></textarea>
+        </div>
+        <button class="booking-submit" onclick="submitProjectInquiry()">Send Inquiry</button>
+        <div id="proj-error" class="booking-error"></div>
+      </div>`;
+        }
+
+        async function submitProjectInquiry() {
+            const btn     = document.querySelector('#offer-projects .booking-submit');
+            const errEl   = document.getElementById('proj-error');
+            const first   = document.getElementById('proj-first')?.value.trim();
+            const last    = document.getElementById('proj-last')?.value.trim();
+            const email   = document.getElementById('proj-email')?.value.trim();
+            const message = document.getElementById('proj-message')?.value.trim();
+
+            if (errEl) errEl.textContent = '';
+            if (!first || !last) { if (errEl) errEl.textContent = 'Please enter your name.'; return; }
+            if (!email || !email.includes('@')) { if (errEl) errEl.textContent = 'Please enter a valid email.'; return; }
+
+            if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/inquiries`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        first_name: first, last_name: last,
+                        email, message,
+                        status: 'new'
+                        // pocket_id intentionally omitted — project inquiry
+                    })
+                });
+                if (!res.ok) throw new Error('Submission failed');
+                const body = document.getElementById('projects-body');
+                if (body) body.innerHTML = `
+          <div class="booking-confirm">
+            <div class="booking-confirm-title">Inquiry sent.</div>
+            <div class="booking-confirm-body">Thank you, ${first}. jnb will be in touch at ${email}.</div>
+          </div>`;
+            } catch(err) {
+                if (errEl) errEl.textContent = 'Something went wrong. Please try again.';
+                if (btn) { btn.textContent = 'Send Inquiry'; btn.disabled = false; }
             }
         }
 

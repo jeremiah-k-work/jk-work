@@ -719,6 +719,7 @@
     <button class="tab-btn" onclick="switchTab('people')">People</button>
     <button class="tab-btn" onclick="switchTab('collections')">Collections</button>
     <button class="tab-btn" onclick="switchTab('bookings')">Bookings</button>
+    <button class="tab-btn" onclick="switchTab('site')">Site</button>
   </nav>
 
   <!-- PHOTOS TAB -->
@@ -991,6 +992,29 @@
 
   </div>
 
+<!-- SITE TAB -->
+  <div id="tab-site" class="tab-panel">
+
+    <div class="booking-subtabs">
+      <button class="booking-subtab active" onclick="switchSiteSubtab('mounts')">Mounts</button>
+    </div>
+
+    <div id="site-sub-mounts" class="booking-subpanel active">
+      <div class="admin-main">
+        <div class="section-header">
+          <span class="section-title">Mounts</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);
+                    margin-bottom:24px;line-height:1.7">
+          A Mount is a named location on the site that displays a photo from an assigned Collection.
+          Assign any Collection to a Mount. The first published photo in that Collection will be used.
+        </div>
+        <div id="mounts-list"><div class="loading-row">Loading...</div></div>
+      </div>
+    </div>
+
+  </div>
+
 </div>
 
 <div id="toast"></div>
@@ -1039,12 +1063,21 @@ if (sessionStorage.getItem('jnb_admin') === '1') {
    ===================================================== */
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['photos','people','collections','bookings'][i] === name);
+    b.classList.toggle('active', ['photos','people','collections','bookings','site'][i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'collections') renderCollectionsList();
   if (name === 'bookings')    loadBookingsTab();
+  if (name === 'site')        loadSiteTab();
+}
+
+function switchSiteSubtab(name) {
+  document.querySelectorAll('#tab-site .booking-subtab').forEach((b, i) => {
+    b.classList.toggle('active', ['mounts'][i] === name);
+  });
+  document.querySelectorAll('#tab-site .booking-subpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`site-sub-${name}`).classList.add('active');
 }
 
 /* =====================================================
@@ -1769,6 +1802,20 @@ function filterCollections(query) {
   });
 }
 
+async function toggleCollectionType(id, currentType) {
+  const newType = currentType === 'gallery' ? 'site' : 'gallery';
+  try {
+    await sbFetch(`/rest/v1/collections?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ collection_type: newType })
+    });
+    const coll = collections.find(c => c.id === id);
+    if (coll) coll.collection_type = newType;
+    renderCollectionsList();
+    showToast(`Marked as ${newType}`, 'success');
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
 function renderCollectionsList() {
   const list = document.getElementById('collections-list');
   if (!list) return;
@@ -1807,6 +1854,17 @@ function renderCollectionsList() {
       <div class="coll-list-info">
         <div class="coll-list-name">${c.label}</div>
         <div class="coll-list-meta">${count} photo${count !== 1 ? 's' : ''} · ${c.slug}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span style="font-family:var(--font-ui);font-size:8px;font-weight:700;
+                     letter-spacing:0.15em;text-transform:uppercase;
+                     color:${c.collection_type === 'site' ? 'var(--cyan)' : 'var(--muted)'}">
+          ${c.collection_type === 'site' ? 'Site' : 'Gallery'}
+        </span>
+        <button class="btn-icon" title="Toggle type: gallery / site"
+                onclick="toggleCollectionType('${c.id}','${c.collection_type || 'gallery'}')">
+          ⇄
+        </button>
       </div>
       <div class="coll-list-actions">
         <button class="btn-icon" onclick="openManageOverlay('${c.id}')">Manage Photos</button>
@@ -2874,6 +2932,115 @@ async function saveInquiry(id) {
     });
     showToast('Saved', 'success');
     await loadInquiries();
+  } catch (err) { showToast('Error: ' + err.message, 'error'); }
+}
+
+/* =====================================================
+   SITE TAB — MOUNTS
+   ===================================================== */
+
+let mounts = [];
+
+async function loadSiteTab() {
+  await loadMounts();
+}
+
+async function loadMounts(attempt = 1) {
+  const list = document.getElementById('mounts-list');
+  if (!list) return;
+  list.innerHTML = attempt === 1
+    ? '<div class="loading-row">Loading...</div>'
+    : `<div class="loading-row">Connecting... (attempt ${attempt} of 3)</div>`;
+  try {
+    mounts = await sbFetch('/rest/v1/mounts?select=*&order=display_order.asc');
+    renderMountsList();
+  } catch (err) {
+    if (attempt < 3) { setTimeout(() => loadMounts(attempt + 1), 2000); return; }
+    list.innerHTML = `<div class="loading-row" style="color:var(--red)">
+      Failed to load. <button class="btn-add" onclick="loadMounts()">Retry</button></div>`;
+  }
+}
+
+function renderMountsList() {
+  const list = document.getElementById('mounts-list');
+  if (!list) return;
+  if (!mounts.length) {
+    list.innerHTML = '<div class="loading-row">No mounts found.</div>';
+    return;
+  }
+
+  list.innerHTML = mounts.map(mount => {
+    const assigned = collections.find(c => c.id === mount.collection_id);
+    const preview  = assigned ? getCollectionPreviewSrc(assigned.id) : null;
+
+    // Build collection options — all collections available
+    const opts = `<option value="">— None —</option>` +
+      collections.map(c =>
+        `<option value="${c.id}" ${c.id === mount.collection_id ? 'selected' : ''}>
+          ${c.label}${c.collection_type === 'site' ? ' ·site' : ''}
+        </option>`
+      ).join('');
+
+    return `
+    <div class="photo-card" style="margin-bottom:8px;padding:18px">
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+
+        <!-- Preview thumbnail -->
+        <div style="flex-shrink:0">
+          ${preview
+            ? `<img src="${PHOTO_PATH}${preview}"
+                    style="width:64px;height:64px;object-fit:cover;border-radius:6px;
+                           background:#1a1a1a"
+                    onerror="this.style.display='none'" alt="">`
+            : `<div style="width:64px;height:64px;border-radius:6px;background:#1a1a1a;
+                           border:1px solid var(--border)"></div>`}
+        </div>
+
+        <!-- Label + collection picker -->
+        <div style="flex:1;min-width:200px">
+          <div style="font-family:var(--font-ui);font-size:13px;font-weight:700;
+                      letter-spacing:0.08em;text-transform:uppercase;
+                      color:var(--white);margin-bottom:8px">${mount.label}</div>
+          <select id="mount-coll-${mount.id}" class="status-select"
+                  style="width:100%;max-width:320px"
+                  onchange="saveMountCollection('${mount.id}')">
+            ${opts}
+          </select>
+        </div>
+
+        <!-- Slug badge -->
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);
+                    letter-spacing:0.06em;flex-shrink:0">${mount.slug}</div>
+
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getCollectionPreviewSrc(collectionId) {
+  // Find the first published photo in a collection using photoCollectionsMap
+  const members = (photoCollectionsMap[collectionId] || [])
+    .sort((a,b) => a.display_order - b.display_order);
+  for (const m of members) {
+    const photo = photos.find(p => p.id === m.photoId && p.published);
+    if (photo) return photo.src;
+  }
+  return null;
+}
+
+async function saveMountCollection(mountId) {
+  const sel = document.getElementById(`mount-coll-${mountId}`);
+  const collectionId = sel?.value || null;
+  try {
+    await sbFetch(`/rest/v1/mounts?id=eq.${mountId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ collection_id: collectionId || null })
+    });
+    // Update local state
+    const mount = mounts.find(m => m.id === mountId);
+    if (mount) mount.collection_id = collectionId || null;
+    showToast('Mount saved', 'success');
+    renderMountsList(); // re-render to update preview thumbnail
   } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 

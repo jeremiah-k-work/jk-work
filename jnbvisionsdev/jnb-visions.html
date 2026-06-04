@@ -1004,16 +1004,20 @@
         }
         .offer-gradient--sessions {
             background: linear-gradient(
-                to bottom,
-                rgba(34, 2, 42, 1) 0%,
-                rgba(34, 2, 42, 0.5) 100%
+                75deg,
+                rgba(34, 2, 42, 1),
+                rgba(34, 2, 42, 0.9) 40%,
+                rgba(34, 2, 42, 0.8) 54%,
+                rgba(34, 2, 42, 0.2)
             );
         }
         .offer-gradient--projects {
             background: linear-gradient(
-                to bottom,
-                rgba(42, 2, 11, 1) 0%,
-                rgba(42, 2, 11, 0.5) 100%
+                75deg,
+                rgba(2, 25, 42, 1),
+                rgba(34, 2, 42, 0.9) 40%,
+                rgba(34, 2, 42, 0.5) 54%,
+                rgba(34, 2, 42, 0.2)
             );
         }
         /* All card content sits above the gradient */
@@ -1856,7 +1860,7 @@ function isMountScheduleActive(schedule) {
 async function fetchBookingData() {
             try {
                 const [pockets, config] = await Promise.all([
-                    fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&order=date.asc`, {
+                    fetch(`${SUPABASE_URL}/rest/v1/availability_pockets?select=*&active=eq.true&date=gte.${new Date().toISOString().slice(0,10)}&order=date.asc`, {
                         headers: {
                             'apikey': SUPABASE_KEY,
                             'Authorization': `Bearer ${SUPABASE_KEY}`

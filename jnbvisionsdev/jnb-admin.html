@@ -1169,62 +1169,76 @@ let newInquiryCount    = 0; // unseen new inquiries since last viewing Inquiries
 let realtimeHeartbeat  = null;
 
 function startRealtimeInquiries() {
-  // Extract project ref from SUPABASE_URL
-  const ref = SUPABASE_URL.replace('https://', '').split('.')[0];
-  const wsUrl = `wss://${ref}.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+  const ref    = SUPABASE_URL.replace('https://', '').split('.')[0];
+  const wsUrl  = `wss://${ref}.supabase.co/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+  let   msgRef = 1;
 
   function connect() {
     realtimeSocket = new WebSocket(wsUrl);
 
     realtimeSocket.onopen = () => {
-      // Join the inquiries table broadcast channel
+      // Supabase Realtime v2 — join with postgres_changes filter
       realtimeSocket.send(JSON.stringify({
-        topic:   'realtime:public:inquiries',
+        topic:   'realtime:jnb-admin-inquiries',
         event:   'phx_join',
         payload: {
           config: {
-            broadcast:  { self: false },
-            presence:   { key: '' },
             postgres_changes: [{
               event:  'INSERT',
               schema: 'public',
               table:  'inquiries'
             }]
-          }
+          },
+          access_token: SUPABASE_KEY
         },
-        ref: '1'
+        ref: String(msgRef++)
       }));
 
-      // Heartbeat every 25s to keep connection alive
+      // Heartbeat every 25s
       realtimeHeartbeat = setInterval(() => {
         if (realtimeSocket?.readyState === WebSocket.OPEN) {
           realtimeSocket.send(JSON.stringify({
-            topic: 'phoenix', event: 'heartbeat', payload: {}, ref: '0'
+            topic: 'phoenix', event: 'heartbeat',
+            payload: {}, ref: String(msgRef++)
           }));
         }
       }, 25000);
     };
 
-    realtimeSocket.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        // Postgres INSERT event arrives as postgres_changes payload
-        if (
-          msg.event === 'postgres_changes' &&
-          msg.payload?.data?.type === 'INSERT'
-        ) {
-          onNewInquiry(msg.payload.data.record);
+    realtimeSocket.onmessage = (evt) => {
+      let msg;
+      try { msg = JSON.parse(evt.data); } catch { return; }
+
+      // phx_reply confirms the join — log for diagnostics
+      if (msg.event === 'phx_reply') {
+        if (msg.payload?.status === 'ok') {
+          console.log('[realtime] subscribed to inquiries');
+        } else {
+          console.warn('[realtime] join failed:', JSON.stringify(msg.payload));
         }
-      } catch(e) { /* ignore parse errors */ }
+        return;
+      }
+
+      // Postgres INSERT event
+      if (msg.event === 'postgres_changes') {
+        const data = msg.payload?.data;
+        if (data?.type === 'INSERT' && data?.table === 'inquiries') {
+          onNewInquiry(data.record);
+        }
+        return;
+      }
+
+      // System messages (keepalive etc) — ignore silently
     };
 
-    realtimeSocket.onclose = () => {
+    realtimeSocket.onclose = (evt) => {
+      console.log('[realtime] closed, reconnecting...', evt.code);
       clearInterval(realtimeHeartbeat);
-      // Reconnect after 5s if closed unexpectedly
       setTimeout(connect, 5000);
     };
 
-    realtimeSocket.onerror = () => {
+    realtimeSocket.onerror = (err) => {
+      console.warn('[realtime] error', err);
       realtimeSocket?.close();
     };
   }

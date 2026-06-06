@@ -1512,7 +1512,7 @@
     <!-- UNIFIED NAV — direct body child, position:fixed, never inside
      any transforming container so it's always viewport-anchored. -->
     <nav id="nav-unified">
-        <button id="nav-gallery" class="nav-word" onclick="enterGallery('portraits')">Gallery</button>
+        <button id="nav-gallery" class="nav-word" onclick="enterShowcase()">Showcase</button>
         <button id="nav-connect" class="nav-word" onclick="goBook()">Book</button>
         <button id="nav-back" class="nav-word" onclick="goBackGeneric()">Back</button>
     </nav>
@@ -1577,8 +1577,8 @@
 
 
         /* Fallback used if Supabase is unreachable */
-        const GALLERY_FALLBACK = {
-            portraits: [{
+        const SHOWCASE_FALLBACK = {
+            showcase: [{
                     src: 'images/CA5D6891_CA_L_no-logo.jpg',
                     first: 'Freddie',
                     last: 'Andrews',
@@ -1609,7 +1609,7 @@
         };
 
         /* GALLERY is populated by fetchGallery() on load */
-        let GALLERY = GALLERY_FALLBACK;
+        let GALLERY = SHOWCASE_FALLBACK;
 
         async function fetchGallery() {
             try {
@@ -1622,7 +1622,7 @@
                         'photos!inner(id,src,logo_y,info_y,zoom_anchor_x,zoom_anchor_y,zoom_ratio,published)',
                         'collections!inner(slug)'
                     ].join(','),
-                    'collections.slug': 'eq.portraits',
+                    'collections.slug': 'eq.portraits', // fallback; mount overrides at runtime
                     'photos.published': 'eq.true',
                     order: 'display_order.asc'
                 });
@@ -1681,9 +1681,7 @@
                     };
                 });
 
-                GALLERY = {
-                    portraits
-                };
+                GALLERY = { showcase: portraits };
             } catch (err) {
                 console.warn('[jnb] Supabase unavailable, using fallback gallery:', err.message);
                 GALLERY = GALLERY_FALLBACK;
@@ -1707,11 +1705,23 @@
         let isExiting = false; // true while exitGallery transition is running
 
         function applyMounts() {
-            // Apply intro portrait mount if a collection is assigned
+            // Apply intro portrait mount
             const introSrc = getMountPhoto('intro-portrait');
             if (introSrc) {
                 const introPhoto = document.getElementById('intro-photo');
                 if (introPhoto) introPhoto.src = introSrc;
+            }
+
+            // Wire showcase mount into GALLERY so enterGallery fallback is current
+            const showcasePhotos = siteMount['showcase'] || [];
+            if (showcasePhotos.length) {
+                GALLERY['showcase'] = showcasePhotos.map(src => ({
+                    src: PATHS.images + src,
+                    first: '', last: '',
+                    logoY: 80, infoY: 55,
+                    zoomAnchor: [50, 50],
+                    zoomRatio: 0.65
+                }));
             }
             // Booking card backgrounds applied when renderBookingView runs
         }
@@ -2515,9 +2525,31 @@ async function fetchBookingData() {
            Phase 3 (800ms):  Overlay lifts. Gallery chrome slides in.
            Phase 4 (1450ms): Tap-to-zoom enabled.
            ===================================================== */
+        function enterShowcase() {
+            // Use the showcase mount's collection if assigned, otherwise fall back
+            const mountPhotos = siteMount['showcase'] || [];
+            if (mountPhotos.length) {
+                // Build slide objects from mount photos
+                currentCollection = mountPhotos.map(src => ({
+                    src: PATHS.images + src,
+                    first: '', last: '',
+                    logoY: 80, infoY: 55,
+                    zoomAnchor: [50, 50],
+                    zoomRatio: 0.65
+                }));
+            } else {
+                // Fallback to SHOWCASE_FALLBACK
+                currentCollection = SHOWCASE_FALLBACK['showcase'] || [];
+            }
+            enterGallery('showcase');
+        }
+
         function enterGallery(collectionKey) {
             if (isExiting) return; // block entry while exitGallery transition is running
-            currentCollection = GALLERY[collectionKey] || [];
+            // Use currentCollection if already set by enterShowcase, otherwise load from GALLERY
+            if (collectionKey !== 'showcase') {
+                currentCollection = GALLERY[collectionKey] || [];
+            }
             currentIndex = 0;
             if (!currentCollection.length) return;
             state = 'morphing';

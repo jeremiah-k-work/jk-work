@@ -2059,15 +2059,20 @@
             document.getElementById('gallery-scene').classList.remove('slide-in');
 
             if (state === 'intro') {
-                // Nav animates toward intro position immediately (it will arrive
-                // around the same time the slide completes at 750ms)
+                // Nav: remove gallery class first so the transition can animate
+                // from gallery position (left:50%) to intro position.
+                // setNavState clears the class and sets inline styles that
+                // the CSS transition will carry.
                 setNavState('intro');
-                // After slide settles, snap nav precisely and restore logo
+                // After slide settles, snap nav and logo precisely
                 setTimeout(() => {
-                    // Re-snap with instant flag after geometry is stable
                     setNavState('intro', true);
                     positionIntroAll();
                     document.getElementById('logo').style.opacity = '1';
+                    document.getElementById('logo').style.left = '';  // reset any booking position
+                    // Restore unified-frame (may have been hidden if we came via Book)
+                    document.getElementById('unified-frame').style.opacity = '1';
+                    document.getElementById('outline-rect').classList.add('rect-visible');
                     document.getElementById('gallery-scene').style.display = 'none';
                     galleryCurrentColl = null;
                 }, 820);
@@ -2503,20 +2508,23 @@ async function fetchBookingData() {
             await fetchBookingData();
 
             if (state === 'gallery-sheet') {
-                // Coming from gallery sheet — snap gallery out instantly, then slide to booking
+                // Coming from gallery sheet — snap gallery out instantly, then slide to booking.
+                // We hide gallery-scene and reset sheet-1 without animation,
+                // then let the normal booking slide (sheet-1.slide-out + booking-scene.slide-in)
+                // handle the visual transition.
                 const gs = document.getElementById('gallery-scene');
                 const s1 = document.getElementById('sheet-1');
-                // Suppress transitions for instant snap
                 gs.style.transition = 'none';
-                s1.style.transition = 'none';
+                s1.style.transition  = 'none';
                 gs.classList.remove('slide-in');
                 s1.classList.remove('slide-right');
                 gs.style.display = 'none';
-                void s1.offsetHeight; // force reflow
-                // Re-enable transitions for booking slide
+                void s1.offsetHeight; // force reflow before re-enabling transitions
                 gs.style.transition = '';
-                s1.style.transition = '';
+                s1.style.transition  = '';
                 document.getElementById('logo').style.opacity = '0';
+                setNavState('booking');
+                // The normal slide-out + slide-in at the bottom of goBook will run
             } else if (state === 'gallery' || state === 'expanded') {
                 // Coming from showcase gallery — fade chrome without going back to intro.
                 // The nav moves to left side.
@@ -2573,14 +2581,30 @@ async function fetchBookingData() {
 
             if (prevState === 'gallery-sheet') {
                 // ── Returning to gallery sheet ──
-                setNavState('gallery', true);
+                // Snap booking out, then slide gallery back in
+                const s1 = document.getElementById('sheet-1');
+                const bs = document.getElementById('booking-scene');
+                const gs = document.getElementById('gallery-scene');
+
+                // Suppress transitions for instant booking snap
+                s1.style.transition = 'none';
+                bs.style.transition = 'none';
+                s1.classList.remove('slide-out');
+                bs.classList.remove('slide-in');
+                bs.style.display = 'none';
+                selectedPocketDay = null;
+                void s1.offsetHeight;
+                s1.style.transition = '';
+
+                // Re-show gallery scene and slide it back in
+                gs.style.display = 'flex';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    s1.classList.add('slide-right');
+                    gs.classList.add('slide-in');
+                }));
+
                 state = 'gallery-sheet';
-                document.getElementById('sheet-1').classList.remove('slide-out');
-                document.getElementById('booking-scene').classList.remove('slide-in');
-                setTimeout(() => {
-                    document.getElementById('booking-scene').style.display = 'none';
-                    selectedPocketDay = null;
-                }, 820);
+                setNavState('gallery', true);
                 return;
 
             } else if (prevState === 'gallery' || prevState === 'expanded') {
@@ -3648,26 +3672,39 @@ async function fetchBookingData() {
             // Suppress transitions for instant snaps
             if (instant) nav.classList.add('no-transition');
 
-            // Clear all state classes and inline positional styles
+            // Remove state classes — this releases !important overrides
+            // so inline styles can take effect and CSS transitions can run
             nav.classList.remove('gallery', 'booking', 'gallery-sheet', 'no-transition-temp');
-            nav.style.left = '';
-            nav.style.right = '';
-            nav.style.top = '';
-            nav.style.bottom = '';
-            nav.style.transform = '';
 
             if (newState === 'intro') {
-                // Snap to intro position — JS measures spacer
-                positionIntroNav();
+                // Set intro position directly — transition runs from current position
+                // (e.g. left:50% from gallery) to measured intro position.
+                // Don't clear styles first — that would cause a frame jump.
+                nav.style.right  = 'auto';
+                nav.style.bottom = 'auto';
+                positionIntroNav(); // sets left, top, transform inline
             } else if (newState === 'gallery') {
-                // CSS .gallery handles left/transform; bottom set inline
+                // Clear inline styles so CSS .gallery !important takes over
+                nav.style.left = '';
+                nav.style.right = '';
+                nav.style.top = '';
+                nav.style.bottom = '';
+                nav.style.transform = '';
                 nav.classList.add('gallery');
                 nav.style.bottom = 'clamp(24px, 8vh, 60px)';
             } else if (newState === 'booking') {
-                // CSS .booking handles left/top/transform
+                nav.style.left = '';
+                nav.style.right = '';
+                nav.style.top = '';
+                nav.style.bottom = '';
+                nav.style.transform = '';
                 nav.classList.add('booking');
             } else if (newState === 'gallery-sheet') {
-                // Gallery sheet uses same bottom-centre position as gallery
+                nav.style.left = '';
+                nav.style.right = '';
+                nav.style.top = '';
+                nav.style.bottom = '';
+                nav.style.transform = '';
                 nav.classList.add('gallery', 'gallery-sheet');
                 nav.style.bottom = 'clamp(24px, 8vh, 60px)';
             }

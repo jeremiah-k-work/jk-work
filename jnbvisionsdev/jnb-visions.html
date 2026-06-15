@@ -831,6 +831,229 @@
         /* =====================================================
      BOOKING SCENE
      ===================================================== */
+        /* ── Gallery Scene — Sheet 0, left of intro ── */
+        #gallery-scene {
+            position: absolute;
+            top: 0;
+            left: -100vw;
+            width: 100vw;
+            min-height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.75s var(--ease-expo);
+            will-change: transform;
+            display: flex;
+            flex-direction: column;
+        }
+        #gallery-scene.slide-in {
+            transform: translateX(100vw);
+        }
+        #sheet-1.slide-right {
+            transform: translateX(100vw);
+        }
+
+        /* Collection cards landing */
+        #gallery-inner {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 48px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+        #gallery-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+        .gallery-heading {
+            font-family: var(--font-secondary);
+            font-size: clamp(10px, 1.4vw, 14px);
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+        }
+        #gallery-collections {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .gallery-coll-card {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+            transition: border-color 0.2s ease;
+        }
+        .gallery-coll-card:hover { border-color: rgba(255,255,255,0.2); }
+        .gallery-coll-gradient {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(0,0,0,0.85) 0%,
+                rgba(0,0,0,0.5) 50%,
+                rgba(0,0,0,0.15) 100%
+            );
+        }
+        .gallery-coll-info {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 28px;
+            z-index: 1;
+        }
+        .gallery-coll-name {
+            font-family: var(--font-secondary);
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: 900;
+            letter-spacing: -0.01em;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+        .gallery-coll-count {
+            font-family: var(--font-primary);
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        /* Photo grid view */
+        #gallery-grid-view {
+            width: 100%;
+        }
+        #gallery-grid-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 80px 48px 28px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .gallery-back-link {
+            background: none; border: none;
+            color: rgba(255,255,255,0.35);
+            font-family: var(--font-secondary);
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            cursor: pointer; padding: 0;
+            transition: color 0.15s;
+        }
+        .gallery-back-link:hover { color: rgba(255,255,255,0.7); }
+        .gallery-grid-title {
+            font-family: var(--font-secondary);
+            font-size: clamp(11px, 1.5vw, 16px);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--white);
+        }
+        #gallery-grid {
+            padding: 0 48px 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        /* Justified row layout */
+        .gallery-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .gallery-thumb {
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            background: #111;
+            transition: opacity 0.15s ease;
+        }
+        .gallery-thumb:hover { opacity: 0.88; }
+        .gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+
+        /* Isolated photo view */
+        #gallery-photo-view {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: var(--black);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #gallery-photo-view .gallery-photo-img {
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            display: block;
+        }
+        #gallery-photo-controls {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            z-index: 81;
+        }
+        .gallery-photo-btn {
+            background: none; border: none;
+            color: rgba(255,255,255,0.5);
+            font-family: var(--font-secondary);
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            cursor: pointer; padding: 0;
+            transition: color 0.15s;
+        }
+        .gallery-photo-btn:hover { color: var(--white); }
+        .gallery-photo-btn.accent { color: var(--white); }
+        #gallery-photo-close {
+            position: fixed;
+            top: 28px; right: 32px;
+            background: none; border: none;
+            color: rgba(255,255,255,0.4);
+            font-family: var(--font-secondary);
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.15s;
+            z-index: 81;
+        }
+        #gallery-photo-close:hover { color: var(--white); }
+        #gallery-photo-nav-prev,
+        #gallery-photo-nav-next {
+            position: fixed;
+            top: 50%; transform: translateY(-50%);
+            background: none; border: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 28px; cursor: pointer;
+            transition: color 0.15s;
+            z-index: 81; padding: 0 20px;
+        }
+        #gallery-photo-nav-prev { left: 0; }
+        #gallery-photo-nav-next { right: 0; }
+        #gallery-photo-nav-prev:hover,
+        #gallery-photo-nav-next:hover { color: rgba(255,255,255,0.8); }
+
+        /* ── Booking Scene ── */
         #booking-scene {
             position: absolute;
             top: 0;
@@ -1427,6 +1650,10 @@
      Sheet 2 (booking) slides in from the right.
      transform: translateX(-100vw) shows Sheet 2. -->
     <div id="site-slider">
+
+        <!-- GALLERY SCENE — Sheet 0, slides in from the left -->
+        <div id="gallery-scene" style="display:none"></div>
+
         <div id="sheet-1">
 
             <!-- RED LINE -->
@@ -1512,7 +1739,7 @@
     <!-- UNIFIED NAV — direct body child, position:fixed, never inside
      any transforming container so it's always viewport-anchored. -->
     <nav id="nav-unified">
-        <button id="nav-gallery" class="nav-word" onclick="enterShowcase()">Showcase</button>
+        <button id="nav-gallery" class="nav-word" onclick="enterGallerySheet()">Gallery</button>
         <button id="nav-connect" class="nav-word" onclick="goBook()">Book</button>
         <button id="nav-back" class="nav-word" onclick="goBackGeneric()">Back</button>
     </nav>
@@ -1730,6 +1957,282 @@
         let isExpanded = false;
 
         /* =====================================================
+           GALLERY SHEET
+           ===================================================== */
+
+        let galleryCollections   = [];  // gallery-type collections from Supabase
+        let galleryPhotos        = [];  // photos in current collection
+        let galleryCurrentColl   = null; // { id, label, slug }
+        let galleryPhotoIndex    = 0;   // index in galleryPhotos for isolated view
+        let galleryBookingContext = null; // { source, slug } — passed to booking
+
+        /* ── Enter / Exit ── */
+
+        async function enterGallerySheet() {
+            if (state === 'gallery' || state === 'expanded') exitGallery();
+            if (state === 'booking') return; // handled by nav Back
+
+            state = 'gallery-sheet';
+
+            // Fetch collections if not loaded yet
+            if (!galleryCollections.length) await fetchGalleryCollections();
+
+            // Show scene
+            const scene = document.getElementById('gallery-scene');
+            scene.style.display = 'flex';
+            renderGalleryLanding();
+
+            // Slide left → right reveal
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                document.getElementById('sheet-1').classList.add('slide-right');
+                scene.classList.add('slide-in');
+            }));
+
+            // Nav: reuse gallery state (Back visible, Book visible)
+            setNavState('gallery');
+            document.getElementById('logo').style.opacity = '0';
+        }
+
+        function exitGallerySheet() {
+            if (state !== 'gallery-sheet') return;
+            state = 'intro';
+
+            // Close isolated view if open
+            closeGalleryPhotoView();
+
+            // Slide back
+            document.getElementById('sheet-1').classList.remove('slide-right');
+            document.getElementById('gallery-scene').classList.remove('slide-in');
+
+            // Restore intro
+            setNavState('intro');
+            setTimeout(() => {
+                document.getElementById('logo').style.opacity = '1';
+                positionLogoIntro();
+                document.getElementById('gallery-scene').style.display = 'none';
+                galleryCurrentColl = null;
+            }, 800);
+        }
+
+        /* ── Data fetching ── */
+
+        async function fetchGalleryCollections() {
+            try {
+                // Fetch only gallery-type collections that have photos
+                const rows = await fetch(
+                    `${SUPABASE_URL}/rest/v1/collections?select=id,label,slug,collection_type&collection_type=eq.gallery&order=display_order.asc`,
+                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                ).then(r => r.json());
+                galleryCollections = rows || [];
+            } catch(err) {
+                console.warn('[jnb] Gallery collections fetch failed:', err.message);
+                galleryCollections = [];
+            }
+        }
+
+        async function fetchCollectionPhotos(collectionId) {
+            try {
+                const rows = await fetch(
+                    `${SUPABASE_URL}/rest/v1/photo_collections?select=display_order,photos!inner(id,src,published)&collection_id=eq.${collectionId}&photos.published=eq.true&order=display_order.asc`,
+                    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                ).then(r => r.json());
+                return (rows || []).map(r => r.photos).filter(p => p?.src);
+            } catch(err) {
+                console.warn('[jnb] Collection photos fetch failed:', err.message);
+                return [];
+            }
+        }
+
+        /* ── Landing: collection cards ── */
+
+        function renderGalleryLanding() {
+            const scene = document.getElementById('gallery-scene');
+            if (!galleryCollections.length) {
+                scene.innerHTML = `<div id="gallery-inner">
+                    <div class="gallery-heading" style="color:rgba(255,255,255,0.4);margin-top:40px">
+                        No collections available yet.
+                    </div></div>`;
+                return;
+            }
+
+            const cardsHtml = galleryCollections.map(c => {
+                // Use first photo from siteMount or from photo list as cover
+                // For now use a solid background — photo cover loaded lazily
+                return `
+                <div class="gallery-coll-card" id="gccard-${c.id}"
+                     onclick="openCollection('${c.id}','${c.label}','${c.slug}')">
+                  <div class="gallery-coll-gradient"></div>
+                  <div class="gallery-coll-info">
+                    <div class="gallery-coll-name">${c.label}</div>
+                  </div>
+                </div>`;
+            }).join('');
+
+            scene.innerHTML = `<div id="gallery-inner">
+                <div id="gallery-header">
+                    <span class="gallery-heading">Collections</span>
+                </div>
+                <div id="gallery-collections">${cardsHtml}</div>
+            </div>`;
+
+            // Lazily load cover photos for each card
+            loadCollectionCovers();
+        }
+
+        async function loadCollectionCovers() {
+            for (const c of galleryCollections) {
+                const card = document.getElementById(`gccard-${c.id}`);
+                if (!card) continue;
+                const photos = await fetchCollectionPhotos(c.id);
+                if (photos.length) {
+                    card.style.backgroundImage = `url('${PATHS.images}${photos[0].src}')`;
+                    const countEl = card.querySelector('.gallery-coll-count');
+                    if (countEl) countEl.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
+                }
+                // Small delay between fetches to avoid hammering Supabase
+                await new Promise(r => setTimeout(r, 80));
+            }
+        }
+
+        /* ── Collection grid view ── */
+
+        async function openCollection(id, label, slug) {
+            galleryCurrentColl = { id, label, slug };
+            galleryBookingContext = { source: 'gallery-collection', slug };
+
+            const scene = document.getElementById('gallery-scene');
+            scene.innerHTML = `<div id="gallery-grid-view">
+                <div id="gallery-grid-header">
+                    <button class="gallery-back-link" onclick="renderGalleryLanding()">← Collections</button>
+                    <span class="gallery-grid-title">${label}</span>
+                </div>
+                <div id="gallery-grid"><div class="gallery-heading" style="opacity:0.4">Loading...</div></div>
+            </div>`;
+
+            const photos = await fetchCollectionPhotos(id);
+            galleryPhotos = photos;
+
+            if (!photos.length) {
+                document.getElementById('gallery-grid').innerHTML =
+                    '<div class="gallery-heading" style="opacity:0.4">No photos in this collection.</div>';
+                return;
+            }
+
+            renderJustifiedGrid(photos);
+        }
+
+        function renderJustifiedGrid(photos) {
+            const container = document.getElementById('gallery-grid');
+            if (!container) return;
+
+            const ROW_HEIGHT = 220; // px — target row height
+            const GAP        = 6;
+            const availW     = container.offsetWidth || (window.innerWidth - 96);
+
+            // Build rows by accumulating photos until their total width fills the row
+            // Each photo gets a natural width = ROW_HEIGHT * (aspect ratio)
+            // We assume roughly 4:3 portrait ratio since we don't have dimensions
+            // A future improvement: store width/height on photos table
+            const ASSUMED_RATIO = 0.75; // portrait default
+            const naturalW = photos.map(() => Math.round(ROW_HEIGHT * ASSUMED_RATIO));
+
+            const rows = [];
+            let rowStart = 0;
+            while (rowStart < photos.length) {
+                let rowW = 0;
+                let rowEnd = rowStart;
+                while (rowEnd < photos.length && rowW + naturalW[rowEnd] + GAP <= availW) {
+                    rowW += naturalW[rowEnd] + GAP;
+                    rowEnd++;
+                }
+                // If nothing fit (single very wide image), take at least one
+                if (rowEnd === rowStart) rowEnd = rowStart + 1;
+                rows.push({ start: rowStart, end: rowEnd });
+                rowStart = rowEnd;
+            }
+
+            let html = '';
+            rows.forEach(({ start, end }) => {
+                const rowPhotos = photos.slice(start, end);
+                const totalNatural = rowPhotos.reduce((s, _, i) => s + naturalW[start + i], 0);
+                const totalGaps    = (rowPhotos.length - 1) * GAP;
+                const scale        = (availW - totalGaps) / totalNatural;
+                const rowH         = Math.round(ROW_HEIGHT * scale);
+
+                const thumbsHtml = rowPhotos.map((p, i) => {
+                    const w = Math.round(naturalW[start + i] * scale);
+                    const globalIdx = start + i;
+                    return `
+                    <div class="gallery-thumb" style="width:${w}px;height:${rowH}px"
+                         onclick="openGalleryPhoto(${globalIdx})">
+                        <img src="${PATHS.images}${p.src}" alt="" loading="lazy"
+                             onerror="this.parentElement.style.background='#1a1a1a'">
+                    </div>`;
+                }).join('');
+
+                html += `<div class="gallery-row">${thumbsHtml}</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        /* ── Isolated photo view ── */
+
+        function openGalleryPhoto(index) {
+            galleryPhotoIndex = index;
+            const photo = galleryPhotos[index];
+            if (!photo) return;
+
+            // Remove existing view if any
+            closeGalleryPhotoView();
+
+            const view = document.createElement('div');
+            view.id = 'gallery-photo-view';
+            view.innerHTML = `
+                <button id="gallery-photo-close" onclick="closeGalleryPhotoView()">✕ Close</button>
+                <button id="gallery-photo-nav-prev" onclick="galleryPhotoNav(-1)">‹</button>
+                <img class="gallery-photo-img" src="${PATHS.images}${photo.src}" alt="">
+                <button id="gallery-photo-nav-next" onclick="galleryPhotoNav(1)">›</button>
+                <div id="gallery-photo-controls">
+                    <button class="gallery-photo-btn" onclick="closeGalleryPhotoView()">Back to ${galleryCurrentColl?.label || 'Gallery'}</button>
+                    <button class="gallery-photo-btn accent" onclick="galleryGoBook()">Book</button>
+                </div>`;
+            document.body.appendChild(view);
+
+            // Swipe support
+            let tx = 0;
+            view.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+            view.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - tx;
+                if (Math.abs(dx) > 50) galleryPhotoNav(dx < 0 ? 1 : -1);
+            });
+        }
+
+        function galleryPhotoNav(dir) {
+            const next = galleryPhotoIndex + dir;
+            if (next < 0 || next >= galleryPhotos.length) return;
+            openGalleryPhoto(next);
+        }
+
+        function closeGalleryPhotoView() {
+            document.getElementById('gallery-photo-view')?.remove();
+        }
+
+        function galleryGoBook() {
+            closeGalleryPhotoView();
+            goBook();
+        }
+
+        /* ── goBackGeneric update ── */
+
+        function goBackGeneric() {
+            if (state === 'intro')        return;
+            if (state === 'gallery-sheet') { exitGallerySheet(); return; }
+            if (state === 'gallery' || state === 'expanded') { exitGallery(); return; }
+            if (state === 'booking')      { exitBook(); return; }
+        }
+
+        /* =====================================================
            BOOKING
            ===================================================== */
 
@@ -1912,13 +2415,22 @@ async function fetchBookingData() {
 
         async function goBook() {
             if (state === 'booking') return;
+            if (state === 'gallery-sheet') {
+                // Entering book from gallery sheet
+                bookingPrevState = 'gallery-sheet';
+            }
 
             bookingPrevState = state; // remember where we came from
 
             await fetchBookingData();
 
-            if (state === 'gallery' || state === 'expanded') {
-                // Coming from gallery — fade chrome without going back to intro.
+            if (state === 'gallery-sheet') {
+                // Coming from gallery sheet — slide gallery back, then slide booking in
+                document.getElementById('sheet-1').classList.remove('slide-right');
+                document.getElementById('gallery-scene').classList.remove('slide-in');
+                document.getElementById('logo').style.opacity = '0';
+            } else if (state === 'gallery' || state === 'expanded') {
+                // Coming from showcase gallery — fade chrome without going back to intro.
                 // The nav moves to left side.
                 hideGalleryChrome();
                 document.getElementById('gallery-tap').classList.remove('active');
@@ -1968,8 +2480,20 @@ async function fetchBookingData() {
             selectDay(selectedPocketDay);
             
             
-            if (bookingPrevState === 'gallery' || bookingPrevState === 'expanded') {
-                // ── Returning to gallery ──
+            if (bookingPrevState === 'gallery-sheet') {
+                // ── Returning to gallery sheet ──
+                setNavState('gallery', true);
+                state = 'gallery-sheet';
+                document.getElementById('sheet-1').classList.remove('slide-out');
+                document.getElementById('booking-scene').classList.remove('slide-in');
+                setTimeout(() => {
+                    document.getElementById('booking-scene').style.display = 'none';
+                    selectedPocketDay = null;
+                }, 820);
+                return;
+
+            } else if (bookingPrevState === 'gallery' || bookingPrevState === 'expanded') {
+                // ── Returning to showcase gallery ──
                 // Snap nav to gallery position immediately before slide begins
                 setNavState('gallery', true);
                 state = 'gallery';

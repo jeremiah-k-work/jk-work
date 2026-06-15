@@ -537,6 +537,24 @@
             transform: translateY(0);
             pointer-events: all;
         }
+        /* Showcase button hidden in gallery-sheet and booking */
+        #nav-unified.gallery #nav-showcase,
+        #nav-unified.booking #nav-showcase {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Hide Showcase and Gallery in non-intro states */
+        #nav-unified.gallery #nav-showcase,
+        #nav-unified.booking #nav-showcase {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #nav-unified.gallery-sheet #nav-gallery,
+        #nav-unified.booking #nav-gallery {
+            opacity: 0;
+            pointer-events: none;
+        }
 
         /* Hide Book button when already in booking view */
         /* BOOK word becomes the ambient heading in booking state —
@@ -891,6 +909,16 @@
             transition: border-color 0.2s ease;
         }
         .gallery-coll-card:hover { border-color: rgba(255,255,255,0.2); }
+        .gallery-coll-card .gallery-coll-bg-img {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            background-size: cover;
+            background-position: inherit; /* inherits from card */
+            transition: transform 0.5s ease;
+            transform-origin: var(--focal-x, 50%) var(--focal-y, 50%);
+            border-radius: inherit;
+        }
+        .gallery-coll-card:hover .gallery-coll-bg-img { transform: scale(1.06); }
         .gallery-coll-gradient {
             position: absolute;
             inset: 0;
@@ -1739,9 +1767,10 @@
     <!-- UNIFIED NAV — direct body child, position:fixed, never inside
      any transforming container so it's always viewport-anchored. -->
     <nav id="nav-unified">
-        <button id="nav-gallery" class="nav-word" onclick="enterGallerySheet()">Gallery</button>
-        <button id="nav-connect" class="nav-word" onclick="goBook()">Book</button>
-        <button id="nav-back" class="nav-word" onclick="goBackGeneric()">Back</button>
+        <button id="nav-gallery"  class="nav-word" onclick="enterGallerySheet()">Gallery</button>
+        <button id="nav-showcase" class="nav-word" onclick="enterShowcase()">Showcase</button>
+        <button id="nav-connect"  class="nav-word" onclick="goBook()">Book</button>
+        <button id="nav-back"     class="nav-word" onclick="goBackGeneric()">Back</button>
     </nav>
     
     <div id="logo">
@@ -1927,9 +1956,24 @@
         /* =====================================================
            STATE
            ===================================================== */
-        let state = 'intro'; // 'intro' | 'gallery' | 'expanded' | 'booking'
-        let bookingPrevState = 'intro'; // state before entering booking
+        let state = 'intro'; // current state: 'intro'|'gallery'|'expanded'|'booking'|'gallery-sheet'
+        let navHistory = ['intro']; // sheet navigation stack — Back pops this
+        let bookingPrevState = 'intro'; // kept for exitBook compat
         let isExiting = false; // true while exitGallery transition is running
+
+        function navPush(s) {
+            // Push a new state onto history
+            navHistory.push(s);
+            state = s;
+        }
+        function navPop() {
+            // Pop current state and return the previous one
+            if (navHistory.length > 1) navHistory.pop();
+            return navHistory[navHistory.length - 1];
+        }
+        function navPeek() {
+            return navHistory[navHistory.length - 1];
+        }
 
         function applyMounts() {
             // Apply intro portrait mount
@@ -1972,7 +2016,7 @@
             if (state === 'gallery' || state === 'expanded') exitGallery();
             if (state === 'booking') return; // handled by nav Back
 
-            state = 'gallery-sheet';
+            navPush('gallery-sheet');
 
             // Fetch collections if not loaded yet
             if (!galleryCollections.length) await fetchGalleryCollections();
@@ -1988,27 +2032,27 @@
                 scene.classList.add('slide-in');
             }));
 
-            // Nav: reuse gallery state (Back visible, Book visible)
-            setNavState('gallery');
+            // Nav: gallery-sheet state (Back visible, Gallery hidden, Showcase hidden)
+            setNavState('gallery-sheet');
             document.getElementById('logo').style.opacity = '0';
         }
 
         function exitGallerySheet() {
             if (state !== 'gallery-sheet') return;
-            state = 'intro';
-
-            // Close isolated view if open
             closeGalleryPhotoView();
 
-            // Slide back
+            const prevState = navPop(); // pop gallery-sheet, get previous
+            state = prevState || 'intro';
+
+            // Slide back to sheet-1
             document.getElementById('sheet-1').classList.remove('slide-right');
             document.getElementById('gallery-scene').classList.remove('slide-in');
 
-            // Restore intro
-            setNavState('intro');
+            // Restore nav based on where we came from
+            setNavState(state === 'intro' ? 'intro' : 'gallery');
             setTimeout(() => {
                 document.getElementById('logo').style.opacity = '1';
-                positionLogoIntro();
+                if (state === 'intro') positionLogoIntro();
                 document.getElementById('gallery-scene').style.display = 'none';
                 galleryCurrentColl = null;
             }, 800);
@@ -2033,7 +2077,7 @@
         async function fetchCollectionPhotos(collectionId) {
             try {
                 const rows = await fetch(
-                    `${SUPABASE_URL}/rest/v1/photo_collections?select=display_order,photos!inner(id,src,published)&collection_id=eq.${collectionId}&photos.published=eq.true&order=display_order.asc`,
+                    `${SUPABASE_URL}/rest/v1/photo_collections?select=display_order,photos!inner(id,src,published,zoom_anchor_x,zoom_anchor_y)&collection_id=eq.${collectionId}&photos.published=eq.true&order=display_order.asc`,
                     { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
                 ).then(r => r.json());
                 return (rows || []).map(r => r.photos).filter(p => p?.src);
@@ -2061,6 +2105,7 @@
                 return `
                 <div class="gallery-coll-card" id="gccard-${c.id}"
                      onclick="openCollection('${c.id}','${c.label}','${c.slug}')">
+                  <div class="gallery-coll-bg-img" id="gcbg-${c.id}"></div>
                   <div class="gallery-coll-gradient"></div>
                   <div class="gallery-coll-info">
                     <div class="gallery-coll-name">${c.label}</div>
@@ -2085,11 +2130,20 @@
                 if (!card) continue;
                 const photos = await fetchCollectionPhotos(c.id);
                 if (photos.length) {
-                    card.style.backgroundImage = `url('${PATHS.images}${photos[0].src}')`;
+                    const cover = photos[0];
+                    const ax = cover.zoom_anchor_x ?? 50;
+                    const ay = cover.zoom_anchor_y ?? 50;
+                    const bgDiv = document.getElementById(`gcbg-${c.id}`);
+                    if (bgDiv) {
+                        bgDiv.style.backgroundImage    = `url('${PATHS.images}${cover.src}')`;
+                        bgDiv.style.backgroundPosition = `${ax}% ${ay}%`;
+                        bgDiv.style.backgroundSize     = 'cover';
+                        bgDiv.style.setProperty('--focal-x', ax + '%');
+                        bgDiv.style.setProperty('--focal-y', ay + '%');
+                    }
                     const countEl = card.querySelector('.gallery-coll-count');
                     if (countEl) countEl.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
                 }
-                // Small delay between fetches to avoid hammering Supabase
                 await new Promise(r => setTimeout(r, 80));
             }
         }
@@ -2125,9 +2179,20 @@
             const container = document.getElementById('gallery-grid');
             if (!container) return;
 
-            const ROW_HEIGHT = 220; // px — target row height
+            // Use viewport width minus padding rather than container.offsetWidth
+            // since the container may not be laid out yet when this is called
+            const PADDING    = 96; // 48px each side from #gallery-grid padding
             const GAP        = 6;
-            const availW     = container.offsetWidth || (window.innerWidth - 96);
+            const availW     = window.innerWidth - PADDING;
+            const availH     = window.innerHeight - 140; // reserve header + controls
+            // Fit as many rows as possible without scrolling
+            // Total photos / cols gives rows; target row height from available height
+            const minCols    = 2;
+            const estCols    = Math.max(minCols, Math.round(availW / 280));
+            const estRows    = Math.ceil(photos.length / estCols);
+            const ROW_HEIGHT = Math.min(260, Math.max(120,
+                Math.floor((availH - estRows * GAP) / estRows)
+            ));
 
             // Build rows by accumulating photos until their total width fills the row
             // Each photo gets a natural width = ROW_HEIGHT * (aspect ratio)
@@ -2208,6 +2273,20 @@
             });
         }
 
+        // Keyboard nav for isolated photo view — added to the global keydown listener
+        function handleGallerySheetKeys(e) {
+            if (state !== 'gallery-sheet') return;
+            if (document.getElementById('gallery-photo-view')) {
+                // Isolated view open
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); galleryPhotoNav(1); }
+                if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); galleryPhotoNav(-1); }
+                if (e.key === 'Escape') { e.preventDefault(); closeGalleryPhotoView(); }
+            } else {
+                // Collection grid or landing
+                if (e.key === 'Escape') { e.preventDefault(); exitGallerySheet(); }
+            }
+        }
+
         function galleryPhotoNav(dir) {
             const next = galleryPhotoIndex + dir;
             if (next < 0 || next >= galleryPhotos.length) return;
@@ -2244,31 +2323,7 @@
         let siteMount = {}; // slug → first photo src for each mount
         
         
-        function goBackGeneric() {
-            
-            // If the state is intro, there should not be a back button.
-            if (state == 'intro') {
-            }
-            
-            // If the state is gallery,
-            if (state == 'gallery') {
-                exitGallery();
-                
-            }
-            
-            // If the state is expanded (expanded gallery image),
-            if (state == 'expanded') {
-                exitGallery();
-                
-            }
-            
-            // If the state is booking,
-            if (state == 'booking') {
-                exitBook();
-                
-            }
-            
-        }
+        // goBackGeneric defined above
 
         /* =====================================================
    MOUNT FETCHING
@@ -2415,10 +2470,8 @@ async function fetchBookingData() {
 
         async function goBook() {
             if (state === 'booking') return;
-            if (state === 'gallery-sheet') {
-                // Entering book from gallery sheet
-                bookingPrevState = 'gallery-sheet';
-            }
+            bookingPrevState = state; // keep for exitBook compat
+            navPush('booking');
 
             bookingPrevState = state; // remember where we came from
 
@@ -2480,7 +2533,10 @@ async function fetchBookingData() {
             selectDay(selectedPocketDay);
             
             
-            if (bookingPrevState === 'gallery-sheet') {
+            const prevState = navPop(); // pop 'booking', get previous sheet
+            bookingPrevState = prevState;
+
+            if (prevState === 'gallery-sheet') {
                 // ── Returning to gallery sheet ──
                 setNavState('gallery', true);
                 state = 'gallery-sheet';
@@ -2492,7 +2548,7 @@ async function fetchBookingData() {
                 }, 820);
                 return;
 
-            } else if (bookingPrevState === 'gallery' || bookingPrevState === 'expanded') {
+            } else if (prevState === 'gallery' || prevState === 'expanded') {
                 // ── Returning to showcase gallery ──
                 // Snap nav to gallery position immediately before slide begins
                 setNavState('gallery', true);
@@ -3558,7 +3614,7 @@ async function fetchBookingData() {
             if (instant) nav.classList.add('no-transition');
 
             // Clear all state classes and inline positional styles
-            nav.classList.remove('gallery', 'booking', 'no-transition-temp');
+            nav.classList.remove('gallery', 'booking', 'gallery-sheet', 'no-transition-temp');
             nav.style.left = '';
             nav.style.right = '';
             nav.style.top = '';
@@ -3575,6 +3631,10 @@ async function fetchBookingData() {
             } else if (newState === 'booking') {
                 // CSS .booking handles left/top/transform
                 nav.classList.add('booking');
+            } else if (newState === 'gallery-sheet') {
+                // Gallery sheet uses same bottom-centre position as gallery
+                nav.classList.add('gallery', 'gallery-sheet');
+                nav.style.bottom = 'clamp(24px, 8vh, 60px)';
             }
 
             // Re-enable transitions after one frame if we suppressed them
@@ -3760,6 +3820,9 @@ async function fetchBookingData() {
             if (!contextMenuEnabled) e.preventDefault();
         });
         document.addEventListener('keydown', e => {
+            // Gallery sheet keyboard navigation
+            handleGallerySheetKeys(e);
+
             if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 contextMenuEnabled = !contextMenuEnabled;

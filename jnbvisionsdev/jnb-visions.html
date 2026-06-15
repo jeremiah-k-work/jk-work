@@ -502,7 +502,17 @@
             text-align: center;
         }
 
-        /* ── CONNECT word ── */
+        /* ── SHOWCASE word ── */
+        #nav-showcase {
+            font-size: clamp(10px, 1.4vw, 14px);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.45);
+            opacity: 1;
+            transform: none;
+        }
+        #nav-showcase:hover { color: rgba(255, 255, 255, 0.85); }
+
+        /* ── CONNECT (Book) word ── */
         #nav-connect {
             font-size: clamp(10px, 1.4vw, 14px);
             font-weight: 400;
@@ -2044,18 +2054,31 @@
             const prevState = navPop(); // pop gallery-sheet, get previous
             state = prevState || 'intro';
 
-            // Slide back to sheet-1
+            // Start slide back
             document.getElementById('sheet-1').classList.remove('slide-right');
             document.getElementById('gallery-scene').classList.remove('slide-in');
 
-            // Restore nav based on where we came from
-            setNavState(state === 'intro' ? 'intro' : 'gallery');
-            setTimeout(() => {
-                document.getElementById('logo').style.opacity = '1';
-                if (state === 'intro') positionLogoIntro();
-                document.getElementById('gallery-scene').style.display = 'none';
-                galleryCurrentColl = null;
-            }, 800);
+            if (state === 'intro') {
+                // Nav animates toward intro position immediately (it will arrive
+                // around the same time the slide completes at 750ms)
+                setNavState('intro');
+                // After slide settles, snap nav precisely and restore logo
+                setTimeout(() => {
+                    // Re-snap with instant flag after geometry is stable
+                    setNavState('intro', true);
+                    positionIntroAll();
+                    document.getElementById('logo').style.opacity = '1';
+                    document.getElementById('gallery-scene').style.display = 'none';
+                    galleryCurrentColl = null;
+                }, 820);
+            } else {
+                setNavState('gallery');
+                setTimeout(() => {
+                    document.getElementById('logo').style.opacity = '1';
+                    document.getElementById('gallery-scene').style.display = 'none';
+                    galleryCurrentColl = null;
+                }, 820);
+            }
         }
 
         /* ── Data fetching ── */
@@ -2221,7 +2244,9 @@
                 const rowPhotos = photos.slice(start, end);
                 const totalNatural = rowPhotos.reduce((s, _, i) => s + naturalW[start + i], 0);
                 const totalGaps    = (rowPhotos.length - 1) * GAP;
-                const scale        = (availW - totalGaps) / totalNatural;
+                // Cap scale at 1.0 so single-photo rows don't blow up
+                const rawScale     = (availW - totalGaps) / totalNatural;
+                const scale        = Math.min(rawScale, availH / ROW_HEIGHT);
                 const rowH         = Math.round(ROW_HEIGHT * scale);
 
                 const thumbsHtml = rowPhotos.map((p, i) => {
@@ -2478,9 +2503,19 @@ async function fetchBookingData() {
             await fetchBookingData();
 
             if (state === 'gallery-sheet') {
-                // Coming from gallery sheet — slide gallery back, then slide booking in
-                document.getElementById('sheet-1').classList.remove('slide-right');
-                document.getElementById('gallery-scene').classList.remove('slide-in');
+                // Coming from gallery sheet — snap gallery out instantly, then slide to booking
+                const gs = document.getElementById('gallery-scene');
+                const s1 = document.getElementById('sheet-1');
+                // Suppress transitions for instant snap
+                gs.style.transition = 'none';
+                s1.style.transition = 'none';
+                gs.classList.remove('slide-in');
+                s1.classList.remove('slide-right');
+                gs.style.display = 'none';
+                void s1.offsetHeight; // force reflow
+                // Re-enable transitions for booking slide
+                gs.style.transition = '';
+                s1.style.transition = '';
                 document.getElementById('logo').style.opacity = '0';
             } else if (state === 'gallery' || state === 'expanded') {
                 // Coming from showcase gallery — fade chrome without going back to intro.

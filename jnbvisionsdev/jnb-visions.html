@@ -2425,27 +2425,18 @@
         function getChunkLayout() {
             const vw = window.innerWidth;
             const vh = window.innerHeight;
-            const ratio = vw / vh;
-            const HEADER_H = 110; // header + nav allowance
+            const HEADER_H = 110;
             const GAP_BETWEEN = 20;
 
-            // Chunk width — centered content column
-            const chunkW = Math.min(Math.round(vw * 0.68), 860);
-
-            let chunk1H, chunk2H, showTwo;
-
-            if (ratio > 1.2) {
-                // Wide viewport — one chunk fills available height
-                showTwo = false;
-                chunk1H = vh - HEADER_H;
-                chunk2H = 0;
-            } else {
-                // Tall/square viewport — two chunks
-                showTwo = true;
-                const totalH = vh - HEADER_H - GAP_BETWEEN;
-                chunk1H = Math.round(totalH * 0.58);
-                chunk2H = Math.round(totalH * 0.38);
-            }
+            // Two chunks are always shown regardless of viewport width.
+            // chunkW grows with the viewport so the first chunk's images
+            // naturally become wider compositions on wide screens.
+            // chunk heights are fixed fractions of available vertical space.
+            const showTwo = true;
+            const chunkW  = Math.min(Math.round(vw * 0.82), 1200);
+            const totalH  = vh - HEADER_H - GAP_BETWEEN;
+            const chunk1H = Math.round(totalH * 0.56);
+            const chunk2H = Math.round(totalH * 0.38);
 
             return { chunkW, chunk1H, chunk2H, showTwo };
         }

@@ -1012,9 +1012,6 @@
             cursor: pointer;
             flex-shrink: 0;
             background: #0d0d0d;
-            /* Silver shimmer outline on hover via box-shadow inside the slot */
-            box-shadow: inset 0 0 0 0px transparent;
-            transition: box-shadow 0.3s ease;
         }
         .gallery-slot img {
             position: absolute;
@@ -1031,11 +1028,81 @@
             user-drag: none;
         }
         .gallery-slot img.loaded { opacity: 1; }
-        /* Hover: silver shimmer outline — image darkening kept but disabled */
+        /* Image darkening on hover — kept, currently disabled */
         /* .gallery-slot:hover img { opacity: 0.88; } */
-        .gallery-slot:hover {
-            box-shadow: inset 0 0 0 1.5px rgba(200,200,210,0.45),
-                        inset 0 0 12px 0px rgba(220,220,235,0.08);
+
+        /* Shimmer overlay — sits above the photo, only visible on hover.
+           A conic gradient rotates around the slot perimeter creating a
+           travelling silver light effect. Masked to show only at the edges. */
+        .gallery-slot::after {
+            content: '';
+            position: absolute;
+            inset: -100%;          /* oversized so rotation covers all edges */
+            z-index: 2;
+            background: conic-gradient(
+                from var(--shimmer-angle, 0deg),
+                transparent 0deg,
+                transparent 60deg,
+                rgba(255,255,255,0.0) 80deg,
+                rgba(220,225,235,0.55) 100deg,
+                rgba(255,255,255,0.9) 110deg,
+                rgba(220,225,235,0.55) 120deg,
+                rgba(255,255,255,0.0) 140deg,
+                transparent 160deg,
+                transparent 360deg
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            /* Mask to a thin border ring — only the edges are visible */
+            -webkit-mask: linear-gradient(#000 0 0) content-box,
+                          linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 1.5px;       /* border thickness */
+            border-radius: inherit;
+            pointer-events: none;
+        }
+
+        @property --shimmer-angle {
+            syntax: '<angle>';
+            inherits: false;
+            initial-value: 0deg;
+        }
+
+        @keyframes shimmer-rotate {
+            to { --shimmer-angle: 360deg; }
+        }
+
+        .gallery-slot:hover::after {
+            opacity: 1;
+            animation: shimmer-rotate 2.4s linear infinite;
+        }
+
+        /* Pulsing ambient glow — separate element, blurred, behind the photo */
+        .gallery-slot::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: conic-gradient(
+                from var(--shimmer-angle, 0deg),
+                transparent 0deg,
+                rgba(180,185,210,0.12) 100deg,
+                rgba(220,225,240,0.25) 110deg,
+                rgba(180,185,210,0.12) 120deg,
+                transparent 160deg,
+                transparent 360deg
+            );
+            opacity: 0;
+            filter: blur(8px);
+            border-radius: inherit;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .gallery-slot:hover::before {
+            opacity: 1;
+            animation: shimmer-rotate 2.4s linear infinite;
         }
 
         /* Chunk nav arrows */

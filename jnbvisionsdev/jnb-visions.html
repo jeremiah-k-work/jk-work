@@ -932,12 +932,7 @@
         .gallery-coll-card .gallery-coll-bg-img.loaded { opacity: 1; }
         .gallery-coll-card:hover .gallery-coll-bg-img { transform: scale(1.06); }
 
-        /* Gallery thumb fade-in */
-        .gallery-thumb img {
-            opacity: 0;
-            transition: opacity 0.45s ease;
-        }
-        .gallery-thumb img.loaded { opacity: 1; }
+
         .gallery-coll-gradient {
             position: absolute;
             inset: 0;
@@ -973,68 +968,87 @@
             margin-top: 4px;
         }
 
-        /* Photo grid view */
+        /* ── Chunk layout ── */
         #gallery-grid-view {
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         #gallery-grid-header {
             display: flex;
             align-items: center;
             gap: 16px;
-            padding: 80px 48px 28px;
-            max-width: 1000px;
-            margin: 0 auto;
+            padding: 28px 0 20px;
+            width: var(--chunk-w, 640px);
         }
-        .gallery-back-link {
-            background: none; border: none;
-            color: rgba(255,255,255,0.35);
-            font-family: var(--font-secondary);
-            font-size: 10px; font-weight: 700;
-            letter-spacing: 0.18em; text-transform: uppercase;
-            cursor: pointer; padding: 0;
-            transition: color 0.15s;
-        }
-        .gallery-back-link:hover { color: rgba(255,255,255,0.7); }
-        .gallery-grid-title {
-            font-family: var(--font-secondary);
-            font-size: clamp(11px, 1.5vw, 16px);
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--white);
-        }
-        #gallery-grid {
-            padding: 0 48px 80px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        /* Justified row layout */
-        .gallery-row {
+        #gallery-chunk-area {
+            width: var(--chunk-w, 640px);
             display: flex;
-            gap: 6px;
-            margin-bottom: 6px;
+            flex-direction: column;
+            gap: 20px;
         }
-        .gallery-thumb {
+        .gallery-chunk {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
             flex-shrink: 0;
-            overflow: hidden;
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            background: #111;
-            transition: opacity 0.15s ease;
         }
-        .gallery-thumb:hover { opacity: 0.88; }
-        .gallery-thumb img {
+        /* Slot column — contains one or more slots stacked */
+        .gallery-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        /* Individual photo slot */
+        .gallery-slot {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+            background: #0d0d0d;
+        }
+        .gallery-slot img {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            transition: transform 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.45s ease;
             -webkit-user-drag: none;
             user-drag: none;
         }
+        .gallery-slot img.loaded { opacity: 1; }
+        .gallery-slot:hover img { opacity: 0.88; }
 
-        /* Isolated photo view */
+        /* Chunk nav arrows */
+        #gallery-chunk-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            padding: 16px 0 0;
+            width: var(--chunk-w, 640px);
+        }
+        .gallery-chunk-arrow {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 8px 16px;
+            transition: color 0.2s ease;
+            font-family: var(--font-primary);
+        }
+        .gallery-chunk-arrow:hover { color: rgba(255,255,255,0.8); }
+        .gallery-chunk-arrow:disabled { opacity: 0.15; cursor: default; }
+
+                /* Isolated photo view */
         #gallery-photo-view {
             position: fixed;
             inset: 0;
@@ -2254,28 +2268,28 @@
                     <button class="gallery-back-link" onclick="renderGalleryLanding()">← Collections</button>
                     <span class="gallery-grid-title">${label}</span>
                 </div>
-                <div id="gallery-grid"><div class="gallery-heading" style="opacity:0.4">Loading...</div></div>
+                <div id="gallery-chunk-area"></div>
+                <div id="gallery-chunk-nav">
+                    <button class="gallery-chunk-arrow" data-dir="-1"
+                            onclick="advanceChunks(-1)" disabled>←</button>
+                    <button class="gallery-chunk-arrow" data-dir="1"
+                            onclick="advanceChunks(1)">→</button>
+                </div>
             </div>`;
 
             // If we have a cached grid, restore it — images are already in browser cache
             // so they render instantly without re-downloading
-            if (collectionGridCache.has(id)) {
-                document.getElementById('gallery-grid').innerHTML = collectionGridCache.get(id);
-                galleryPhotos = collectionPhotosCache.get(id) || [];
-                // Re-attach fade-in: images already loaded, just make them visible
-                document.querySelectorAll('.gallery-thumb img').forEach(img => {
-                    if (img.complete) {
-                        img.classList.add('loaded');
-                    } else {
-                        img.onload = () => img.classList.add('loaded');
-                    }
-                });
-                attachThumbObserver();
+            if (collectionPhotosCache.has(id)) {
+                // Photos already fetched — render chunks immediately from cache
+                galleryPhotos = collectionPhotosCache.get(id);
+                chunkWindowStart = 0;
+                renderChunkDisplay();
                 return;
             }
 
             const photos = await fetchCollectionPhotos(id);
             galleryPhotos = photos;
+            chunkWindowStart = 0;
 
             if (!photos.length) {
                 document.getElementById('gallery-grid').innerHTML =
@@ -2283,119 +2297,290 @@
                 return;
             }
 
-            renderJustifiedGrid(photos);
-
-            // Cache the rendered grid HTML after rendering
-            const grid = document.getElementById('gallery-grid');
-            if (grid) collectionGridCache.set(id, grid.innerHTML);
+            renderChunkDisplay();
+            // No grid HTML cache needed — chunks are rendered from data + templates
         }
 
-        function renderJustifiedGrid(photos) {
-            const container = document.getElementById('gallery-grid');
-            if (!container) return;
+        /* =====================================================
+           CHUNK TEMPLATE LAYOUT
+           ===================================================== */
 
-            // Use viewport width minus padding rather than container.offsetWidth
-            // since the container may not be laid out yet when this is called
-            const PADDING    = 96; // 48px each side from #gallery-grid padding
-            const GAP        = 6;
-            const availW     = window.innerWidth - PADDING;
-            const availH     = window.innerHeight - 140; // reserve header + controls
-            // Fit as many rows as possible without scrolling
-            // Total photos / cols gives rows; target row height from available height
-            const minCols    = 2;
-            const estCols    = Math.max(minCols, Math.round(availW / 280));
-            const estRows    = Math.ceil(photos.length / estCols);
-            const ROW_HEIGHT = Math.min(260, Math.max(120,
-                Math.floor((availH - estRows * GAP) / estRows)
-            ));
+        // Photo window — index of first visible photo in the chunk display
+        let chunkWindowStart = 0;
 
-            // Build rows by accumulating photos until their total width fills the row
-            // Each photo gets a natural width = ROW_HEIGHT * (aspect ratio)
-            // We assume roughly 4:3 portrait ratio since we don't have dimensions
-            // A future improvement: store width/height on photos table
-            const ASSUMED_RATIO = 0.75; // portrait default
-            const naturalW = photos.map(() => Math.round(ROW_HEIGHT * ASSUMED_RATIO));
+        /* ── Template definitions ──────────────────────────────
+           Each template is an array of COLUMNS.
+           Each column has:
+             w: fraction of chunkW (0–1)
+             slots: array of { h: fraction of chunkH }
+           Photos are assigned left-to-right, top-to-bottom.
+           photosNeeded = sum of all slots across all columns.
+        ─────────────────────────────────────────────────────── */
+        const TEMPLATES = [
+            {
+                // PANO-MIX — 6 photos, two tall anchors with stacked wide pairs between
+                name: 'PANO-MIX',
+                photosNeeded: 6,
+                cols: [
+                    { w: 0.235, slots: [{ h: 1.0 }] },           // tall portrait
+                    { w: 0.265, slots: [{ h: 0.46 }, { h: 0.46 }] }, // two landscape
+                    { w: 0.235, slots: [{ h: 1.0 }] },           // tall portrait
+                    { w: 0.265, slots: [{ h: 0.60 }, { h: 0.34 }] }, // landscape + wide
+                ]
+            },
+            {
+                // ANCHOR-TRIO — 5 photos, tall anchors with three stacked center
+                name: 'ANCHOR-TRIO',
+                photosNeeded: 5,
+                cols: [
+                    { w: 0.28, slots: [{ h: 1.0 }] },
+                    { w: 0.42, slots: [{ h: 0.31 }, { h: 0.31 }, { h: 0.31 }] },
+                    { w: 0.28, slots: [{ h: 1.0 }] },
+                ]
+            },
+            {
+                // EDITORIAL — 6 photos, narrow bookends with complex center
+                name: 'EDITORIAL',
+                photosNeeded: 6,
+                cols: [
+                    { w: 0.13, slots: [{ h: 1.0 }] },             // very narrow portrait
+                    { w: 0.43, slots: [{ h: 0.42 }, { h: 0.52 }] }, // wide + medium
+                    { w: 0.30, slots: [{ h: 1.0 }] },             // medium portrait
+                    { w: 0.13, slots: [{ h: 1.0 }] },             // very narrow portrait
+                ]
+            },
+            {
+                // WIDE-HERO — 1 photo, full chunk
+                name: 'WIDE-HERO',
+                photosNeeded: 1,
+                cols: [
+                    { w: 1.0, slots: [{ h: 1.0 }] },
+                ]
+            },
+            {
+                // DIPTYCH — 2 photos side by side
+                name: 'DIPTYCH',
+                photosNeeded: 2,
+                cols: [
+                    { w: 0.49, slots: [{ h: 1.0 }] },
+                    { w: 0.49, slots: [{ h: 1.0 }] },
+                ]
+            },
+            {
+                // TRIPTYCH — 3 equal columns
+                name: 'TRIPTYCH',
+                photosNeeded: 3,
+                cols: [
+                    { w: 0.32, slots: [{ h: 1.0 }] },
+                    { w: 0.32, slots: [{ h: 1.0 }] },
+                    { w: 0.32, slots: [{ h: 1.0 }] },
+                ]
+            },
+            {
+                // QUAD — 4 photos, two rows of two
+                name: 'QUAD',
+                photosNeeded: 4,
+                cols: [
+                    { w: 0.49, slots: [{ h: 0.49 }, { h: 0.49 }] },
+                    { w: 0.49, slots: [{ h: 0.49 }, { h: 0.49 }] },
+                ]
+            },
+            {
+                // FEATURE-LEFT — 4 photos, large left + three stacked right
+                name: 'FEATURE-LEFT',
+                photosNeeded: 4,
+                cols: [
+                    { w: 0.55, slots: [{ h: 1.0 }] },
+                    { w: 0.43, slots: [{ h: 0.31 }, { h: 0.31 }, { h: 0.31 }] },
+                ]
+            },
+        ];
 
-            const rows = [];
-            let rowStart = 0;
-            while (rowStart < photos.length) {
-                let rowW = 0;
-                let rowEnd = rowStart;
-                while (rowEnd < photos.length && rowW + naturalW[rowEnd] + GAP <= availW) {
-                    rowW += naturalW[rowEnd] + GAP;
-                    rowEnd++;
-                }
-                // If nothing fit (single very wide image), take at least one
-                if (rowEnd === rowStart) rowEnd = rowStart + 1;
-                rows.push({ start: rowStart, end: rowEnd });
-                rowStart = rowEnd;
+        // Template cycle order for multi-chunk display
+        const TEMPLATE_CYCLE = [
+            'WIDE-HERO',   // chunk 1 of a pair often gets a hero
+            'PANO-MIX',
+            'ANCHOR-TRIO',
+            'EDITORIAL',
+            'PANO-MIX',
+            'FEATURE-LEFT',
+            'QUAD',
+            'ANCHOR-TRIO',
+            'TRIPTYCH',
+        ];
+
+        function pickTemplate(photoCount, cycleIndex) {
+            // Find templates that fit the available photo count
+            const cycle = TEMPLATE_CYCLE[cycleIndex % TEMPLATE_CYCLE.length];
+            const preferred = TEMPLATES.find(t => t.name === cycle);
+            if (preferred && preferred.photosNeeded <= photoCount) return preferred;
+            // Fall back to best fit
+            const fits = TEMPLATES.filter(t => t.photosNeeded <= photoCount);
+            if (!fits.length) return TEMPLATES[TEMPLATES.indexOf(TEMPLATES.find(t => t.name === 'WIDE-HERO'))];
+            return fits.reduce((best, t) =>
+                Math.abs(t.photosNeeded - photoCount) < Math.abs(best.photosNeeded - photoCount) ? t : best
+            );
+        }
+
+        function getChunkLayout() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const ratio = vw / vh;
+            const HEADER_H = 110; // header + nav allowance
+            const GAP_BETWEEN = 20;
+
+            // Chunk width — centered content column
+            const chunkW = Math.min(Math.round(vw * 0.68), 860);
+
+            let chunk1H, chunk2H, showTwo;
+
+            if (ratio > 1.2) {
+                // Wide viewport — one chunk fills available height
+                showTwo = false;
+                chunk1H = vh - HEADER_H;
+                chunk2H = 0;
+            } else {
+                // Tall/square viewport — two chunks
+                showTwo = true;
+                const totalH = vh - HEADER_H - GAP_BETWEEN;
+                chunk1H = Math.round(totalH * 0.58);
+                chunk2H = Math.round(totalH * 0.38);
             }
 
-            let html = '';
-            rows.forEach(({ start, end }) => {
-                const rowPhotos    = photos.slice(start, end);
-                const totalNatural = rowPhotos.reduce((s, _, i) => s + naturalW[start + i], 0);
-                const totalGaps    = (rowPhotos.length - 1) * GAP;
-                const rawScale     = (availW - totalGaps) / totalNatural;
-                // Last row (or any partial row) should never scale above 1.0 —
-                // a row that doesn't fill the container stays at natural size,
-                // left-aligned. Full rows scale up to fill width but are capped
-                // by available height so they can't blow out the viewport vertically.
-                const isLastRow    = end >= photos.length;
-                const scale        = isLastRow
-                    ? Math.min(rawScale, 1.0)          // partial row: never enlarge
-                    : Math.min(rawScale, availH / ROW_HEIGHT); // full row: fill width, cap height
-                const rowH         = Math.round(ROW_HEIGHT * scale);
-
-                const thumbsHtml = rowPhotos.map((p, i) => {
-                    const w = Math.round(naturalW[start + i] * scale);
-                    const globalIdx = start + i;
-                    return `
-                    <div class="gallery-thumb" style="width:${w}px;height:${rowH}px"
-                         onclick="openGalleryPhoto(${globalIdx})">
-                        <img src="${PATHS.images}${p.src}" alt=""
-                             data-idx="${globalIdx}"
-                             onerror="this.classList.add('loaded');this.parentElement.style.background='#1a1a1a'">
-                    </div>`;
-                }).join('');
-
-                html += `<div class="gallery-row">${thumbsHtml}</div>`;
-            });
-
-            container.innerHTML = html;
-            // Staggered fade-in via IntersectionObserver
-            attachThumbObserver();
+            return { chunkW, chunk1H, chunk2H, showTwo };
         }
 
-        function attachThumbObserver() {
-            // Observe each thumb image. When it enters the viewport,
-            // wait for it to load then fade it in with a stagger based on
-            // its position in the grid (left-to-right, top-to-bottom).
-            const imgs = document.querySelectorAll('.gallery-thumb img:not(.loaded)');
-            if (!imgs.length) return;
+        function renderChunk(photos, template, chunkW, chunkH, photoOffset) {
+            // Returns HTML for one chunk
+            const GAP = 10;
+            let html = '<div class="gallery-chunk">';
+            let photoIdx = photoOffset;
 
+            template.cols.forEach((col, ci) => {
+                const colW = Math.round(col.w * chunkW - (template.cols.length - 1) * GAP / template.cols.length);
+                html += `<div class="gallery-col" style="width:${colW}px">`;
+
+                col.slots.forEach((slot, si) => {
+                    const slotH = Math.round(slot.h * chunkH - (col.slots.length - 1) * GAP / col.slots.length);
+                    const photo = photos[photoIdx % photos.length]; // wrap if needed
+                    const globalIdx = photoIdx;
+                    const ax = photo?.zoom_anchor_x ?? 50;
+                    const ay = photo?.zoom_anchor_y ?? 50;
+                    const src = photo ? `${PATHS.images}${photo.src}` : '';
+
+                    html += `
+                    <div class="gallery-slot" style="height:${slotH}px"
+                         onclick="openGalleryPhoto(${globalIdx % photos.length})">
+                        <img src="${src}"
+                             style="object-position:${ax}% ${ay}%"
+                             data-idx="${globalIdx}"
+                             onerror="this.classList.add('loaded');this.style.opacity='0'">
+                    </div>`;
+                    photoIdx++;
+                });
+
+                html += '</div>';
+            });
+
+            html += '</div>';
+            return { html, photosUsed: photoIdx - photoOffset };
+        }
+
+        function renderChunkDisplay() {
+            const container = document.getElementById('gallery-chunk-area');
+            const navEl     = document.getElementById('gallery-chunk-nav');
+            if (!container || !galleryPhotos.length) return;
+
+            const { chunkW, chunk1H, chunk2H, showTwo } = getChunkLayout();
+
+            // Update CSS variable so header and nav align with chunks
+            const gridView = document.getElementById('gallery-grid-view');
+            if (gridView) gridView.style.setProperty('--chunk-w', chunkW + 'px');
+
+            let html = '';
+            let photosUsed = 0;
+
+            // Chunk 1
+            const t1 = pickTemplate(
+                galleryPhotos.length - chunkWindowStart,
+                0
+            );
+            const c1 = renderChunk(galleryPhotos, t1, chunkW, chunk1H, chunkWindowStart);
+            html += c1.html;
+            photosUsed += c1.photosUsed;
+
+            // Chunk 2 (if two-chunk mode)
+            if (showTwo && (chunkWindowStart + photosUsed) < galleryPhotos.length) {
+                const t2 = pickTemplate(
+                    galleryPhotos.length - chunkWindowStart - photosUsed,
+                    1
+                );
+                const c2 = renderChunk(
+                    galleryPhotos, t2, chunkW, chunk2H,
+                    chunkWindowStart + photosUsed
+                );
+                html += c2.html;
+                photosUsed += c2.photosUsed;
+            }
+
+            container.innerHTML = html;
+
+            // Update nav arrows
+            if (navEl) {
+                const prevBtn = navEl.querySelector('.gallery-chunk-arrow[data-dir="-1"]');
+                const nextBtn = navEl.querySelector('.gallery-chunk-arrow[data-dir="1"]');
+                if (prevBtn) prevBtn.disabled = chunkWindowStart <= 0;
+                if (nextBtn) nextBtn.disabled = (chunkWindowStart + photosUsed) >= galleryPhotos.length;
+            }
+
+            // Fade in images with stagger
+            attachSlotObserver();
+        }
+
+        function advanceChunks(dir) {
+            const { showTwo, chunkW, chunk1H, chunk2H } = getChunkLayout();
+            const t1 = pickTemplate(galleryPhotos.length - chunkWindowStart, 0);
+            let used = t1.photosNeeded;
+            if (showTwo) {
+                const t2 = pickTemplate(galleryPhotos.length - chunkWindowStart - used, 1);
+                used += t2.photosNeeded;
+            }
+            if (dir > 0) {
+                chunkWindowStart = Math.min(chunkWindowStart + used, galleryPhotos.length - 1);
+            } else {
+                chunkWindowStart = Math.max(0, chunkWindowStart - used);
+            }
+            renderChunkDisplay();
+        }
+
+        function attachSlotObserver() {
+            const imgs = document.querySelectorAll('.gallery-slot img:not(.loaded)');
+            if (!imgs.length) return;
             const observer = new IntersectionObserver((entries, obs) => {
-                entries.forEach(entry => {
+                entries.forEach((entry, i) => {
                     if (!entry.isIntersecting) return;
                     const img = entry.target;
                     obs.unobserve(img);
-                    const idx   = parseInt(img.dataset.idx || '0');
-                    const delay = (idx % 20) * 55; // stagger within each screenful
-                    const reveal = () => {
-                        setTimeout(() => img.classList.add('loaded'), delay);
-                    };
-                    if (img.complete) {
-                        reveal();
-                    } else {
-                        img.onload  = reveal;
-                        img.onerror = reveal; // still reveal on error
-                    }
+                    const delay = i * 60;
+                    const reveal = () => setTimeout(() => img.classList.add('loaded'), delay);
+                    if (img.complete && img.naturalWidth > 0) reveal();
+                    else { img.onload = reveal; img.onerror = () => img.classList.add('loaded'); }
                 });
             }, { threshold: 0.05 });
-
             imgs.forEach(img => observer.observe(img));
         }
 
+        // Keyboard conveyor — shift window by 1 photo
+        function galleryKeyConveyor(dir) {
+            if (dir > 0 && chunkWindowStart < galleryPhotos.length - 1) {
+                chunkWindowStart++;
+            } else if (dir < 0 && chunkWindowStart > 0) {
+                chunkWindowStart--;
+            }
+            renderChunkDisplay();
+        }
+
+        
         /* ── Isolated photo view ── */
 
         function openGalleryPhoto(index) {
@@ -2432,12 +2617,24 @@
         function handleGallerySheetKeys(e) {
             if (state !== 'gallery-sheet') return;
             if (document.getElementById('gallery-photo-view')) {
-                // Isolated view open
+                // Isolated view open — navigate photos
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); galleryPhotoNav(1); }
                 if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); galleryPhotoNav(-1); }
                 if (e.key === 'Escape') { e.preventDefault(); closeGalleryPhotoView(); }
+            } else if (galleryCurrentColl && document.getElementById('gallery-chunk-area')) {
+                // Collection chunk view — arrow keys conveyor shift OR chunk advance
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (e.shiftKey) advanceChunks(1);    // Shift+→ advances a full chunk
+                    else galleryKeyConveyor(1);            // → shifts by one photo
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (e.shiftKey) advanceChunks(-1);
+                    else galleryKeyConveyor(-1);
+                }
+                if (e.key === 'Escape') { e.preventDefault(); renderGalleryLanding(); }
             } else {
-                // Collection grid or landing
                 if (e.key === 'Escape') { e.preventDefault(); exitGallerySheet(); }
             }
         }
@@ -3980,6 +4177,7 @@ async function fetchBookingData() {
             resizeTimer = setTimeout(() => {
                 if (state === 'intro') positionIntroAll();
                 if (state === 'booking') positionLogoBooking();
+    if (state === 'gallery-sheet' && galleryCurrentColl) renderChunkDisplay();
                 if (state === 'gallery' || state === 'expanded') {
                     const vw = window.innerWidth,
                         vh = window.innerHeight;

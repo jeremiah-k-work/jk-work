@@ -923,12 +923,21 @@
             position: absolute; inset: 0;
             width: 100%; height: 100%;
             background-size: cover;
-            background-position: inherit; /* inherits from card */
-            transition: transform 0.5s ease;
+            background-position: inherit;
+            transition: transform 0.5s ease, opacity 0.4s ease;
             transform-origin: var(--focal-x, 50%) var(--focal-y, 50%);
             border-radius: inherit;
+            opacity: 0; /* starts hidden — fades in when image loads */
         }
+        .gallery-coll-card .gallery-coll-bg-img.loaded { opacity: 1; }
         .gallery-coll-card:hover .gallery-coll-bg-img { transform: scale(1.06); }
+
+        /* Gallery thumb fade-in */
+        .gallery-thumb img {
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .gallery-thumb img.loaded { opacity: 1; }
         .gallery-coll-gradient {
             position: absolute;
             inset: 0;
@@ -2019,6 +2028,8 @@
         let galleryCurrentColl   = null; // { id, label, slug }
         let galleryPhotoIndex    = 0;   // index in galleryPhotos for isolated view
         let galleryBookingContext = null; // { source, slug } — passed to booking
+        const collectionCoverCache = new Map(); // collectionId → { src, ax, ay }
+        const collectionPhotosCache = new Map(); // collectionId → photos array
 
         /* ── Enter / Exit ── */
 
@@ -2103,12 +2114,18 @@
         }
 
         async function fetchCollectionPhotos(collectionId) {
+            // Return cached result immediately if available
+            if (collectionPhotosCache.has(collectionId)) {
+                return collectionPhotosCache.get(collectionId);
+            }
             try {
                 const rows = await fetch(
                     `${SUPABASE_URL}/rest/v1/photo_collections?select=display_order,photos!inner(id,src,published,zoom_anchor_x,zoom_anchor_y)&collection_id=eq.${collectionId}&photos.published=eq.true&order=display_order.asc`,
                     { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
                 ).then(r => r.json());
-                return (rows || []).map(r => r.photos).filter(p => p?.src);
+                const photos = (rows || []).map(r => r.photos).filter(p => p?.src);
+                collectionPhotosCache.set(collectionId, photos);
+                return photos;
             } catch(err) {
                 console.warn('[jnb] Collection photos fetch failed:', err.message);
                 return [];
@@ -2152,27 +2169,65 @@
             loadCollectionCovers();
         }
 
+        function applyCoverToCard(collectionId, coverData) {
+            // Apply a cached cover immediately and fade it in
+            const bgDiv = document.getElementById(`gcbg-${collectionId}`);
+            if (!bgDiv) return;
+            bgDiv.style.backgroundImage    = `url('${PATHS.images}${coverData.src}')`;
+            bgDiv.style.backgroundPosition = `${coverData.ax}% ${coverData.ay}%`;
+            bgDiv.style.backgroundSize     = 'cover';
+            bgDiv.style.setProperty('--focal-x', coverData.ax + '%');
+            bgDiv.style.setProperty('--focal-y', coverData.ay + '%');
+            bgDiv.classList.add('loaded'); // already in cache — show immediately
+        }
+
         async function loadCollectionCovers() {
+            const uncached = [];
+
+            // Apply cached covers immediately — no flash, no fetch
             for (const c of galleryCollections) {
+                if (collectionCoverCache.has(c.id)) {
+                    applyCoverToCard(c.id, collectionCoverCache.get(c.id));
+                } else {
+                    uncached.push(c);
+                }
+            }
+
+            // Fetch and fade in uncached covers
+            for (const c of uncached) {
                 const card = document.getElementById(`gccard-${c.id}`);
                 if (!card) continue;
+
                 const photos = await fetchCollectionPhotos(c.id);
-                if (photos.length) {
-                    const cover = photos[0];
-                    const ax = cover.zoom_anchor_x ?? 50;
-                    const ay = cover.zoom_anchor_y ?? 50;
-                    const bgDiv = document.getElementById(`gcbg-${c.id}`);
-                    if (bgDiv) {
-                        bgDiv.style.backgroundImage    = `url('${PATHS.images}${cover.src}')`;
-                        bgDiv.style.backgroundPosition = `${ax}% ${ay}%`;
-                        bgDiv.style.backgroundSize     = 'cover';
-                        bgDiv.style.setProperty('--focal-x', ax + '%');
-                        bgDiv.style.setProperty('--focal-y', ay + '%');
-                    }
-                    const countEl = card.querySelector('.gallery-coll-count');
-                    if (countEl) countEl.textContent = `${photos.length} photo${photos.length !== 1 ? 's' : ''}`;
-                }
-                await new Promise(r => setTimeout(r, 80));
+                if (!photos.length) continue;
+
+                const cover = photos[0];
+                const coverData = {
+                    src: cover.src,
+                    ax:  cover.zoom_anchor_x ?? 50,
+                    ay:  cover.zoom_anchor_y ?? 50,
+                    count: photos.length
+                };
+                collectionCoverCache.set(c.id, coverData);
+
+                const bgDiv = document.getElementById(`gcbg-${c.id}`);
+                if (!bgDiv) continue;
+
+                // Use Image() to detect when the browser has loaded the image
+                // before fading it in — avoids showing a half-painted background
+                const img = new Image();
+                img.onload = () => {
+                    bgDiv.style.backgroundImage    = `url('${PATHS.images}${coverData.src}')`;
+                    bgDiv.style.backgroundPosition = `${coverData.ax}% ${coverData.ay}%`;
+                    bgDiv.style.backgroundSize     = 'cover';
+                    bgDiv.style.setProperty('--focal-x', coverData.ax + '%');
+                    bgDiv.style.setProperty('--focal-y', coverData.ay + '%');
+                    requestAnimationFrame(() => bgDiv.classList.add('loaded'));
+                };
+                img.src = PATHS.images + coverData.src;
+
+                // Small delay between fetches only when hitting Supabase
+                await new Promise(r => setTimeout(r, 60));
             }
         }
 
@@ -2261,7 +2316,8 @@
                     <div class="gallery-thumb" style="width:${w}px;height:${rowH}px"
                          onclick="openGalleryPhoto(${globalIdx})">
                         <img src="${PATHS.images}${p.src}" alt="" loading="lazy"
-                             onerror="this.parentElement.style.background='#1a1a1a'">
+                             onload="this.classList.add('loaded')"
+                             onerror="this.classList.add('loaded');this.parentElement.style.background='#1a1a1a'">
                     </div>`;
                 }).join('');
 

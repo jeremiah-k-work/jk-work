@@ -924,7 +924,7 @@
             width: 100%; height: 100%;
             background-size: cover;
             background-position: inherit;
-            transition: transform 0.5s ease, opacity 0.4s ease;
+            transition: transform 0.5s ease, opacity 0.55s ease;
             transform-origin: var(--focal-x, 50%) var(--focal-y, 50%);
             border-radius: inherit;
             opacity: 0; /* starts hidden — fades in when image loads */
@@ -935,7 +935,7 @@
         /* Gallery thumb fade-in */
         .gallery-thumb img {
             opacity: 0;
-            transition: opacity 0.35s ease;
+            transition: opacity 0.45s ease;
         }
         .gallery-thumb img.loaded { opacity: 1; }
         .gallery-coll-gradient {
@@ -2028,8 +2028,9 @@
         let galleryCurrentColl   = null; // { id, label, slug }
         let galleryPhotoIndex    = 0;   // index in galleryPhotos for isolated view
         let galleryBookingContext = null; // { source, slug } — passed to booking
-        const collectionCoverCache = new Map(); // collectionId → { src, ax, ay }
+        const collectionCoverCache = new Map(); // collectionId → { src, ax, ay, count }
         const collectionPhotosCache = new Map(); // collectionId → photos array
+        const collectionGridCache   = new Map(); // collectionId → rendered grid HTML
 
         /* ── Enter / Exit ── */
 
@@ -2169,8 +2170,9 @@
             loadCollectionCovers();
         }
 
-        function applyCoverToCard(collectionId, coverData) {
-            // Apply a cached cover immediately and fade it in
+        function applyCoverToCard(collectionId, coverData, delay = 0) {
+            // Apply a cached cover. Use rAF + optional delay so the opacity:0
+            // initial state has time to register before we transition to opacity:1.
             const bgDiv = document.getElementById(`gcbg-${collectionId}`);
             if (!bgDiv) return;
             bgDiv.style.backgroundImage    = `url('${PATHS.images}${coverData.src}')`;
@@ -2178,16 +2180,21 @@
             bgDiv.style.backgroundSize     = 'cover';
             bgDiv.style.setProperty('--focal-x', coverData.ax + '%');
             bgDiv.style.setProperty('--focal-y', coverData.ay + '%');
-            bgDiv.classList.add('loaded'); // already in cache — show immediately
+            // Give the browser one frame to register opacity:0 before fading in
+            requestAnimationFrame(() => {
+                setTimeout(() => bgDiv.classList.add('loaded'), delay);
+            });
         }
 
         async function loadCollectionCovers() {
             const uncached = [];
 
-            // Apply cached covers immediately — no flash, no fetch
+            // Apply cached covers with a stagger so they fade in sequentially
+            let cachedIdx = 0;
             for (const c of galleryCollections) {
                 if (collectionCoverCache.has(c.id)) {
-                    applyCoverToCard(c.id, collectionCoverCache.get(c.id));
+                    applyCoverToCard(c.id, collectionCoverCache.get(c.id), cachedIdx * 80);
+                    cachedIdx++;
                 } else {
                     uncached.push(c);
                 }
@@ -2222,7 +2229,9 @@
                     bgDiv.style.backgroundSize     = 'cover';
                     bgDiv.style.setProperty('--focal-x', coverData.ax + '%');
                     bgDiv.style.setProperty('--focal-y', coverData.ay + '%');
-                    requestAnimationFrame(() => bgDiv.classList.add('loaded'));
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => bgDiv.classList.add('loaded'));
+                    });
                 };
                 img.src = PATHS.images + coverData.src;
 
@@ -2238,6 +2247,8 @@
             galleryBookingContext = { source: 'gallery-collection', slug };
 
             const scene = document.getElementById('gallery-scene');
+
+            // Always render the shell so the header is present
             scene.innerHTML = `<div id="gallery-grid-view">
                 <div id="gallery-grid-header">
                     <button class="gallery-back-link" onclick="renderGalleryLanding()">← Collections</button>
@@ -2245,6 +2256,23 @@
                 </div>
                 <div id="gallery-grid"><div class="gallery-heading" style="opacity:0.4">Loading...</div></div>
             </div>`;
+
+            // If we have a cached grid, restore it — images are already in browser cache
+            // so they render instantly without re-downloading
+            if (collectionGridCache.has(id)) {
+                document.getElementById('gallery-grid').innerHTML = collectionGridCache.get(id);
+                galleryPhotos = collectionPhotosCache.get(id) || [];
+                // Re-attach fade-in: images already loaded, just make them visible
+                document.querySelectorAll('.gallery-thumb img').forEach(img => {
+                    if (img.complete) {
+                        img.classList.add('loaded');
+                    } else {
+                        img.onload = () => img.classList.add('loaded');
+                    }
+                });
+                attachThumbObserver();
+                return;
+            }
 
             const photos = await fetchCollectionPhotos(id);
             galleryPhotos = photos;
@@ -2256,6 +2284,10 @@
             }
 
             renderJustifiedGrid(photos);
+
+            // Cache the rendered grid HTML after rendering
+            const grid = document.getElementById('gallery-grid');
+            if (grid) collectionGridCache.set(id, grid.innerHTML);
         }
 
         function renderJustifiedGrid(photos) {
@@ -2315,8 +2347,8 @@
                     return `
                     <div class="gallery-thumb" style="width:${w}px;height:${rowH}px"
                          onclick="openGalleryPhoto(${globalIdx})">
-                        <img src="${PATHS.images}${p.src}" alt="" loading="lazy"
-                             onload="this.classList.add('loaded')"
+                        <img src="${PATHS.images}${p.src}" alt=""
+                             data-idx="${globalIdx}"
                              onerror="this.classList.add('loaded');this.parentElement.style.background='#1a1a1a'">
                     </div>`;
                 }).join('');
@@ -2325,6 +2357,37 @@
             });
 
             container.innerHTML = html;
+            // Staggered fade-in via IntersectionObserver
+            attachThumbObserver();
+        }
+
+        function attachThumbObserver() {
+            // Observe each thumb image. When it enters the viewport,
+            // wait for it to load then fade it in with a stagger based on
+            // its position in the grid (left-to-right, top-to-bottom).
+            const imgs = document.querySelectorAll('.gallery-thumb img:not(.loaded)');
+            if (!imgs.length) return;
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const img = entry.target;
+                    obs.unobserve(img);
+                    const idx   = parseInt(img.dataset.idx || '0');
+                    const delay = (idx % 20) * 55; // stagger within each screenful
+                    const reveal = () => {
+                        setTimeout(() => img.classList.add('loaded'), delay);
+                    };
+                    if (img.complete) {
+                        reveal();
+                    } else {
+                        img.onload  = reveal;
+                        img.onerror = reveal; // still reveal on error
+                    }
+                });
+            }, { threshold: 0.05 });
+
+            imgs.forEach(img => observer.observe(img));
         }
 
         /* ── Isolated photo view ── */

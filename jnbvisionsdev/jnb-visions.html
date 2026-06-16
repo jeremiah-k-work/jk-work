@@ -979,10 +979,31 @@
         }
         #gallery-grid-header {
             display: flex;
-            align-items: center;
-            gap: 16px;
+            align-items: baseline;
+            gap: 20px;
             padding: 28px 0 20px;
             width: var(--chunk-w, 640px);
+        }
+        .gallery-grid-breadcrumb {
+            font-family: var(--font-secondary);
+            font-size: clamp(9px, 1vw, 11px);
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .gallery-grid-breadcrumb:hover { color: rgba(255,255,255,0.65); }
+        .gallery-grid-title {
+            font-family: var(--font-secondary);
+            font-size: clamp(16px, 2.5vw, 28px);
+            font-weight: 900;
+            letter-spacing: -0.01em;
+            text-transform: uppercase;
+            color: var(--white);
         }
         #gallery-chunk-area {
             width: var(--chunk-w, 640px);
@@ -1021,15 +1042,23 @@
             height: 100%;
             object-fit: cover;
             display: block;
-            z-index: 1;           /* above glow (0), below shimmer ring (2) */
+            z-index: 1;
             opacity: 0;
-            transition: opacity 0.45s ease;
+            /* Zoom transition: very slow cubic-bezier that accelerates then
+               barely coasts — feels like it will zoom forever but does settle */
+            transition: opacity 0.45s ease,
+                        transform 12s cubic-bezier(0.05, 0.0, 0.2, 1.0);
+            transform-origin: var(--focal-x, 50%) var(--focal-y, 50%);
+            transform: scale(1.0);
+            will-change: transform;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: pixelated;
             -webkit-user-drag: none;
             user-drag: none;
         }
         .gallery-slot img.loaded { opacity: 1; }
+        /* Slow zoom toward focal point on hover */
+        .gallery-slot:hover img { transform: scale(1.06); }
         /* Image darkening on hover — kept, currently disabled */
         /* .gallery-slot:hover img { opacity: 0.88; } */
 
@@ -1043,12 +1072,12 @@
             to { --shimmer-angle: 360deg; }
         }
 
-        /* Ambient glow — blurred conic, sits behind the photo */
+        /* Ambient glow — blurred conic, sits above the photo */
         .gallery-slot::before {
             content: '';
             position: absolute;
-            inset: -40%;          /* oversized so the blur bleeds to edges */
-            z-index: 0;
+            inset: -40%;
+            z-index: 4;
             background: conic-gradient(
                 from var(--shimmer-angle, 0deg),
                 transparent 0deg,
@@ -1062,9 +1091,9 @@
             );
             opacity: 0;
             filter: blur(80px);
-            transition: opacity 0.5s ease;
+            transition: opacity 0.8s ease;
             pointer-events: none;
-            border-radius: 50%;   /* round the oversized element so blur is even */
+            border-radius: 50%;
         }
         .gallery-slot:hover::before {
             opacity: 1;
@@ -1083,7 +1112,7 @@
             z-index: 2;
             border-radius: inherit;
             /* Rotating conic gradient as the border */
-            border: 1.5px solid transparent;
+            border: 1px solid transparent;
             background:
                 /* transparent fill so photo shows through */
                 linear-gradient(#000 0 0) padding-box,
@@ -2356,7 +2385,8 @@
             // Always render the shell so the header is present
             scene.innerHTML = `<div id="gallery-grid-view">
                 <div id="gallery-grid-header">
-                    <button class="gallery-back-link" onclick="renderGalleryLanding()">← Collections</button>
+                    <span class="gallery-grid-breadcrumb"
+                          onclick="renderGalleryLanding()">← Collections</span>
                     <span class="gallery-grid-title">${label}</span>
                 </div>
                 <div id="gallery-chunk-area"></div>
@@ -2551,7 +2581,7 @@
                     const src = photo ? `${PATHS.images}${photo.src}` : '';
 
                     html += `
-                    <div class="gallery-slot" style="height:${slotH}px"
+                    <div class="gallery-slot" style="height:${slotH}px;--focal-x:${ax}%;--focal-y:${ay}%"
                          onclick="openGalleryPhoto(${globalIdx % photos.length})">
                         <img src="${src}"
                              style="object-position:${ax}% ${ay}%"

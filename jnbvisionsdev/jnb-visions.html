@@ -2333,12 +2333,18 @@
 
             let html = '';
             rows.forEach(({ start, end }) => {
-                const rowPhotos = photos.slice(start, end);
+                const rowPhotos    = photos.slice(start, end);
                 const totalNatural = rowPhotos.reduce((s, _, i) => s + naturalW[start + i], 0);
                 const totalGaps    = (rowPhotos.length - 1) * GAP;
-                // Cap scale at 1.0 so single-photo rows don't blow up
                 const rawScale     = (availW - totalGaps) / totalNatural;
-                const scale        = Math.min(rawScale, availH / ROW_HEIGHT);
+                // Last row (or any partial row) should never scale above 1.0 —
+                // a row that doesn't fill the container stays at natural size,
+                // left-aligned. Full rows scale up to fill width but are capped
+                // by available height so they can't blow out the viewport vertically.
+                const isLastRow    = end >= photos.length;
+                const scale        = isLastRow
+                    ? Math.min(rawScale, 1.0)          // partial row: never enlarge
+                    : Math.min(rawScale, availH / ROW_HEIGHT); // full row: fill width, cap height
                 const rowH         = Math.round(ROW_HEIGHT * scale);
 
                 const thumbsHtml = rowPhotos.map((p, i) => {

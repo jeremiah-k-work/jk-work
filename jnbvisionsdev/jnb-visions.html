@@ -1012,6 +1012,7 @@
             cursor: pointer;
             flex-shrink: 0;
             background: #0d0d0d;
+            isolation: isolate; /* establishes stacking context for z-order control */
         }
         .gallery-slot img {
             position: absolute;
@@ -1020,6 +1021,7 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            z-index: 1;           /* above glow (0), below shimmer ring (2) */
             opacity: 0;
             transition: opacity 0.45s ease;
             image-rendering: -webkit-optimize-contrast;
@@ -1031,38 +1033,6 @@
         /* Image darkening on hover — kept, currently disabled */
         /* .gallery-slot:hover img { opacity: 0.88; } */
 
-        /* Shimmer overlay — sits above the photo, only visible on hover.
-           A conic gradient rotates around the slot perimeter creating a
-           travelling silver light effect. Masked to show only at the edges. */
-        .gallery-slot::after {
-            content: '';
-            position: absolute;
-            inset: -100%;          /* oversized so rotation covers all edges */
-            z-index: 2;
-            background: conic-gradient(
-                from var(--shimmer-angle, 0deg),
-                transparent 0deg,
-                transparent 60deg,
-                rgba(255,255,255,0.0) 80deg,
-                rgba(220,225,235,0.55) 100deg,
-                rgba(255,255,255,0.9) 110deg,
-                rgba(220,225,235,0.55) 120deg,
-                rgba(255,255,255,0.0) 140deg,
-                transparent 160deg,
-                transparent 360deg
-            );
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            /* Mask to a thin border ring — only the edges are visible */
-            -webkit-mask: linear-gradient(#000 0 0) content-box,
-                          linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            padding: 1.5px;       /* border thickness */
-            border-radius: inherit;
-            pointer-events: none;
-        }
-
         @property --shimmer-angle {
             syntax: '<angle>';
             inherits: false;
@@ -1073,36 +1043,76 @@
             to { --shimmer-angle: 360deg; }
         }
 
-        .gallery-slot:hover::after {
-            opacity: 1;
-            animation: shimmer-rotate 2.4s linear infinite;
-        }
-
-        /* Pulsing ambient glow — separate element, blurred, behind the photo */
+        /* Ambient glow — blurred conic, sits behind the photo */
         .gallery-slot::before {
             content: '';
             position: absolute;
-            inset: 0;
+            inset: -40%;          /* oversized so the blur bleeds to edges */
             z-index: 0;
             background: conic-gradient(
                 from var(--shimmer-angle, 0deg),
                 transparent 0deg,
-                rgba(180,185,210,0.12) 100deg,
-                rgba(220,225,240,0.25) 110deg,
-                rgba(180,185,210,0.12) 120deg,
-                transparent 160deg,
+                rgba(180,185,215,0.0) 70deg,
+                rgba(200,205,230,0.35) 90deg,
+                rgba(240,240,255,0.55) 100deg,
+                rgba(200,205,230,0.35) 110deg,
+                rgba(180,185,215,0.0) 130deg,
+                transparent 180deg,
                 transparent 360deg
             );
             opacity: 0;
-            filter: blur(8px);
+            filter: blur(80px);
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            border-radius: 50%;   /* round the oversized element so blur is even */
+        }
+        .gallery-slot:hover::before {
+            opacity: 1;
+            animation: shimmer-rotate 8s linear infinite;
+        }
+
+        /* Shimmer ring — sits above the photo as a border-like overlay.
+           Uses the border-image trick: the element covers the slot exactly,
+           a transparent background reveals the photo, and the border itself
+           carries the rotating conic gradient. overflow:hidden on the parent
+           clips it to the border-radius. */
+        .gallery-slot::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 2;
             border-radius: inherit;
+            /* Rotating conic gradient as the border */
+            border: 1.5px solid transparent;
+            background:
+                /* transparent fill so photo shows through */
+                linear-gradient(#000 0 0) padding-box,
+                /* rotating silver arc as the border paint */
+                conic-gradient(
+                    from var(--shimmer-angle, 0deg),
+                    transparent 0deg,
+                    transparent 55deg,
+                    rgba(150,155,170,0.0) 75deg,
+                    rgba(200,205,220,0.6) 88deg,
+                    rgba(240,242,250,1.0) 95deg,
+                    rgba(200,205,220,0.6) 102deg,
+                    rgba(150,155,170,0.0) 115deg,
+                    transparent 135deg,
+                    transparent 360deg
+                ) border-box;
+            /* Cut out the padding-box fill so only the border is painted */
+            -webkit-mask:
+                linear-gradient(#fff 0 0) padding-box,
+                linear-gradient(#fff 0 0) border-box;
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            opacity: 0;
             transition: opacity 0.4s ease;
             pointer-events: none;
         }
-
-        .gallery-slot:hover::before {
+        .gallery-slot:hover::after {
             opacity: 1;
-            animation: shimmer-rotate 2.4s linear infinite;
+            animation: shimmer-rotate 8s linear infinite;
         }
 
         /* Chunk nav arrows */

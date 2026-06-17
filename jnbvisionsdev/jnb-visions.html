@@ -2934,54 +2934,51 @@ async function fetchBookingData() {
 
         async function goBook() {
             if (state === 'booking') return;
-            bookingPrevState = state; // keep for exitBook compat
-            navPush('booking');
 
-            bookingPrevState = state; // remember where we came from
+            // Capture where we are RIGHT NOW before any state mutation
+            const prevState   = state;
+            bookingPrevState  = prevState;
 
             await fetchBookingData();
 
-            if (state === 'gallery-sheet') {
-                // Coming from gallery sheet — snap gallery out instantly, then slide to booking.
-                // We hide gallery-scene and reset sheet-1 without animation,
-                // then let the normal booking slide (sheet-1.slide-out + booking-scene.slide-in)
-                // handle the visual transition.
+            // Branch on prevState — state has NOT been mutated yet
+            if (prevState === 'gallery-sheet') {
+                // Snap gallery out instantly, then let normal booking slide run
                 const gs = document.getElementById('gallery-scene');
                 const s1 = document.getElementById('sheet-1');
                 gs.style.transition = 'none';
-                s1.style.transition  = 'none';
+                s1.style.transition = 'none';
                 gs.classList.remove('slide-in');
                 s1.classList.remove('slide-right');
                 gs.style.display = 'none';
-                void s1.offsetHeight; // force reflow before re-enabling transitions
+                void s1.offsetHeight;
                 gs.style.transition = '';
-                s1.style.transition  = '';
+                s1.style.transition = '';
                 document.getElementById('logo').style.opacity = '0';
                 setNavState('booking');
-                // The normal slide-out + slide-in at the bottom of goBook will run
-            } else if (state === 'gallery' || state === 'expanded') {
-                // Coming from showcase gallery — fade chrome without going back to intro.
-                // The nav moves to left side.
+
+            } else if (prevState === 'gallery' || prevState === 'expanded') {
+                // Fade showcase gallery chrome, keep sheet-1 in place
                 hideGalleryChrome();
                 document.getElementById('gallery-tap').classList.remove('active');
                 document.getElementById('unified-frame').style.opacity = '0';
                 document.getElementById('outline-rect').classList.remove('rect-visible');
                 document.getElementById('photo-plate').classList.remove('visible');
-                // Move nav to booking position
                 setNavState('booking');
+
             } else {
-                // Coming from intro — hide intro chrome, move nav left side.
+                // Coming from intro
                 document.getElementById('visions-label').style.opacity = '0';
                 document.getElementById('visions-label').style.left =
                     (parseFloat(document.getElementById('visions-label').style.left || '0') - 20) + 'px';
                 document.getElementById('unified-frame').style.opacity = '0';
                 document.getElementById('outline-rect').classList.remove('rect-visible');
                 document.getElementById('logo').style.opacity = '0';
-
                 setNavState('booking');
             }
 
-            state = 'booking';
+            // Now commit the state change
+            navPush('booking');
 
             // Slide booking scene in
             const scene = document.getElementById('booking-scene');
@@ -2993,10 +2990,7 @@ async function fetchBookingData() {
                 });
             });
 
-            // Render after slide begins
             setTimeout(() => renderBookingView(), 400);
-
-            // Logo moves immediately alongside the slide transition
             positionLogoBooking();
         }
 
